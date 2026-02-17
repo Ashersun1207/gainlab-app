@@ -4,8 +4,7 @@ node_modules/
 # Build output
 dist/
 
-# Environment variables
-.env
+# Environment variables (.env only has public VITE_WORKER_URL, safe to commit)
 .env.local
 .env.*.local
 
