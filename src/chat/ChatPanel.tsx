@@ -1,35 +1,34 @@
-import { useState, useCallback, useRef } from 'react'
-import { MessageList } from './MessageList'
-import { useMcpStream } from '../hooks/useMcpStream'
+import { useState, useCallback, useRef } from 'react';
+import { MessageList } from './MessageList';
+import { useMcpStream } from '../hooks/useMcpStream';
 
 interface ChatPanelProps {
-  onToolResult?: (toolName: string, result: unknown) => void
+  onToolResult?: (toolName: string, result: unknown) => void;
 }
 
 export function ChatPanel({ onToolResult }: ChatPanelProps) {
-  const [input, setInput] = useState('')
-  const inputRef = useRef<HTMLTextAreaElement>(null)
-  const { messages, streaming, activeToolCall, sendMessage, clearMessages } =
-    useMcpStream()
+  const [input, setInput] = useState('');
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const { messages, streaming, activeToolCall, sendMessage, clearMessages } = useMcpStream();
 
   const handleSend = useCallback(async () => {
-    const text = input.trim()
-    if (!text || streaming) return
-    setInput('')
-    await sendMessage(text, onToolResult)
+    const text = input.trim();
+    if (!text || streaming) return;
+    setInput('');
+    await sendMessage(text, onToolResult);
     // 发送后聚焦输入框
-    inputRef.current?.focus()
-  }, [input, streaming, sendMessage, onToolResult])
+    inputRef.current?.focus();
+  }, [input, streaming, sendMessage, onToolResult]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault()
-        handleSend()
+        e.preventDefault();
+        handleSend();
       }
     },
     [handleSend],
-  )
+  );
 
   return (
     <div
@@ -54,9 +53,7 @@ export function ChatPanel({ onToolResult }: ChatPanelProps) {
           flexShrink: 0,
         }}
       >
-        <span style={{ color: '#8888cc', fontSize: 13, fontWeight: 600 }}>
-          ✨ GainLab AI
-        </span>
+        <span style={{ color: '#8888cc', fontSize: 13, fontWeight: 600 }}>✨ GainLab AI</span>
         <button
           onClick={clearMessages}
           style={{
@@ -130,10 +127,10 @@ export function ChatPanel({ onToolResult }: ChatPanelProps) {
             opacity: streaming ? 0.6 : 1,
           }}
           onFocus={(e) => {
-            e.currentTarget.style.borderColor = '#4a4a8a'
+            e.currentTarget.style.borderColor = '#4a4a8a';
           }}
           onBlur={(e) => {
-            e.currentTarget.style.borderColor = '#2a2a4a'
+            e.currentTarget.style.borderColor = '#2a2a4a';
           }}
         />
         <button
@@ -144,9 +141,7 @@ export function ChatPanel({ onToolResult }: ChatPanelProps) {
             borderRadius: 8,
             border: 'none',
             background:
-              streaming || !input.trim()
-                ? '#1e1e3a'
-                : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+              streaming || !input.trim() ? '#1e1e3a' : 'linear-gradient(135deg, #2563eb, #1d4ed8)',
             color: streaming || !input.trim() ? '#3a3a6a' : '#fff',
             fontSize: 13,
             cursor: streaming || !input.trim() ? 'not-allowed' : 'pointer',
@@ -159,5 +154,5 @@ export function ChatPanel({ onToolResult }: ChatPanelProps) {
         </button>
       </div>
     </div>
-  )
+  );
 }

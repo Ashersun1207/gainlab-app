@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
-import { init, dispose } from './KLineChart/index'
-import type { KLineData, Chart } from './klinechart'
+import { useEffect, useRef, useState } from 'react';
+import { init, dispose } from './KLineChart/index';
+import type { KLineData, Chart } from './klinechart';
 
 // BTC 30 条日线 fallback 数据（Binance 被墙时使用）
 const SAMPLE_DATA: KLineData[] = [
@@ -34,23 +34,23 @@ const SAMPLE_DATA: KLineData[] = [
   { timestamp: 1710288000000, open: 70500, high: 72000, low: 70000, close: 71800, volume: 80000 },
   { timestamp: 1710374400000, open: 71800, high: 73000, low: 71000, close: 72500, volume: 70000 },
   { timestamp: 1710460800000, open: 72500, high: 73500, low: 71500, close: 73000, volume: 65000 },
-]
+];
 
 interface KLineWidgetProps {
-  symbol?: string
-  data?: KLineData[]
-  indicators?: string[]
+  symbol?: string;
+  data?: KLineData[];
+  indicators?: string[];
 }
 
 async function fetchBinanceKline(symbol: string): Promise<KLineData[] | null> {
   try {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 5000) // 5s 超时
-    const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1d&limit=100`
-    const res = await fetch(url, { signal: controller.signal })
-    clearTimeout(timeoutId)
-    if (!res.ok) return null
-    const raw = await res.json() as unknown[][]
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s 超时
+    const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1d&limit=100`;
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    if (!res.ok) return null;
+    const raw = (await res.json()) as unknown[][];
     return raw.map((item) => ({
       timestamp: item[0] as number,
       open: parseFloat(item[1] as string),
@@ -58,9 +58,9 @@ async function fetchBinanceKline(symbol: string): Promise<KLineData[] | null> {
       low: parseFloat(item[3] as string),
       close: parseFloat(item[4] as string),
       volume: parseFloat(item[5] as string),
-    }))
+    }));
   } catch {
-    return null
+    return null;
   }
 }
 
@@ -69,13 +69,12 @@ export function KLineWidget({
   data: externalData,
   indicators = ['RSI'],
 }: KLineWidgetProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const chartRef = useRef<Chart | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<Chart | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return
+    if (!containerRef.current) return;
 
     // init chart
     const chart = init(containerRef.current, {
@@ -110,67 +109,62 @@ export function KLineWidget({
           color: '#2a2a4a',
         },
       },
-    })
+    });
 
-    if (!chart) return
-    chartRef.current = chart
+    if (!chart) return;
+    chartRef.current = chart;
 
     // add indicator panes
     for (const ind of indicators) {
-      chart.createIndicator(ind, false, { id: `pane_${ind}` })
+      chart.createIndicator(ind, false, { id: `pane_${ind}` });
     }
 
     // 立刻用外部数据或 fallback 显示，再异步尝试 Binance
     if (externalData && externalData.length > 0) {
-      chart.setDataList(externalData)
-      setLoading(false)
+      chart.setDataList(externalData);
     } else {
       // 先用 SAMPLE_DATA 立即显示
-      chart.setDataList(SAMPLE_DATA)
-      setLoading(false)
+      chart.setDataList(SAMPLE_DATA);
 
       // 后台尝试真实数据
       fetchBinanceKline(symbol).then((fetched) => {
         if (fetched && chartRef.current) {
-          chartRef.current.setDataList(fetched)
-          setError(null)
+          chartRef.current.setDataList(fetched);
+          setError(null);
         } else {
-          setError('Binance API 不可用，使用样本数据')
+          setError('Binance API 不可用，使用样本数据');
         }
-      })
+      });
     }
 
+    // Capture ref value for cleanup (react-hooks/exhaustive-deps)
+    const container = containerRef.current;
     return () => {
-      dispose(containerRef.current!)
-      chartRef.current = null
-    }
-  }, [symbol, externalData, indicators])
+      if (container) dispose(container);
+      chartRef.current = null;
+    };
+  }, [symbol, externalData, indicators]);
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', background: '#12122a' }}>
-      {loading && (
-        <div style={{
-          position: 'absolute', inset: 0, display: 'flex',
-          alignItems: 'center', justifyContent: 'center',
-          color: '#6a6a9a', fontSize: 14, zIndex: 10,
-        }}>
-          加载中...
-        </div>
-      )}
       {error && (
-        <div style={{
-          position: 'absolute', top: 8, right: 8,
-          padding: '4px 8px', borderRadius: 4,
-          background: '#3a2a00', color: '#ffc107',
-          fontSize: 12, zIndex: 10,
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            padding: '4px 8px',
+            borderRadius: 4,
+            background: '#3a2a00',
+            color: '#ffc107',
+            fontSize: 12,
+            zIndex: 10,
+          }}
+        >
           {error}
         </div>
       )}
-      <div
-        ref={containerRef}
-        style={{ width: '100%', height: '100%' }}
-      />
+      <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
     </div>
-  )
+  );
 }

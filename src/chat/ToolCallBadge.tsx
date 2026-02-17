@@ -1,18 +1,18 @@
-import { useState } from 'react'
-import type { McpToolCall } from '../types/mcp'
+import { useState } from 'react';
+import type { McpToolCall } from '../types/mcp';
 
 interface ToolCallBadgeProps {
-  toolCall: McpToolCall
+  toolCall: McpToolCall;
 }
 
 export function ToolCallBadge({ toolCall }: ToolCallBadgeProps) {
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(false);
 
   // 提取关键参数显示（symbol、interval 等）
   const keyArgs = Object.entries(toolCall.args)
     .slice(0, 2)
     .map(([k, v]) => `${k}: ${String(v)}`)
-    .join(', ')
+    .join(', ');
 
   return (
     <div style={{ marginTop: 4, marginBottom: 2 }}>
@@ -35,9 +35,7 @@ export function ToolCallBadge({ toolCall }: ToolCallBadgeProps) {
       >
         <span>🔧</span>
         <span style={{ fontWeight: 600 }}>{toolCall.name}</span>
-        {keyArgs && (
-          <span style={{ color: '#a78bfa', opacity: 0.85 }}>({keyArgs})</span>
-        )}
+        {keyArgs && <span style={{ color: '#a78bfa', opacity: 0.85 }}>({keyArgs})</span>}
         <span style={{ opacity: 0.6, fontSize: 10 }}>{expanded ? '▲' : '▼'}</span>
       </button>
 
@@ -61,5 +59,5 @@ export function ToolCallBadge({ toolCall }: ToolCallBadgeProps) {
         </pre>
       )}
     </div>
-  )
+  );
 }

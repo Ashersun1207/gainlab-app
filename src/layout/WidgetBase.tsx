@@ -1,6 +1,6 @@
 interface WidgetBaseProps {
-  title: string
-  children: React.ReactNode
+  title: string;
+  children: React.ReactNode;
 }
 
 export function WidgetBase({ title, children }: WidgetBaseProps) {
@@ -29,9 +29,7 @@ export function WidgetBase({ title, children }: WidgetBaseProps) {
       >
         {title}
       </div>
-      <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
-        {children}
-      </div>
+      <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>{children}</div>
     </div>
-  )
+  );
 }

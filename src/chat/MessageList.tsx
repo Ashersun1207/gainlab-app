@@ -1,19 +1,19 @@
-import { useEffect, useRef } from 'react'
-import { ToolCallBadge } from './ToolCallBadge'
-import type { ChatMessage } from '../hooks/useMcpStream'
+import { useEffect, useRef } from 'react';
+import { ToolCallBadge } from './ToolCallBadge';
+import type { ChatMessage } from '../hooks/useMcpStream';
 
 interface MessageListProps {
-  messages: ChatMessage[]
-  streaming: boolean
+  messages: ChatMessage[];
+  streaming: boolean;
 }
 
 export function MessageList({ messages, streaming }: MessageListProps) {
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   // 自动滚到底部
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   if (messages.length === 0) {
     return (
@@ -31,11 +31,12 @@ export function MessageList({ messages, streaming }: MessageListProps) {
         }}
       >
         <span>
-          💡 你好！我是 GainLab AI<br />
+          💡 你好！我是 GainLab AI
+          <br />
           向我提问关于加密货币市场的问题
         </span>
       </div>
-    )
+    );
   }
 
   return (
@@ -74,15 +75,12 @@ export function MessageList({ messages, streaming }: MessageListProps) {
                 maxWidth: '85%',
                 padding: '8px 12px',
                 borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                background: msg.role === 'user'
-                  ? 'linear-gradient(135deg, #2563eb, #1d4ed8)'
-                  : '#1a1a35',
+                background:
+                  msg.role === 'user' ? 'linear-gradient(135deg, #2563eb, #1d4ed8)' : '#1a1a35',
                 color: msg.role === 'user' ? '#fff' : '#c8c8e8',
                 fontSize: 13,
                 lineHeight: 1.6,
-                border: msg.role === 'user'
-                  ? 'none'
-                  : '1px solid #2a2a4a',
+                border: msg.role === 'user' ? 'none' : '1px solid #2a2a4a',
                 wordBreak: 'break-word',
                 whiteSpace: 'pre-wrap',
               }}
@@ -113,5 +111,5 @@ export function MessageList({ messages, streaming }: MessageListProps) {
 
       <div ref={bottomRef} />
     </div>
-  )
+  );
 }

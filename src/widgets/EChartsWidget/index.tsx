@@ -1,11 +1,11 @@
-import ReactECharts from 'echarts-for-react'
-import type { EChartsOption } from 'echarts'
-import type { CSSProperties } from 'react'
+import ReactECharts from 'echarts-for-react';
+import type { EChartsOption } from 'echarts';
+import type { CSSProperties } from 'react';
 
 interface EChartsWidgetProps {
-  option: EChartsOption
-  style?: CSSProperties
-  onReady?: (instance: unknown) => void
+  option: EChartsOption;
+  style?: CSSProperties;
+  onReady?: (instance: unknown) => void;
 }
 
 export function EChartsWidget({ option, style, onReady }: EChartsWidgetProps) {
@@ -23,5 +23,5 @@ export function EChartsWidget({ option, style, onReady }: EChartsWidgetProps) {
       lazyUpdate
       onChartReady={onReady}
     />
-  )
+  );
 }

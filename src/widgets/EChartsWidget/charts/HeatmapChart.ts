@@ -1,32 +1,32 @@
-import type { EChartsOption, TooltipComponentOption } from 'echarts'
-import type { HeatmapItem } from './sampleHeatmapData'
+import type { EChartsOption, TooltipComponentOption } from 'echarts';
+import type { HeatmapItem } from './sampleHeatmapData';
 
 function changeColor(change: number): string {
-  if (change > 3)  return '#00c853'
-  if (change > 0)  return '#69f0ae'
-  if (change < -3) return '#d50000'
-  if (change < 0)  return '#ff5252'
-  return '#607d8b'
+  if (change > 3) return '#00c853';
+  if (change > 0) return '#69f0ae';
+  if (change < -3) return '#d50000';
+  if (change < 0) return '#ff5252';
+  return '#607d8b';
 }
 
 function formatMarketCap(value: number): string {
-  if (value >= 1e12) return `$${(value / 1e12).toFixed(2)}T`
-  if (value >= 1e9)  return `$${(value / 1e9).toFixed(1)}B`
-  if (value >= 1e6)  return `$${(value / 1e6).toFixed(0)}M`
-  return `$${value}`
+  if (value >= 1e12) return `$${(value / 1e12).toFixed(2)}T`;
+  if (value >= 1e9) return `$${(value / 1e9).toFixed(1)}B`;
+  if (value >= 1e6) return `$${(value / 1e6).toFixed(0)}M`;
+  return `$${value}`;
 }
 
 interface TreeNode {
-  name: string
-  value: number
-  itemStyle: { color: string }
-  change: number
+  name: string;
+  value: number;
+  itemStyle: { color: string };
+  change: number;
 }
 
 // ECharts callback param shape we actually use
 interface CallbackParams {
-  name: string
-  data: TreeNode
+  name: string;
+  data: TreeNode;
 }
 
 export function buildHeatmapOption(data: HeatmapItem[]): EChartsOption {
@@ -35,20 +35,20 @@ export function buildHeatmapOption(data: HeatmapItem[]): EChartsOption {
     value: item.value,
     itemStyle: { color: changeColor(item.change) },
     change: item.change,
-  }))
+  }));
 
   const tooltipFormatter = (params: CallbackParams) => {
-    const sign = params.data.change >= 0 ? '+' : ''
+    const sign = params.data.change >= 0 ? '+' : '';
     return [
       `<b>${params.name}</b>`,
       `涨跌: ${sign}${params.data.change.toFixed(2)}%`,
       `市值: ${formatMarketCap(params.data.value)}`,
-    ].join('<br/>')
-  }
+    ].join('<br/>');
+  };
 
   const tooltip: TooltipComponentOption = {
-    formatter: (tooltipFormatter as unknown) as TooltipComponentOption['formatter'],
-  }
+    formatter: tooltipFormatter as unknown as TooltipComponentOption['formatter'],
+  };
 
   return {
     backgroundColor: '#1a1a2e',
@@ -65,8 +65,8 @@ export function buildHeatmapOption(data: HeatmapItem[]): EChartsOption {
         label: {
           show: true,
           formatter: ((params: CallbackParams) => {
-            const sign = params.data.change >= 0 ? '+' : ''
-            return `{name|${params.name}}\n{change|${sign}${params.data.change.toFixed(2)}%}`
+            const sign = params.data.change >= 0 ? '+' : '';
+            return `{name|${params.name}}\n{change|${sign}${params.data.change.toFixed(2)}%}`;
           }) as unknown as string,
           rich: {
             name: {
@@ -95,5 +95,5 @@ export function buildHeatmapOption(data: HeatmapItem[]): EChartsOption {
         },
       } as never,
     ],
-  }
+  };
 }
