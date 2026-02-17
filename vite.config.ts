@@ -11,4 +11,14 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          echarts: ['echarts', 'echarts-for-react'],
+          mosaic: ['react-mosaic-component'],
+        },
+      },
+    },
+  },
 })

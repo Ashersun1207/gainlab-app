@@ -1,14 +1,41 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, Suspense, lazy } from 'react';
 import type { MosaicBranch, MosaicNode } from 'react-mosaic-component';
 import type { EChartsOption } from 'echarts';
 import { MosaicDashboard } from './layout/MosaicDashboard';
-import { EChartsWidget } from './widgets/EChartsWidget';
 import { buildHeatmapOption } from './widgets/EChartsWidget/charts/HeatmapChart';
 import { sampleHeatmapData } from './widgets/EChartsWidget/charts/sampleHeatmapData';
-import { KLineWidget } from './widgets/KLineWidget';
 import { ChatPanel } from './chat/ChatPanel';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { getRenderTarget, mcpToKLine, mcpToEChartsOption } from './services/dataAdapter';
 import type { KLineData } from './types/data';
+
+// --- Code-split heavy widgets (G7) ---
+const LazyKLineWidget = lazy(() =>
+  import('./widgets/KLineWidget').then((m) => ({ default: m.KLineWidget })),
+);
+const LazyEChartsWidget = lazy(() =>
+  import('./widgets/EChartsWidget').then((m) => ({ default: m.EChartsWidget })),
+);
+
+// --- Loading placeholder (dark themed) ---
+function LoadingPlaceholder() {
+  return (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#1a1a2e',
+        color: '#8888aa',
+        fontSize: 14,
+      }}
+    >
+      Loading…
+    </div>
+  );
+}
 
 // 默认热力图（Chat 更新前显示）
 const defaultHeatmapOption = buildHeatmapOption(sampleHeatmapData);
@@ -44,14 +71,28 @@ function App() {
   const renderWidget = useCallback(
     (id: string, _path: MosaicBranch[]) => {
       if (id === 'kline') {
-        return <KLineWidget symbol="BTCUSDT" data={klineData ?? undefined} indicators={['RSI']} />;
+        return (
+          <ErrorBoundary label="KLine Widget">
+            <Suspense fallback={<LoadingPlaceholder />}>
+              <LazyKLineWidget
+                symbol="BTCUSDT"
+                data={klineData ?? undefined}
+                indicators={['RSI']}
+              />
+            </Suspense>
+          </ErrorBoundary>
+        );
       }
       if (id === 'echarts') {
         return (
-          <EChartsWidget
-            option={echartsOption ?? defaultHeatmapOption}
-            style={{ height: '100%' }}
-          />
+          <ErrorBoundary label="ECharts Widget">
+            <Suspense fallback={<LoadingPlaceholder />}>
+              <LazyEChartsWidget
+                option={echartsOption ?? defaultHeatmapOption}
+                style={{ height: '100%' }}
+              />
+            </Suspense>
+          </ErrorBoundary>
         );
       }
       return (
