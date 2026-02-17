@@ -1,0 +1,1 @@
+import{j as a}from"./mosaic-86Umg_jF.js";import{E as i}from"./echarts-DW2iXprX.js";function s({option:t,style:e,onReady:r}){return a.jsx(i,{option:t,style:{width:"100%",height:"100%",minHeight:200,...e},theme:"dark",notMerge:!0,lazyUpdate:!0,onChartReady:r})}export{s as EChartsWidget};
