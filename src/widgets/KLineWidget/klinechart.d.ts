@@ -15,7 +15,7 @@ export interface KLineData {
 }
 
 export interface Chart {
-  applyNewData(data: KLineData[], more?: boolean): void
+  setDataList(data: KLineData[]): void
   updateData(data: KLineData): void
   createIndicator(name: string, isStack?: boolean, options?: { id?: string }): string | null
   resize(): void

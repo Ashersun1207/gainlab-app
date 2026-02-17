@@ -122,17 +122,17 @@ export function KLineWidget({
 
     // 立刻用外部数据或 fallback 显示，再异步尝试 Binance
     if (externalData && externalData.length > 0) {
-      chart.applyNewData(externalData)
+      chart.setDataList(externalData)
       setLoading(false)
     } else {
       // 先用 SAMPLE_DATA 立即显示
-      chart.applyNewData(SAMPLE_DATA)
+      chart.setDataList(SAMPLE_DATA)
       setLoading(false)
 
       // 后台尝试真实数据
       fetchBinanceKline(symbol).then((fetched) => {
         if (fetched && chartRef.current) {
-          chartRef.current.applyNewData(fetched)
+          chartRef.current.setDataList(fetched)
           setError(null)
         } else {
           setError('Binance API 不可用，使用样本数据')
