@@ -44,8 +44,11 @@ interface KLineWidgetProps {
 
 async function fetchBinanceKline(symbol: string): Promise<KLineData[] | null> {
   try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000) // 5s 超时
     const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1d&limit=100`
-    const res = await fetch(url)
+    const res = await fetch(url, { signal: controller.signal })
+    clearTimeout(timeoutId)
     if (!res.ok) return null
     const raw = await res.json() as unknown[][]
     return raw.map((item) => ({
@@ -117,30 +120,25 @@ export function KLineWidget({
       chart.createIndicator(ind, false, { id: `pane_${ind}` })
     }
 
-    // load data
-    const loadData = async () => {
-      setLoading(true)
-      setError(null)
+    // 立刻用外部数据或 fallback 显示，再异步尝试 Binance
+    if (externalData && externalData.length > 0) {
+      chart.applyNewData(externalData)
+      setLoading(false)
+    } else {
+      // 先用 SAMPLE_DATA 立即显示
+      chart.applyNewData(SAMPLE_DATA)
+      setLoading(false)
 
-      let klineData: KLineData[]
-
-      if (externalData && externalData.length > 0) {
-        klineData = externalData
-      } else {
-        const fetched = await fetchBinanceKline(symbol)
-        if (fetched) {
-          klineData = fetched
+      // 后台尝试真实数据
+      fetchBinanceKline(symbol).then((fetched) => {
+        if (fetched && chartRef.current) {
+          chartRef.current.applyNewData(fetched)
+          setError(null)
         } else {
-          klineData = SAMPLE_DATA
           setError('Binance API 不可用，使用样本数据')
         }
-      }
-
-      chart.applyNewData(klineData)
-      setLoading(false)
+      })
     }
-
-    loadData()
 
     return () => {
       dispose(containerRef.current!)
