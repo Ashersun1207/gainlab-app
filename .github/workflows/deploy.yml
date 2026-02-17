@@ -24,6 +24,11 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+
+      # G4 门禁：四步强制，任一步红不部署
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
       - run: pnpm build
         env:
           VITE_WORKER_URL: https://gainlab-api.asher-sun.workers.dev/api/chat

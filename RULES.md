@@ -85,6 +85,60 @@ PRD / TASK / 决策记录 统一放研究仓库：
 
 **MCP 数据格式**：MCP Server 输出标准数据（OHLCV array / 指标 array），前端根据 widget 类型选渲染库，不依赖 Server 端的渲染指令。`render:"echarts"` 模式为可选兼容层。
 
+## 工程化规则（G1-G7） 🔴
+
+_基于 Reddit/X 社区调研 + 自身踩坑经验。违反 = 返工。_
+
+### G1: 测试作为行为锁
+- Vitest + React Testing Library
+- 数据转换函数（dataAdapter, mcpClient）必须有测试
+- **测试数量只能增不能减**（防 AI 删测试绕过）
+- 新增 Widget 必须至少 1 个渲染测试
+- 跑 `pnpm test` 全绿才能 commit
+
+### G2: 类型检查
+- `pnpm typecheck` 必须通过（app 代码 0 errors）
+- KLineChart fork 错误由 `scripts/typecheck.sh` 自动过滤
+- 禁止 `any`，必须 `as` 时加注释说明原因
+- 禁止 `@ts-ignore`，用 `@ts-expect-error` + 说明
+
+### G3: Lint + Format
+- ESLint flat config（`eslint.config.js`）+ Prettier（`.prettierrc`）
+- `pnpm lint` 0 error 才能 commit
+- `pnpm format` 格式化所有 app 代码
+- KLineChart 目录已在 ignore 列表中
+
+### G4: CI 门禁（四步强制）
+```yaml
+steps:
+  - pnpm lint         # 风格检查
+  - pnpm typecheck    # 类型检查
+  - pnpm test         # 测试
+  - pnpm build        # 构建
+```
+任一步红 → 不部署。人和 AI 都绕不过。
+
+### G5: 核心文件禁区（AI 专属） 🔴
+```
+NEVER MODIFY（不许改）:
+- src/widgets/KLineWidget/KLineChart/  （45K 行 fork，不改源码）
+- src/widgets/KLineWidget/klines/       （K线数据文件）
+- .github/workflows/deploy.yml          （CI 流程不随便动）
+- vite.config.ts                         （构建配置不随便动）
+- eslint.config.js                       （lint 配置稳定后不动）
+```
+修改这些文件**必须在 TASK 里明确授权 + 说明原因**。
+
+### G6: ErrorBoundary + 网络容错
+- React ErrorBoundary 包裹每个 Widget（崩了不白屏）
+- 所有 fetch 加 AbortController + 超时 + fallback 数据
+- 用户看到的错误信息要有意义（不是白屏/undefined）
+
+### G7: 代码分割
+- KLineChart 用 React.lazy + Suspense 动态加载
+- ECharts 同理
+- 目标：首屏 chunk < 500KB
+
 ## 提交规范
 
 ```
@@ -100,10 +154,12 @@ chore: add GH Actions deploy workflow
 type: `feat` / `fix` / `docs` / `refactor` / `chore` / `test`  
 scope: `widget` / `layout` / `mcp` / `utils` / `deploy`
 
-**commit 前必须**：
-1. `pnpm build` 无 TypeScript 错误
-2. `pnpm lint` 通过（ESLint）
-3. 浏览器本地验证通过
+**commit 前必须**（按 G4 门禁顺序）：
+1. `pnpm lint` — 0 errors
+2. `pnpm typecheck` — app 代码 0 errors
+3. `pnpm test` — 全绿，测试数不减少
+4. `pnpm build` — 构建成功
+5. 浏览器本地验证通过（图表类改动）
 
 ## 安全规范 ⚠️
 
