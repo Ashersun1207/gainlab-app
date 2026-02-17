@@ -20,3 +20,80 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
+
+/* ── react-mosaic 深色主题覆盖 ─────────────────────────── */
+
+.mosaic-dark .mosaic-root {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* 分割线 */
+.mosaic-dark .mosaic-split {
+  background: #2a2a4a;
+  z-index: 1;
+}
+.mosaic-dark .mosaic-split:hover,
+.mosaic-dark .mosaic-split.-dragging {
+  background: #5a5aaa;
+}
+.mosaic-dark .mosaic-split .mosaic-split-line {
+  display: none;
+}
+
+/* 窗口标题栏 */
+.mosaic-dark .mosaic-window .mosaic-window-toolbar {
+  background: #1a1a3e;
+  border-bottom: 1px solid #2a2a4a;
+  color: #a0a0cc;
+  height: 32px;
+  min-height: 32px;
+}
+
+.mosaic-dark .mosaic-window .mosaic-window-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a0a0cc;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* 工具栏按钮 */
+.mosaic-dark .mosaic-window .mosaic-window-controls .mosaic-default-control {
+  color: #5a5a8a;
+}
+.mosaic-dark .mosaic-window .mosaic-window-controls .mosaic-default-control:hover {
+  color: #a0a0cc;
+  background: #2a2a4a;
+}
+
+/* 窗口主体 */
+.mosaic-dark .mosaic-window .mosaic-window-body {
+  background: #12122a;
+  overflow: hidden;
+}
+
+/* Blueprint JS 覆盖（react-mosaic 依赖） */
+.mosaic-dark .bp3-button,
+.mosaic-dark .bp4-button,
+.mosaic-dark .bp5-button {
+  color: #a0a0cc !important;
+  background: transparent !important;
+  min-height: 24px !important;
+  min-width: 24px !important;
+  padding: 2px 4px !important;
+}
+.mosaic-dark .bp3-button:hover,
+.mosaic-dark .bp4-button:hover,
+.mosaic-dark .bp5-button:hover {
+  background: #2a2a4a !important;
+}
+
+/* 拖拽预览 */
+.mosaic-dark .mosaic-drop-target.drop-target-hover .drop-target-container {
+  background: rgba(90, 90, 170, 0.15);
+  border: 2px solid #5a5aaa;
+}
+
