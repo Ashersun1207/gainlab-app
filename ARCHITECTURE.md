@@ -40,7 +40,7 @@ gainlab-app/
 │   ├── widgets/
 │   │   ├── KLineWidget/
 │   │   │   ├── index.tsx       # K线 Widget 入口
-│   │   │   ├── ChartView.tsx   # lightweight-charts 渲染（复制自 dashboard）
+│   │   │   ├── ChartView.tsx   # KLineChart 渲染（复制自 dashboard）
 │   │   │   └── plugins/        # KLineChart plugin（复制自 dashboard，45K行）
 │   │   └── EChartsWidget/
 │   │       ├── index.tsx       # ECharts Widget 入口
@@ -101,7 +101,7 @@ mcpClient.ts (useMcpStream hook)
         ├── tool call → dataAdapter.ts
         │       │  MCP 数据格式 → KLineChart/ECharts 格式
         │       ▼
-        │   KLineWidget（lightweight-charts）
+        │   KLineWidget（KLineChart）
         │       或
         │   EChartsWidget（echarts-for-react）
         │
@@ -133,7 +133,7 @@ MCP Server 输出标准化数据（不含渲染指令）
 dataAdapter.ts 判断渲染类型
         │
         ├── K线类（kline / indicators / volume_profile / wrb）
-        │       → 转换为 lightweight-charts 格式
+        │       → 转换为 KLineChart 格式
         │       → KLineWidget（ChartView）渲染
         │
         └── 非K线类（heatmap / fundamentals / correlation / overlay）
@@ -219,7 +219,7 @@ CF Worker: gainlab-api.asher-sun.workers.dev
 | 组件 | 验证目标 |
 |---|---|
 | Mosaic 布局（2 个 Widget） | react-mosaic 可以正常拖拽分割 |
-| KLineWidget | lightweight-charts 在浏览器中渲染 K 线 + RSI |
+| KLineWidget | KLineChart 在浏览器中渲染 K 线 + RSI |
 | EChartsWidget | echarts-for-react 渲染热力图 |
 | 简化 Chat | 输入框 → CF Worker → tool call → 触发 Widget 更新 |
 | GH Actions 部署 | push main → gh-pages 自动更新 |

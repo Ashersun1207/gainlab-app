@@ -49,7 +49,7 @@ PRD / TASK / 决策记录 统一放研究仓库：
 ### 技术栈
 - **框架**：React 18 + TypeScript 5 + Vite
 - **布局**：react-mosaic（复用 gainlab-dashboard）
-- **K线图**：lightweight-charts（KLineWidget 专用）
+- **K线图**：KLineChart（从 dashboard 复制的 fork，KLineWidget 专用）
 - **非K线图**：echarts + echarts-for-react（EChartsWidget 专用）
 - **样式**：Tailwind CSS（与 dashboard 保持一致）
 - **包管理**：pnpm
@@ -77,7 +77,7 @@ PRD / TASK / 决策记录 统一放研究仓库：
 
 | 场景 | 必须用 | 禁止用 |
 |---|---|---|
-| K线（OHLCV）、技术指标（RSI/MACD/Bollinger）、成交量分布（VP）、WRB | **KLineChart** (`lightweight-charts`) | ECharts |
+| K线（OHLCV）、技术指标（RSI/MACD/Bollinger）、成交量分布（VP）、WRB | **KLineChart**（dashboard fork） | ECharts |
 | 热力图、基本面雷达/柱状/树图、相关性矩阵、Overlay 折线叠加 | **ECharts** | KLineChart |
 | 新增图表类型 | 先看属不属于K线类 → 是则 KLineChart，否则 ECharts | 随意选库 |
 
