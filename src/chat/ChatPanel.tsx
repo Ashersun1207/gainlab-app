@@ -4,9 +4,10 @@ import { useMcpStream } from '../hooks/useMcpStream';
 
 interface ChatPanelProps {
   onToolResult?: (toolName: string, result: unknown) => void;
+  onClose?: () => void;
 }
 
-export function ChatPanel({ onToolResult }: ChatPanelProps) {
+export function ChatPanel({ onToolResult, onClose }: ChatPanelProps) {
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { messages, streaming, activeToolCall, sendMessage, clearMessages } = useMcpStream();
@@ -54,21 +55,41 @@ export function ChatPanel({ onToolResult }: ChatPanelProps) {
         }}
       >
         <span style={{ color: '#8888cc', fontSize: 13, fontWeight: 600 }}>✨ GainLab AI</span>
-        <button
-          onClick={clearMessages}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: '#4a4a7a',
-            fontSize: 11,
-            cursor: 'pointer',
-            padding: '2px 6px',
-            borderRadius: 4,
-          }}
-          title="清空对话"
-        >
-          清空
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <button
+            onClick={clearMessages}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#4a4a7a',
+              fontSize: 11,
+              cursor: 'pointer',
+              padding: '2px 6px',
+              borderRadius: 4,
+            }}
+            title="清空对话"
+          >
+            清空
+          </button>
+          {onClose && (
+            <button
+              onClick={onClose}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#4a4a7a',
+                fontSize: 14,
+                cursor: 'pointer',
+                padding: '2px 6px',
+                borderRadius: 4,
+                lineHeight: 1,
+              }}
+              title="收起"
+            >
+              ✕
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 消息列表 */}

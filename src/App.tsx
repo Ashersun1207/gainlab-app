@@ -5,6 +5,7 @@ import { MosaicDashboard } from './layout/MosaicDashboard';
 import { buildHeatmapOption } from './widgets/EChartsWidget/charts/HeatmapChart';
 import { sampleHeatmapData } from './widgets/EChartsWidget/charts/sampleHeatmapData';
 import { ChatPanel } from './chat/ChatPanel';
+import { ChatToggle } from './chat/ChatToggle';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { getRenderTarget, mcpToKLine, mcpToEChartsOption } from './services/dataAdapter';
 import type { KLineData } from './types/data';
@@ -49,6 +50,9 @@ const INNER_LAYOUT: MosaicNode<string> = {
 };
 
 function App() {
+  // Chat 收起/展开状态（P1 默认收起）
+  const [chatOpen, setChatOpen] = useState(false);
+
   // Widget 数据状态：null 表示使用默认/fallback 数据
   const [klineData, setKlineData] = useState<KLineData[] | null>(null);
   const [echartsOption, setEchartsOption] = useState<EChartsOption | null>(null);
@@ -130,10 +134,26 @@ function App() {
         <MosaicDashboard initialLayout={INNER_LAYOUT} renderWidget={renderWidget} />
       </div>
 
-      {/* 右侧：固定 Chat 面板（320px） */}
-      <div style={{ width: 320, flexShrink: 0, overflow: 'hidden' }}>
-        <ChatPanel onToolResult={handleToolResult} />
+      {/* 右侧：可收起 Chat 面板（320px，动画滑入/滑出） */}
+      <div
+        style={{
+          width: 320,
+          flexShrink: 0,
+          overflow: 'hidden',
+          transform: chatOpen ? 'translateX(0)' : 'translateX(100%)',
+          transition: 'transform 0.3s ease-in-out',
+          position: chatOpen ? 'relative' : 'absolute',
+          right: 0,
+          top: 0,
+          height: '100%',
+          zIndex: 40,
+        }}
+      >
+        <ChatPanel onToolResult={handleToolResult} onClose={() => setChatOpen(false)} />
       </div>
+
+      {/* 收起时显示 💬 悬浮按钮 */}
+      {!chatOpen && <ChatToggle onClick={() => setChatOpen(true)} />}
     </div>
   );
 }
