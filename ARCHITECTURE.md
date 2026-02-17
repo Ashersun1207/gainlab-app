@@ -166,10 +166,10 @@ function getRenderTarget(toolName: string): RenderTarget {
 |---|---|---|---|
 | react-mosaic 布局（MosaicDashboard） | ~800 行 | 直接复制 | 去掉 dashboard 特有的 redux store 依赖 |
 | Sidebar 组件（OpenBBSidebar） | ~600 行 | 直接复制 | 去掉 OpenBB 特有逻辑，资产列表改为 props |
-| Widget 基类容器 | ~200 行 | 直接复制 | 无需修改 |
+| Widget 容器（WidgetContainer.tsx） | ~200 行 | 直接复制 | 去掉 dashboard 特有依赖 |
 | i18n（zh/en） | ~600 行 | 直接复制 | 追加 app 特有文案 |
 | KLineChart plugin + ChartView | ~45,000 行 | 直接复制整个 plugins/ 目录 | 去掉 dashboard 的 store 订阅，改为 props 传入 |
-| OHLCV / 类型定义 | ~400 行 | 直接复制 | 无需修改 |
+| OHLCV 类型（KLineChart/common/Data.ts） | ~40 行 | 直接复制 | 无需修改 |
 | **合计** | **~47,400 行** | | |
 
 > gainlab-dashboard 总规模：~54,000 行  

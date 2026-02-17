@@ -129,10 +129,11 @@ scope: `widget` / `layout` / `mcp` / `utils` / `deploy`
 |---|---|---|
 | react-mosaic 布局 | dashboard/src/components/MosaicDashboard | src/layout/ |
 | Sidebar 组件 | dashboard/src/components/layout/OpenBBSidebar | src/layout/ |
-| Widget 基类 | dashboard/src/components/Widget | src/widgets/base/ |
+| Widget 容器 | dashboard/src/components/widgets/WidgetContainer.tsx | src/layout/ |
+| ChartView | dashboard/src/components/chart/ChartView.tsx | src/widgets/KLineWidget/ |
 | i18n 配置 | dashboard/src/i18n/ | src/i18n/ |
-| KLineChart plugin | dashboard/src/plugins/klinechart/ | src/widgets/KLineWidget/ |
-| OHLCV 类型定义 | dashboard/src/types/data.ts | src/types/ |
+| KLineChart plugin | dashboard/src/plugins/klinechart/ + KLineChart/ | src/widgets/KLineWidget/ |
+| OHLCV 类型定义 | dashboard/src/plugins/KLineChart/common/Data.ts | src/types/ |
 
 ---
 
