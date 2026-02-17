@@ -1,6 +1,6 @@
 # GainLab App — 架构文档
 
-_骨架验证阶段（v0.1）| 更新时机：目录结构或数据流变更后_
+_P1 产品阶段 | 更新时机：目录结构或数据流变更后_
 
 ---
 
@@ -12,7 +12,7 @@ _骨架验证阶段（v0.1）| 更新时机：目录结构或数据流变更后_
 | 仓库 | 职责 |
 |---|---|
 | `gainlab-mcp` | MCP Server，提供 7 个金融分析工具，发布为 npm 包 |
-| `gainlab-app` | 产品前端（本仓库），Mosaic 布局 + 混合图表 + Chat 界面 |
+| `gainlab-app` | 产品前端（本仓库），三区布局 + 混合图表 + Chat 界面 |
 | `gainlab-research` | 研究仓库，PRD / TASK / 决策 / 教训 |
 | Cloudflare Worker | API 代理，保护 key，gainlab-api.asher-sun.workers.dev |
 
@@ -29,38 +29,80 @@ gainlab-app/
 │   └── favicon.ico
 ├── src/
 │   ├── main.tsx                # 入口
-│   ├── App.tsx                 # Mosaic + Chat 布局，Widget 数据流管理
-│   ├── index.css               # Tailwind + Mosaic 深色主题
+│   ├── App.tsx                 # 三区布局 + 移动端适配 + 状态管理
+│   ├── index.css               # Tailwind + Mosaic 深色主题 + 移动端样式
+│   │
 │   ├── layout/
-│   │   ├── MosaicDashboard.tsx # 极简 Mosaic 容器（props 驱动，无 store）
+│   │   ├── Sidebar/
+│   │   │   ├── index.tsx       # Sidebar 主组件（市场切换 + 搜索 + 资产列表 + 工具栏）
+│   │   │   ├── MarketTabs.tsx  # 市场 tab（加密/美股/A股/贵金属）
+│   │   │   ├── SearchBox.tsx   # 搜索输入框
+│   │   │   ├── AssetList.tsx   # 资产列表（报价 + 涨跌色）
+│   │   │   └── ToolBar.tsx     # 工具按钮栏（VP/Overlay/基本面/热力图/WRB）
+│   │   ├── Toolbar.tsx         # 顶部工具栏（资产名 + 价格 + 时间周期 + 指标）
+│   │   ├── Drawer.tsx          # 底部抽屉（工具面板容器）
+│   │   ├── MobileTabBar.tsx    # 移动端底部 Tab Bar（📊市场/🔧工具/💬聊天）
+│   │   ├── MosaicDashboard.tsx # react-mosaic 容器（P0 遗留，保留兼容）
 │   │   └── WidgetBase.tsx      # Widget 壳（深色主题）
+│   │
 │   ├── widgets/
 │   │   ├── KLineWidget/
-│   │   │   ├── index.tsx       # KLineChart 渲染 + Binance fetch + fallback
-│   │   │   ├── klinechart.d.ts # 类型声明（KLineChart 排除 tsc 检查）
-│   │   │   ├── klines/
-│   │   │   │   └── scriptUtils.ts  # stub（脚本编辑器功能骨架不需要）
-│   │   │   └── KLineChart/     # 45K 行插件（从 dashboard 复制，不改）
-│   │   └── EChartsWidget/
-│   │       ├── index.tsx       # 通用 ECharts 容器（echarts-for-react）
-│   │       └── charts/
-│   │           ├── HeatmapChart.ts       # treemap option builder
-│   │           └── sampleHeatmapData.ts  # 20 加密货币静态数据
+│   │   │   ├── index.tsx       # K线渲染（外部 data prop 优先 → fallback Binance → 样本数据）
+│   │   │   ├── klinechart.d.ts # 类型声明
+│   │   │   ├── klines/         # K线数据文件
+│   │   │   └── KLineChart/     # 45K 行 fork（G5 禁区，不改）
+│   │   ├── EChartsWidget/
+│   │   │   ├── index.tsx       # 通用 ECharts 容器
+│   │   │   └── charts/
+│   │   │       ├── HeatmapChart.ts       # treemap option builder
+│   │   │       └── sampleHeatmapData.ts  # 20 加密货币静态数据
+│   │   ├── HeatmapWidget/
+│   │   │   └── index.tsx       # 板块热力图（自动 fetch screener 数据）
+│   │   ├── VolumeProfileWidget/
+│   │   │   ├── index.tsx       # 筹码分布（基于 klineData 计算）
+│   │   │   └── calculateVP.ts  # VP 计算逻辑
+│   │   ├── OverlayWidget/
+│   │   │   ├── index.tsx       # 多资产叠加对比
+│   │   │   └── useOverlayData.ts  # 多 symbol 并行 fetch
+│   │   ├── FundamentalsWidget/
+│   │   │   └── index.tsx       # 基本面数据柱状图
+│   │   └── WRBWidget/
+│   │       ├── index.tsx       # WRB 信号检测列表
+│   │       └── detectWRB.ts    # WRB 检测逻辑
+│   │
 │   ├── chat/
 │   │   ├── ChatPanel.tsx       # 对话框 UI（输入框 + 消息列表）
+│   │   ├── ChatToggle.tsx      # 💬 悬浮按钮（桌面端）
 │   │   ├── MessageList.tsx     # 消息渲染（user/assistant 气泡 + 自动滚底）
 │   │   └── ToolCallBadge.tsx   # tool call 标签（紫色，可折叠 args）
-│   ├── services/
-│   │   ├── mcpClient.ts        # CF Worker SSE 通信 + think 过滤
-│   │   └── dataAdapter.ts      # 渲染目标路由 + 格式转换
+│   │
 │   ├── hooks/
+│   │   ├── useMarketData.ts    # 市场数据 hook（kline + quote，走 CF Worker）
+│   │   ├── useResponsive.ts    # 响应式断点 hook（768px，matchMedia 监听）
 │   │   └── useMcpStream.ts     # SSE 流式响应 hook + Widget 回调
+│   │
+│   ├── services/
+│   │   ├── api.ts              # CF Worker API 封装（kline/quote/search/fundamentals/screener）
+│   │   ├── dataAdapter.ts      # 渲染目标路由 + MCP 数据格式转换
+│   │   ├── marketData.ts       # useMarketData 的数据获取实现
+│   │   └── mcpClient.ts        # CF Worker SSE 通信 + think 过滤
+│   │
 │   ├── types/
-│   │   ├── mcp.ts              # McpMessage / McpToolCall / McpStreamEvent
-│   │   └── data.ts             # KLineData / HeatmapItem
-│   └── utils/                  # （空，T6 的 format.ts 内联到 dataAdapter）
+│   │   ├── market.ts           # MarketType / TimeInterval / ToolType / Asset / Quote
+│   │   ├── data.ts             # KLineData / HeatmapItem / VPLevel / WRBSignal / FundamentalsData
+│   │   └── mcp.ts              # McpMessage / McpToolCall / McpStreamEvent
+│   │
+│   ├── constants/
+│   │   └── markets.ts          # 市场配置 / 热门资产 / 时间周期 / 指标 / 工具配置
+│   │
+│   ├── components/
+│   │   └── ErrorBoundary.tsx   # React Error Boundary（深色主题，retry 按钮）
+│   │
+│   └── utils/                  # （空，格式转换在 dataAdapter.ts）
+│
 ├── scripts/
 │   ├── project-boot.sh         # 认知恢复脚本
+│   ├── typecheck.sh            # tsc 检查（过滤 KLineChart fork 错误）
 │   ├── verify.sh               # 验收自动化（V1-V6）
 │   └── post-batch.sh           # 批次收尾（commit + sync + check-all）
 ├── ARCHITECTURE.md             # 本文件
@@ -72,193 +114,235 @@ gainlab-app/
 └── package.json
 ```
 
-> ⚠️ 骨架阶段**不包含**：
-> - `src/i18n/`（P1 阶段实现）
-> - `src/layout/Sidebar.tsx`（P1 阶段实现）
-> - `src/hooks/useWidgetData.ts`（未实现，数据管理内联在 App.tsx）
-> - `src/utils/format.ts`（格式转换内联到 dataAdapter.ts）
+---
+
+## 布局结构
+
+### 桌面端（≥768px）
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ App.tsx                                                          │
+│  ┌────────┐  ┌──────────────────────────────┐  ┌─────────────┐ │
+│  │Sidebar │  │ 主区                          │  │ ChatPanel   │ │
+│  │ 200px  │  │ ┌────────────────────────────┐│  │ 320px       │ │
+│  │        │  │ │ Toolbar                     ││  │ (可收起)    │ │
+│  │ 市场tab │  │ │ BTC/USDT | $96K | 1D 1W .. ││  │             │ │
+│  │ 搜索    │  │ ├────────────────────────────┤│  │ 消息列表    │ │
+│  │ 资产列表 │  │ │ KLineWidget (60% | 100%)  ││  │ + 输入框    │ │
+│  │ 工具栏  │  │ │ K线 + 技术指标              ││  │             │ │
+│  │        │  │ ├────────────────────────────┤│  │ ToolCall    │ │
+│  │        │  │ │ Drawer (40%, 可关闭)        ││  │ Badge       │ │
+│  │        │  │ │ VP / Heatmap / Overlay ...  ││  │             │ │
+│  │        │  │ └────────────────────────────┘│  └─────────────┘ │
+│  └────────┘  └──────────────────────────────┘   或 💬 ChatToggle │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### 移动端（<768px）
+
+```
+┌──────────────────────────┐
+│ Toolbar (48px)            │
+│ BTC/USDT ▾ │ 1D ▾        │
+├──────────────────────────┤
+│ KLineWidget              │
+│ (flex-1, 自适应高度)      │
+├──────────────────────────┤
+│ Drawer (40dvh, 可选)      │
+│ 工具内容                  │
+├──────────────────────────┤
+│ MobileTabBar (56px)       │
+│ 📊市场 │ 🔧工具 │ 💬聊天  │
+└──────────────────────────┘
++ 全屏 Overlay (市场/工具/聊天)
+```
 
 ---
 
-## 骨架阶段技术决策
+## App.tsx 状态管理
 
-| 决策 | 原因 |
-|---|---|
-| **build 改为 vite-only（不跑 tsc）** | KLineChart 45K 行不兼容 strict mode，esbuild transpile 够用；`vite build` 成功，不加 `tsc --noEmit` |
-| **KLineChart 用 `cp -r` 整目录复制，不改源码** | 45K 行改了出 bug 排不完，骨架验证期间不碰内部代码 |
-| **加 `crypto-js` + `pako` 依赖** | KLineChart 内部 `Chart.ts` 有 import，不装 build 不过 |
-| **`klinechart.d.ts` 提供类型声明** | 让 TypeScript 知道 KLineChart 的核心 API 类型，避免全 `any` |
-| **KLineChart 目录排除在 tsconfig 之外** | `tsconfig.json` 的 `exclude` 字段加上 `src/widgets/KLineWidget/KLineChart` |
-| **Chat 布局：左侧 Mosaic + 右侧固定 ChatPanel 320px** | 简化实现，Chat 不需要拖拽调整；Mosaic 只管 kline（上 60%）+ echarts（下 40%） |
+```typescript
+// ── 资产上下文 ──
+const [activeMarket, setActiveMarket] = useState<MarketType>('crypto');
+const [activeSymbol, setActiveSymbol] = useState('BTCUSDT');
+const [activeInterval, setActiveInterval] = useState<TimeInterval>('1D');
+const [activeIndicators, setActiveIndicators] = useState<string[]>(['MA']);
 
-> ⚠️ **L17 陷阱**：`tsconfig exclude` 不阻止 import chain 编译。KLineChart 目录加了 exclude，但只要 `index.tsx` import 了 KLineChart，tsc 仍然跟进去编译所有文件。解决方案是整个 build 改 vite-only。
+// ── 抽屉 ──
+const [drawerTool, setDrawerTool] = useState<ToolType | null>(null);
+
+// ── Chat ──
+const [chatOpen, setChatOpen] = useState(false);
+
+// ── 移动端 ──
+const [mobileTab, setMobileTab] = useState<MobileTab>('market');
+const [mobileOverlay, setMobileOverlay] = useState<MobileTab | null>(null);
+
+// ── P0 兼容：Chat 推送数据 ──
+const [echartsOption, setEchartsOption] = useState<EChartsOption | null>(null);
+const [chatKlineData, setChatKlineData] = useState<KLineData[] | null>(null);
+```
+
+**无外部状态管理库**（G3 约束），纯 `useState` + props drilling。
 
 ---
 
 ## 数据流
 
-### 正常对话流程
+### 1. 仪表盘模式（Sidebar 驱动）
+
+```
+用户点击 Sidebar 资产
+        │
+        ▼
+handleAssetSelect(asset)
+  → setActiveSymbol / setActiveMarket
+        │
+        ▼
+useMarketData(symbol, market, interval)
+  → fetchWorkerKline() + fetchWorkerQuote()
+  → 走 CF Worker 代理
+        │
+        ▼
+klineData / quote 更新
+        │
+        ├── Toolbar 显示价格 / 涨跌
+        ├── KLineWidget.setDataList(klineData)
+        └── Drawer 工具使用 klineData（VP / WRB）
+```
+
+### 2. Chat 模式（AI 驱动）
 
 ```
 用户输入自然语言
         │
         ▼
-ChatPanel.tsx
-        │  fetch POST (messages[])
+ChatPanel → useMcpStream
+        │  fetch POST → CF Worker → MiniMax-M2
         ▼
-CF Worker (gainlab-api.asher-sun.workers.dev/api/chat)
-        │  持有 AI API key（MiniMax-M2）
-        │  IP 限流（10 req/min）
-        ▼
-MiniMax-M2（AI 模型）
-        │  tool_call: { name: "gainlab_kline", args: {...} }
-        ▼
-CF Worker SSE stream
-        │  事件流：text_delta | tool_call | tool_result
-        ▼
-mcpClient.ts (useMcpStream hook)
-        │  解析 SSE → 识别 tool call
-        │  过滤 <think>...</think>（MiniMax M2 推理输出）
+SSE stream: text_delta | tool_call | tool_result
         │
-        ├── tool call → dataAdapter.ts
-        │       │  getRenderTarget(toolName) → "kline" | "echarts"
-        │       │  binanceToKLine() / buildHeatmapOption()
-        │       ▼
-        │   KLineWidget（KLineChart）
-        │       或
-        │   EChartsWidget（echarts-for-react）
+        ▼
+handleToolResult(toolName, result)
+  → getRenderTarget(toolName)
         │
-        └── text_delta → MessageList.tsx（文字渲染）
+        ├── "kline" → setChatKlineData(mcpToKLine(result))
+        │              → KLineWidget 显示 Chat 推送的数据
+        │
+        └── "echarts" → setEchartsOption(mcpToEChartsOption(...))
+                         → EChartsWidget 显示图表
 ```
 
-### App.tsx 状态管理
+### 3. 抽屉工具模式
 
-```typescript
-// App.tsx 持有 Widget 状态（无外部 store）
-const [klineData, setKlineData] = useState<KLineData[]>([]);
-const [echartsOption, setEchartsOption] = useState<EChartsOption | null>(null);
-
-// Widget 回调：由 useMcpStream hook 触发
-const handleWidgetUpdate = (target: "kline" | "echarts", data: any) => {
-  if (target === "kline") setKlineData(data);
-  else setEchartsOption(data);
-};
 ```
-
-> ⚠️ **L18 陷阱**：`useState` 在 async generator 循环里有 stale closure。`setActiveToolCall(tc)` 后立刻读 `activeToolCall` 还是旧值。解决方案：用 `useRef` 同步追踪当前 tool call，`useState` 只用于 UI 渲染触发。
+用户点击 Sidebar 工具按钮
+        │
+        ▼
+handleToolClick(tool)
+  → setDrawerTool(tool)
+        │
+        ▼
+Drawer 展开 → renderDrawerContent()
+  switch(tool):
+    volume_profile → VolumeProfileWidget(klineData)
+    heatmap        → HeatmapWidget(market)
+    overlay        → OverlayWidget(symbol, market)
+    fundamentals   → FundamentalsWidget(symbol)
+    wrb            → WRBWidget(klineData)
+```
 
 ---
 
 ## 混合渲染策略
 
-```
-MCP Server 输出标准化数据（不含渲染指令）
-        │
-        ▼
-dataAdapter.ts 判断渲染类型
-        │
-        ├── K线类（kline / indicators / volume_profile / wrb）
-        │       → 转换为 KLineChart 格式
-        │       → KLineWidget（index.tsx）渲染
-        │
-        └── 非K线类（heatmap / fundamentals / correlation / overlay）
-                → 构建 ECharts option
-                → EChartsWidget 渲染
-```
-
-**判断逻辑**（`dataAdapter.ts`）：
-
-```typescript
-type RenderTarget = "kline" | "echarts";
-
-export function getRenderTarget(toolName: string): RenderTarget {
-  const klineTools = ["gainlab_kline", "gainlab_indicators",
-                      "gainlab_volume_profile", "gainlab_wrb_scoring"];
-  return klineTools.includes(toolName) ? "kline" : "echarts";
-}
-```
+| 场景 | 渲染库 | 组件 |
+|---|---|---|
+| K线（OHLCV）+ 技术指标 | KLineChart | KLineWidget |
+| 筹码分布 | ECharts (bar) | VolumeProfileWidget |
+| 板块热力图 | ECharts (treemap) | HeatmapWidget |
+| 多资产叠加 | ECharts (line) | OverlayWidget |
+| 基本面柱状图 | ECharts (bar) | FundamentalsWidget |
+| WRB 信号 | 纯 HTML 列表 | WRBWidget |
+| Chat 推送图表 | ECharts (dynamic) | EChartsWidget |
 
 ---
 
-## 布局结构
+## 响应式设计
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ App.tsx                                                          │
-│  ┌──────────────────────────────────────┐  ┌───────────────┐   │
-│  │ MosaicDashboard (flex-grow)          │  │ ChatPanel     │   │
-│  │  ┌────────────────────────────────┐  │  │ 320px fixed   │   │
-│  │  │ KLineWidget (上 60%)           │  │  │               │   │
-│  │  │ BTC K 线 + RSI 子图             │  │  │ 消息列表      │   │
-│  │  └────────────────────────────────┘  │  │ + 输入框      │   │
-│  │  ┌────────────────────────────────┐  │  │               │   │
-│  │  │ EChartsWidget (下 40%)         │  │  │ ToolCallBadge │   │
-│  │  │ 加密市值热力图 treemap          │  │  │ (紫色标签)    │   │
-│  │  └────────────────────────────────┘  │  └───────────────┘   │
-│  └──────────────────────────────────────┘                       │
-└─────────────────────────────────────────────────────────────────┘
-```
+- **断点**: 768px（`useResponsive` hook, matchMedia 监听）
+- **桌面端**: Sidebar(200px) + 主区(flex-1) + Chat(320px 可收起)
+- **移动端**: Toolbar + KLine + Drawer + MobileTabBar + 全屏 Overlay
+- **高度计算**: `calc(100dvh - toolbar - tabbar)`，不硬编码
+- **iOS 安全区**: `env(safe-area-inset-bottom)` padding
 
 ---
 
-## 与 gainlab-mcp 的关系
+## 代码分割（G7）
 
-```
-gainlab-mcp（MCP Server）
-  ├── 发布为 npm 包（@gainlab/mcp）
-  ├── 独立运行，可被任意 Agent / LLM 调用
-  └── 与 gainlab-app 无直接代码依赖
+所有 Widget 和 ChatPanel 使用 `React.lazy` + `Suspense` 动态加载：
 
-gainlab-app（本仓库）
-  ├── 不 import gainlab-mcp 的代码
-  ├── 通过 CF Worker 与 AI 模型交互
-  └── AI 模型决定调用哪个 MCP tool → Worker 执行 → 返回数据
-```
+| chunk | 内容 | 大小 |
+|---|---|---|
+| index | App + layout + hooks | ~3KB |
+| KLineWidget | KLineChart fork | ~560KB |
+| ECharts | echarts 库 | ~1.1MB |
+| ChatPanel | Chat UI + MCP stream | ~8KB |
+| 工具 Widgets | VP/Heatmap/Overlay/Fundamentals/WRB | ~3KB each |
 
-**骨架阶段简化**：gainlab-mcp tools 的执行逻辑在 CF Worker 内内联实现，产品阶段再接真正的 MCP Server。
+首屏只加载 App shell + KLineWidget，其他按需加载。
 
 ---
 
-## 与 CF Worker 的关系
+## 与外部系统的关系
 
 ```
 CF Worker: gainlab-api.asher-sun.workers.dev
-  ├── 端点：POST /api/chat
-  ├── 职责：
-  │   ├── 持有 AI API key（MiniMax-M2）
-  │   ├── IP 限流（10 req/min/IP）
-  │   ├── 持有 EODHD / FMP key（BYOK 代理）
-  │   └── 返回 SSE 流（text_delta + tool_call + tool_result）
-  └── 已有实现：骨架阶段直接复用，不新建 Worker
+  ├── POST /api/chat     — AI 对话（SSE stream）
+  ├── GET /api/kline      — K线数据（所有市场）
+  ├── GET /api/quote      — 实时报价
+  ├── GET /api/search     — 资产搜索
+  ├── GET /api/fundamentals — 基本面数据
+  └── GET /api/screener   — 板块筛选（热力图）
+
+所有请求走 CF Worker 代理，前端不直连任何 API。
 ```
 
 ---
 
-## 骨架验证范围（v0.1）
+## 工程化
 
-| 组件 | 验证目标 | 状态 |
+| 工具 | 用途 |
+|---|---|
+| Vitest + RTL | 测试（89 tests, G1 只增不减） |
+| ESLint flat config | Lint（0 error 才能 commit） |
+| tsc + typecheck.sh | 类型检查（过滤 KLineChart 45K fork 错误） |
+| Vite | 构建 + Dev server |
+| GH Actions | CI/CD → gh-pages |
+
+```bash
+# G4 四步门禁
+pnpm lint && pnpm typecheck && pnpm test && pnpm build
+```
+
+---
+
+## P1 完成组件清单
+
+| 任务 | 组件 | 状态 |
 |---|---|---|
-| Mosaic 布局（2 个 Widget） | react-mosaic 可以正常拖拽分割 | ✅ |
-| KLineWidget | KLineChart 在浏览器中渲染 K 线 + RSI | ✅ |
-| EChartsWidget | echarts-for-react 渲染热力图 | ✅ |
-| 简化 Chat | 输入框 → CF Worker → tool call → 触发 Widget 更新 | ✅ |
-| GH Actions 部署 | push main → gh-pages 自动更新 | ✅ |
-
-**线上地址**：https://ashersun1207.github.io/gainlab-app/
-
-**不在骨架范围内**：完整 Sidebar、i18n 切换、移动端适配、完整 7 工具覆盖、BYOK、CF KV 缓存。
-
----
-
-## P1 产品阶段（待实现）
-
-- 完整 Sidebar（资产选择 + 市场切换）
-- i18n 切换（zh/en）
-- 7 工具全覆盖（kline / indicators / overlay / fundamentals / volume_profile / heatmap / wrb）
-- 移动端适配
-- BYOK 支持（用户自带 EODHD / FMP / Binance key）
-- CF KV 缓存层
+| T01 | types/market.ts, types/data.ts | ✅ |
+| T02 | constants/markets.ts | ✅ |
+| T03 | Sidebar/ (index + MarketTabs + SearchBox + AssetList + ToolBar) | ✅ |
+| T04 | Toolbar.tsx | ✅ |
+| T05 | Drawer.tsx | ✅ |
+| T06 | services/api.ts, services/marketData.ts, hooks/useMarketData.ts | ✅ |
+| T07 | ChatPanel.tsx (重构), ChatToggle.tsx | ✅ |
+| T08 | HeatmapWidget, VolumeProfileWidget, OverlayWidget, FundamentalsWidget, WRBWidget | ✅ |
+| T09 | hooks/useResponsive.ts, layout/MobileTabBar.tsx, mobile CSS | ✅ |
+| T10 | App.tsx 集成, ARCHITECTURE.md 更新 | ✅ |
 
 ---
 
-_创建于 2026-02-17 | 骨架验证 v0.1 | 校准于 2026-02-17（P0 完成后）_
+_创建于 2026-02-17 | P1 产品阶段 | 最后更新于 2026-02-17（T10 集成完成）_
