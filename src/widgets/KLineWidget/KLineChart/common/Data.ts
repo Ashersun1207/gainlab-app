@@ -1,0 +1,45 @@
+/**
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+
+ * http://www.apache.org/licenses/LICENSE-2.0
+
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import type Nullable from './Nullable'
+
+export interface NeighborData<D> {
+  prev: D
+  current: D
+  next: D
+}
+
+export interface KLineData {
+  timestamp: number
+  open: number
+  high: number
+  low: number
+  close: number
+  volume?: number
+  turnover?: number
+  [key: string]: unknown
+}
+
+export interface FootprintCell {
+  price: number
+  buyVolume?: number
+  sellVolume?: number
+  delta?: number
+}
+
+export interface VisibleRangeData {
+  dataIndex: number
+  x: number
+  data: NeighborData<Nullable<KLineData>>
+}

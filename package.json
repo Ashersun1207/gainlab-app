@@ -5,13 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
+    "typecheck": "tsc -b",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "crypto-js": "^4.2.0",
     "echarts": "^6.0.0",
     "echarts-for-react": "^3.0.6",
+    "pako": "^2.1.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-mosaic-component": "^6.1.1"
@@ -23,7 +26,9 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "^24.10.1",
+    "@types/pako": "^2.0.4",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",

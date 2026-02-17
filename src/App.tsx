@@ -3,6 +3,7 @@ import { MosaicDashboard } from './layout/MosaicDashboard'
 import { EChartsWidget } from './widgets/EChartsWidget'
 import { buildHeatmapOption } from './widgets/EChartsWidget/charts/HeatmapChart'
 import { sampleHeatmapData } from './widgets/EChartsWidget/charts/sampleHeatmapData'
+import { KLineWidget } from './widgets/KLineWidget'
 
 const INITIAL_LAYOUT: MosaicNode<string> = {
   direction: 'row',
@@ -14,6 +15,9 @@ const INITIAL_LAYOUT: MosaicNode<string> = {
 const heatmapOption = buildHeatmapOption(sampleHeatmapData)
 
 function renderWidget(id: string, _path: MosaicBranch[]) {
+  if (id === 'kline') {
+    return <KLineWidget symbol="BTCUSDT" indicators={['RSI']} />
+  }
   if (id === 'echarts') {
     return (
       <EChartsWidget
@@ -22,7 +26,6 @@ function renderWidget(id: string, _path: MosaicBranch[]) {
       />
     )
   }
-  // kline placeholder（T3 实现）
   return (
     <div
       style={{
@@ -35,7 +38,7 @@ function renderWidget(id: string, _path: MosaicBranch[]) {
         fontWeight: 500,
       }}
     >
-      K 线图 — 等待 T3 实现
+      Unknown widget: {id}
     </div>
   )
 }
