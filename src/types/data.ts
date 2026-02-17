@@ -6,6 +6,7 @@ export interface KLineData {
   close: number;
   volume?: number;
   turnover?: number;
+  [key: string]: unknown;
 }
 
 export interface HeatmapItem {
