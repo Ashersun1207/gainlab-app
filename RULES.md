@@ -128,7 +128,7 @@ scope: `widget` / `layout` / `mcp` / `utils` / `deploy`
 | 模块 | 来源 | 目标路径 |
 |---|---|---|
 | react-mosaic 布局 | dashboard/src/components/MosaicDashboard | src/layout/ |
-| Sidebar 组件 | dashboard/src/components/Sidebar | src/layout/ |
+| Sidebar 组件 | dashboard/src/components/layout/OpenBBSidebar | src/layout/ |
 | Widget 基类 | dashboard/src/components/Widget | src/widgets/base/ |
 | i18n 配置 | dashboard/src/i18n/ | src/i18n/ |
 | KLineChart plugin | dashboard/src/plugins/klinechart/ | src/widgets/KLineWidget/ |

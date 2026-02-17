@@ -72,7 +72,7 @@ echo ""
 echo "🔗 复用源（gainlab-dashboard）"
 if [ -d "$DASHBOARD" ]; then
   echo "  ✅ dashboard 目录存在"
-  for src_dir in "src/components/MosaicDashboard" "src/components/Sidebar" "src/plugins/KLineChart" "src/plugins/klinechart" "src/i18n"; do
+  for src_dir in "src/components/MosaicDashboard" "src/components/layout/OpenBBSidebar" "src/plugins/KLineChart" "src/plugins/klinechart" "src/i18n"; do
     if [ -d "$DASHBOARD/$src_dir" ]; then
       echo "  ✅ $src_dir/"
     else
