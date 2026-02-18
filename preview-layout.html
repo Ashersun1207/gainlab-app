@@ -112,34 +112,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 .vs{width:1px;height:16px;background:var(--brd);margin:0 3px;flex-shrink:0}
 
 /* Period buttons */
-/* Period bar: all timeframes shown, pinned ones highlighted */
-.tf-bar{display:flex;align-items:center;gap:2px}
-.tf-btn{padding:1px 5px;border-radius:3px;font-size:10px;font-weight:500;color:var(--t3);cursor:pointer;background:0;border:1px solid transparent;transition:.15s;flex-shrink:0}
-.tf-btn:hover{color:var(--t1);background:var(--bgH)}
-.tf-btn.active{color:#fff;background:var(--acc)}
-.tf-btn.pinned{color:var(--t1);border-color:var(--brd2)}
-.tf-btn.pinned.active{color:#fff;background:var(--acc);border-color:var(--acc)}
-.tf-edit-btn{width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:0;background:0;color:var(--t3);cursor:pointer;border-radius:3px;transition:.12s;flex-shrink:0}
-.tf-edit-btn:hover{background:var(--bgH);color:var(--t1)}
-.tf-edit-btn.editing{color:var(--acc)}
-
-/* Chart type selector */
-.ct-sel{position:relative;z-index:201}
-.ct-btn{display:flex;align-items:center;gap:4px;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:500;color:var(--t2);cursor:pointer;background:0;border:0;transition:.15s}
-.ct-btn:hover{background:var(--bgH);color:var(--t1)}
-.ct-icon{flex-shrink:0}
-.ct-label{white-space:nowrap}
-.ct-arrow{font-size:8px;color:var(--t3)}
-.ct-dd{display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--bg2);border:1px solid var(--brd2);border-radius:6px;padding:6px;min-width:140px;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:300}
-.ct-dd.show{display:block}
-.ct-dd-title{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:2px 4px 4px}
-.ct-dd-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:4px;font-size:10px;color:var(--t2);cursor:pointer;border:0;background:0;width:100%;transition:.12s}
-.ct-dd-item:hover{background:var(--bgH);color:var(--t1)}
-.ct-dd-item.on{color:var(--acc);background:rgba(37,99,235,.1)}
-.ct-dd-item svg{width:14px;height:14px;flex-shrink:0}
-.ct-dd-bg{position:fixed;inset:0;z-index:299;display:none}
-.ct-dd-bg.show{display:block}
-
 .pb{padding:1px 5px;border-radius:3px;font-size:10px;font-weight:500;color:var(--t3);cursor:pointer;background:0;border:0;transition:.15s;flex-shrink:0}
 .pb:hover{color:var(--t1);background:var(--bgH)}
 .pb.on{color:#fff;background:var(--acc)}
@@ -390,27 +362,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 
           <div class="vs"></div>
 
-          <!-- Period buttons: pinned (highlighted) + others -->
-          <div class="tf-bar" id="tfBar"></div>
-          <button class="tf-edit-btn" onclick="toggleTfEdit()" id="tfEditBtn" title="Edit pinned timeframes">
-            <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><circle cx="6" cy="2" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="6" cy="10" r="1"/></svg>
-          </button>
+          <!-- Period (in widget, like TV) -->
+          <button class="pb">1m</button>
+          <button class="pb">5m</button>
+          <button class="pb">15m</button>
+          <button class="pb">1H</button>
+          <button class="pb">4H</button>
+          <button class="pb on">1D</button>
+          <button class="pb">1W</button>
 
           <div class="vs"></div>
 
-          <!-- Chart type selector -->
-          <div class="ct-sel" id="ctSel">
-            <button class="ct-btn" onclick="toggleCtDropdown()" id="ctBtn">
-              <svg class="ct-icon" id="ctIcon" viewBox="0 0 16 16" fill="currentColor" width="14" height="14"></svg>
-              <span class="ct-label" id="ctLabel"></span>
-              <span class="ct-arrow">▾</span>
-            </button>
-            <div class="ct-dd-bg" id="ctDdBg" onclick="closeCtDropdown()"></div>
-            <div class="ct-dd" id="ctDd">
-              <div class="ct-dd-title" data-i18n="ct_title">Chart Type</div>
-              <div id="ctList"></div>
-            </div>
-          </div>
+          <!-- Chart type (candle style) -->
+          <button class="dtb on" title="蜡烛图" style="font-size:10px;font-weight:700">K</button>
 
           <div class="vs"></div>
 
@@ -679,76 +643,12 @@ function updateIndTags(){
 }
 updateIndTags();
 
-// === Timeframe bar: all shown, max 3 pinned as shortcuts ===
-const allTimeframes=['1m','5m','15m','1H','4H','1D','1W','1M'];
-let pinnedTFs=['1H','1D','1W']; // highlighted shortcuts
-let activeTF='1D'; // currently viewing
-const MAX_PIN=3;
-let tfEditMode=false;
-
-function renderTfBar(){
-  const bar=document.getElementById('tfBar');
-  bar.innerHTML=allTimeframes.map(tf=>{
-    const isActive=tf===activeTF;
-    const isPinned=pinnedTFs.includes(tf);
-    const cls=['tf-btn'];
-    if(isPinned)cls.push('pinned');
-    if(isActive)cls.push('active');
-    if(tfEditMode) return `<button class="${cls.join(' ')}" onclick="togglePin('${tf}')">${tf}</button>`;
-    return `<button class="${cls.join(' ')}" onclick="setActiveTF('${tf}')">${tf}</button>`;
-  }).join('');
-  document.getElementById('tfEditBtn').classList.toggle('editing',tfEditMode);
-}
-function setActiveTF(tf){
-  activeTF=tf;
-  renderTfBar();genCandles();
-}
-function togglePin(tf){
-  const idx=pinnedTFs.indexOf(tf);
-  if(idx>=0){pinnedTFs.splice(idx,1);}
-  else if(pinnedTFs.length<MAX_PIN){pinnedTFs.push(tf);}
-  renderTfBar();
-}
-function toggleTfEdit(){
-  tfEditMode=!tfEditMode;
-  renderTfBar();
-}
-renderTfBar();
-
-// === Chart type selector ===
-const chartTypes=[
-  {id:'candle_solid', labelKey:'ct_candle_solid', icon:'<path d="M7 1h2v3h2v8H5V4h2V1zm0 14h2v-2H7v2z"/>'},
-  {id:'candle_hollow', labelKey:'ct_candle_hollow', icon:'<rect x="5" y="4" width="6" height="8" rx=".5" fill="none" stroke="currentColor" stroke-width="1.2"/><line x1="8" y1="1" x2="8" y2="4" stroke="currentColor" stroke-width="1.2"/><line x1="8" y1="12" x2="8" y2="15" stroke="currentColor" stroke-width="1.2"/>'},
-  {id:'bar', labelKey:'ct_bar', icon:'<line x1="4" y1="2" x2="4" y2="14" stroke="currentColor" stroke-width="1.3"/><line x1="1" y1="4" x2="4" y2="4" stroke="currentColor" stroke-width="1.3"/><line x1="4" y1="10" x2="7" y2="10" stroke="currentColor" stroke-width="1.3"/><line x1="11" y1="4" x2="11" y2="14" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.3"/><line x1="11" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="1.3"/>'},
-  {id:'line', labelKey:'ct_line', icon:'<polyline points="1,12 4,7 8,9 12,3 15,6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'},
-  {id:'area', labelKey:'ct_area', icon:'<path d="M1,12 L4,7 L8,9 L12,3 L15,6 L15,14 L1,14 Z" opacity=".3"/><polyline points="1,12 4,7 8,9 12,3 15,6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'}
-];
-let curChartType='candle_solid';
-
-function renderCtBtn(){
-  const ct=chartTypes.find(c=>c.id===curChartType);
-  document.getElementById('ctIcon').innerHTML=ct.icon;
-  document.getElementById('ctLabel').textContent=t(ct.labelKey);
-}
-function renderCtList(){
-  const list=document.getElementById('ctList');
-  list.innerHTML=chartTypes.map(ct=>`<button class="ct-dd-item${ct.id===curChartType?' on':''}" onclick="selectChartType('${ct.id}')"><svg viewBox="0 0 16 16" fill="currentColor">${ct.icon}</svg><span>${t(ct.labelKey)}</span></button>`).join('');
-}
-function selectChartType(id){
-  curChartType=id;
-  renderCtBtn();renderCtList();closeCtDropdown();genCandles();
-}
-function toggleCtDropdown(){
-  const dd=document.getElementById('ctDd'),bg=document.getElementById('ctDdBg');
-  const show=!dd.classList.contains('show');
-  dd.classList.toggle('show',show);bg.classList.toggle('show',show);
-  if(show)renderCtList();
-}
-function closeCtDropdown(){
-  document.getElementById('ctDd').classList.remove('show');
-  document.getElementById('ctDdBg').classList.remove('show');
-}
-renderCtBtn();
+// === Period buttons ===
+document.querySelectorAll('.pb').forEach(btn=>btn.addEventListener('click',function(){
+  document.querySelectorAll('.pb').forEach(b=>b.classList.remove('on'));
+  this.classList.add('on');
+  genCandles();
+}));
 
 genCandles();genVP();genHM();
 
@@ -843,11 +743,6 @@ const i18n={
     chat_q2:'对比 AAPL 和 MSFT',
     chat_a2:'正在获取基本面数据...',
     qa_vp:'BTC 筹码', qa_hm:'热力图', qa_wrb:'WRB 信号',
-    // Timeframe selector
-    tf_title:'周期', tf_hint:'最多选 3 个',
-    // Chart type
-    ct_title:'图表类型',
-    ct_candle_solid:'实心K线', ct_candle_hollow:'空心K线', ct_bar:'美国线', ct_line:'折线图', ct_area:'面积图',
     // Sub-panel titles
     sp_charts:'图表', sp_heatmap:'热力图', sp_fund:'基本面',
     sp_overlay:'叠加对比', sp_ai:'AI 助手', sp_all:'所有组件',
@@ -884,9 +779,6 @@ const i18n={
     chat_q2:'Compare AAPL vs MSFT',
     chat_a2:'Fetching fundamentals data...',
     qa_vp:'BTC Profile', qa_hm:'Heatmap', qa_wrb:'WRB Signals',
-    tf_title:'Timeframe', tf_hint:'Max 3 selected',
-    ct_title:'Chart Type',
-    ct_candle_solid:'Candlestick', ct_candle_hollow:'Hollow Candle', ct_bar:'OHLC Bar', ct_line:'Line', ct_area:'Area',
     sp_charts:'Charts', sp_heatmap:'Heatmap', sp_fund:'Fundamentals',
     sp_overlay:'Overlay', sp_ai:'AI Assistant', sp_all:'All Widgets',
     sec_candle:'Candlestick', sec_trend:'Trend', sec_market:'Markets', sec_macro:'Macro',
@@ -939,10 +831,8 @@ function applyLang(){
   });
   // Lang button
   document.getElementById('langBtn').textContent=curLang==='zh'?'EN':'中';
-  // Re-render sidebar nav + TF bar + chart type
+  // Re-render sidebar nav
   renderSidebar();
-  renderTfBar();
-  renderCtBtn();
 }
 
 function toggleLang(){
