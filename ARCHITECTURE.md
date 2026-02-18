@@ -34,12 +34,11 @@ gainlab-app/
 │   │
 │   ├── layout/
 │   │   ├── Sidebar/
-│   │   │   ├── index.tsx       # Sidebar 主组件（市场切换 + 搜索 + 资产列表 + 工具栏）
-│   │   │   ├── MarketTabs.tsx  # 市场 tab（加密/美股/A股/贵金属）
-│   │   │   ├── SearchBox.tsx   # 搜索输入框
-│   │   │   ├── AssetList.tsx   # 资产列表（报价 + 涨跌色）
-│   │   │   └── ToolBar.tsx     # 工具按钮栏（VP/Overlay/基本面/热力图/WRB）
-│   │   ├── Toolbar.tsx         # 顶部工具栏（资产名 + 价格 + 时间周期 + 指标）
+│   │   │   ├── index.tsx       # Sidebar 主组件（Koyfin 单栏双状态：折叠 42px / 展开 250px）
+│   │   │   ├── SceneList.tsx   # 场景列表（可展开 → 显示子 Widget 清单）
+│   │   │   ├── sceneConfig.ts  # 场景定义（id/名称/图标/badge/children Widget 列表）
+│   │   │   └── SidebarToggle.tsx # Hamburger 切换按钮（展开时右侧，带箭头指示）
+│   │   ├── Toolbar.tsx         # 顶部工具栏（资产名 + 价格 + 周期选择器 + 图表类型 + 指标）
 │   │   ├── Drawer.tsx          # 底部抽屉（工具面板容器）
 │   │   ├── MobileTabBar.tsx    # 移动端底部 Tab Bar（📊市场/🔧工具/💬聊天）
 │   │   ├── MosaicDashboard.tsx # react-mosaic 容器（P0 遗留，保留兼容）
@@ -125,17 +124,18 @@ gainlab-app/
 │ App.tsx                                                          │
 │  ┌────────┐  ┌──────────────────────────────┐  ┌─────────────┐ │
 │  │Sidebar │  │ 主区                          │  │ ChatPanel   │ │
-│  │ 200px  │  │ ┌────────────────────────────┐│  │ 320px       │ │
+│  │42/250px│  │ ┌────────────────────────────┐│  │ 320px       │ │
 │  │        │  │ │ Toolbar                     ││  │ (可收起)    │ │
-│  │ 市场tab │  │ │ BTC/USDT | $96K | 1D 1W .. ││  │             │ │
-│  │ 搜索    │  │ ├────────────────────────────┤│  │ 消息列表    │ │
-│  │ 资产列表 │  │ │ KLineWidget (60% | 100%)  ││  │ + 输入框    │ │
-│  │ 工具栏  │  │ │ K线 + 技术指标              ││  │             │ │
-│  │        │  │ ├────────────────────────────┤│  │ ToolCall    │ │
-│  │        │  │ │ Drawer (40%, 可关闭)        ││  │ Badge       │ │
-│  │        │  │ │ VP / Heatmap / Overlay ...  ││  │             │ │
-│  │        │  │ └────────────────────────────┘│  └─────────────┘ │
-│  └────────┘  └──────────────────────────────┘   或 💬 ChatToggle │
+│  │ GainLab│  │ │ BTC/USDT|$96K|1H 4H 1D|CK ││  │             │ │
+│  │ ──────│  │ ├────────────────────────────┤│  │ 消息列表    │ │
+│  │ 场景列表│  │ │ Widget 区域                 ││  │ + 输入框    │ │
+│  │ ▸快照  │  │ │ (场景对应的 Widget 组合)     ││  │             │ │
+│  │ ▾个股  │  │ │ K线/指标/筹码/WRB/...       ││  │ ToolCall    │ │
+│  │  K线图 │  │ ├────────────────────────────┤│  │ Badge       │ │
+│  │  筹码  │  │ │ Drawer (可关闭)             ││  │             │ │
+│  │  WRB   │  │ │ 工具面板                    ││  │             │ │
+│  │ ──────│  │ └────────────────────────────┘│  └─────────────┘ │
+│  └────────┘  └──────────────────────────────┘                    │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -157,6 +157,68 @@ gainlab-app/
 └──────────────────────────┘
 + 全屏 Overlay (市场/工具/聊天)
 ```
+
+---
+
+## 场景模型（Scene → Widget）
+
+Sidebar 的每个条目是一个**场景（Scene）**，而非单个 Widget。
+场景 = Agent 预组装的多 Widget 组合，用户点击场景切换整个视图布局。
+
+### 概念层级
+
+```
+Scene（场景）    ← sidebar 列的东西，如"个股分析""市场热力"
+  └── Widget[]  ← 场景包含的组件列表，可自由增删
+       └── K线图 / 热力图 / 筹码分布 / ...
+```
+
+### 场景定义（sceneConfig.ts）
+
+```typescript
+interface Scene {
+  id: string;              // 'stock_analysis'
+  nameKey: string;         // i18n key
+  badge: string;           // 快捷键 badge
+  icon: ReactNode;         // SVG 图标
+  children: WidgetDef[];   // 包含的 Widget 列表
+}
+
+interface WidgetDef {
+  nameKey: string;         // i18n key
+  widgetType: string;      // 对应的 Widget 组件类型
+}
+```
+
+### Sidebar 分组
+
+| 分组 | 场景 | badge | 子 Widget |
+|---|---|---|---|
+| （顶部高频） | AI 对话 | AI | 对话面板 / 指令快捷 |
+| | 行情快照 | NOW | 涨跌排行 / 热力图 / 关键指数 |
+| | 自选股 | MYW | 自选列表 / 迷你图 |
+| DASHBOARDS | 个股分析 | CK | K线 / 筹码 / WRB / 指标 |
+| | 市场热力 | HM | Crypto热力 / 板块热力 / 涨跌排行 |
+| | 基本面 | FD | 财务概览 / 财报对比 / 现金流 |
+| | 多资产对比 | CMP | 叠加走势 / 相关性 / 比率图 |
+| | 全球指数 | WEI | 全球指数 / 汇率矩阵 |
+| | 宏观经济 | ECON | 利率 / GDP/CPI |
+| PORTFOLIO TOOLS | 我的持仓 | MYP | 持仓明细 / 盈亏（待开发） |
+| | 风险分析 | RISK | VaR / 最大回撤（待开发） |
+| AI TOOLS | 智能分析 | ANA | 信号扫描 / 策略回测 |
+| | 研报生成 | RPT | 生成报告 / AI摘要 |
+| | 条件筛选 | MYS | 筛选器 / 条件构建 |
+
+### Sidebar 交互
+
+- **折叠态（42px）**：只显示图标 + hover tooltip
+- **展开态（250px）**：图标 + 场景名 + badge，点击展开子 Widget 列表
+- **Toggle**：hamburger 按钮，展开时在右侧带 ← 箭头，折叠时 → 箭头
+
+### Toolbar 新增组件
+
+- **周期选择器**：常用快捷按钮 + ▾ 下拉全部 + ★ 星标设为常用（max 5）
+- **图表类型**：5 种（实心蜡烛/空心蜡烛/OHLC/价格线/价格区域），图标+下拉
 
 ---
 
