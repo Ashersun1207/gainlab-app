@@ -117,11 +117,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 .ib:hover{color:var(--t2)}
 .ib.on{color:#60a5fa;background:rgba(96,165,250,.1)}
 
-/* Drawing tools (inside widget header) */
-.dt{display:flex;align-items:center;gap:1px;margin-left:auto;flex-shrink:0}
-.dtb{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;color:var(--t3);background:0;border:0;transition:.15s}
+/* Drawing tools — overlay on chart left edge */
+.dt-trigger{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);background:0;border:0;transition:.15s;flex-shrink:0}
+.dt-trigger:hover{background:var(--bgH);color:var(--t1)}
+.dt-trigger.on{color:var(--acc);background:rgba(37,99,235,.1)}
+.dt-overlay{position:absolute;top:4px;left:4px;z-index:50;display:flex;flex-direction:column;gap:2px;padding:4px;background:var(--bg1);border:1px solid var(--brd2);border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,.5);opacity:0;pointer-events:none;transform:translateX(-4px);transition:opacity .15s,transform .15s}
+.dt-overlay.show{opacity:1;pointer-events:auto;transform:translateX(0)}
+.dtb{width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);background:0;border:0;transition:.12s}
 .dtb:hover{background:var(--bgH);color:var(--t1)}
 .dtb.on{color:var(--acc);background:rgba(37,99,235,.1)}
+.dtb svg{width:15px;height:15px}
 
 /* Chart body */
 .kbody{flex:1;background:var(--bg2);position:relative;overflow:hidden;min-height:0}
@@ -254,7 +259,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
   .sym-m{display:none}
   .prc{font-size:11px}
   .chg{font-size:9px}
-  .dt{display:none} /* 手机隐藏画图工具 */
+  .dt-trigger{display:none} /* 手机隐藏画图工具 */
+  .dt-overlay{display:none}
   .ind-tags{display:none} /* 手机隐藏 tag */
   .dd{width:calc(100vw - 60px);left:-6px}
   .ind-panel{width:calc(100vw - 60px)}
@@ -392,15 +398,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 
           <div class="vs"></div>
 
-          <!-- Drawing tools (in widget, like TV MarkBar) -->
-          <div class="dt">
-            <button class="dtb" data-i18n-title="dt_trend"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="12" x2="12" y2="2"/></svg></button>
-            <button class="dtb" data-i18n-title="dt_hline"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="1" y1="7" x2="13" y2="7"/></svg></button>
-            <button class="dtb" data-i18n-title="dt_rect"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="2" y="3" width="10" height="8" rx="1"/></svg></button>
-            <button class="dtb" data-i18n-title="dt_fib"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="2 1.5"><line x1="1" y1="2" x2="13" y2="2"/><line x1="1" y1="5.5" x2="13" y2="5.5"/><line x1="1" y1="8" x2="13" y2="8"/><line x1="1" y1="12" x2="13" y2="12"/></svg></button>
-            <button class="dtb" data-i18n-title="dt_note"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="4"/><line x1="7" y1="3" x2="7" y2="7"/><line x1="7" y1="7" x2="9.5" y2="9"/></svg></button>
-            <button class="dtb" data-i18n-title="dt_more"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="11" cy="7" r="1.2"/></svg></button>
-          </div>
+          <!-- Drawing tools trigger button (opens overlay on chart) -->
+          <button class="dt-trigger" id="dtTrigger" onclick="toggleDrawTools()" data-i18n-title="dt_more"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="12" x2="12" y2="2"/><line x1="9" y1="2" x2="12" y2="2"/><line x1="12" y1="2" x2="12" y2="5"/></svg></button>
 
           <!-- Widget controls (right side) -->
           <div style="margin-left:auto;display:flex;gap:1px">
@@ -413,6 +412,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 
       <!-- Chart body -->
       <div class="kbody">
+        <!-- Drawing tools overlay (floats on chart left edge) -->
+        <div class="dt-overlay" id="dtOverlay">
+          <button class="dtb" data-i18n-title="dt_trend"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="12" x2="12" y2="2"/></svg></button>
+          <button class="dtb" data-i18n-title="dt_hline"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="1" y1="7" x2="13" y2="7"/></svg></button>
+          <button class="dtb" data-i18n-title="dt_rect"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="2" y="3" width="10" height="8" rx="1"/></svg></button>
+          <button class="dtb" data-i18n-title="dt_fib"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><line x1="1" y1="2" x2="13" y2="2"/><line x1="1" y1="5.5" x2="13" y2="5.5" stroke-dasharray="2 1.5"/><line x1="1" y1="9" x2="13" y2="9" stroke-dasharray="2 1.5"/><line x1="1" y1="12" x2="13" y2="12"/></svg></button>
+          <button class="dtb" data-i18n-title="dt_note"><svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg></button>
+          <button class="dtb" data-i18n-title="dt_more"><svg viewBox="0 0 14 14" fill="currentColor"><circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="11" cy="7" r="1.2"/></svg></button>
+        </div>
         <div class="grd">
           <div class="gl" style="top:12%"><span class="gll">72,000</span></div>
           <div class="gl" style="top:30%"><span class="gll">70,000</span></div>
@@ -786,6 +794,19 @@ function t(key){return i18n[curLang][key]||key;}
 
 // Now safe to render sidebar (depends on t())
 renderSidebar();
+
+// ═══ DRAWING TOOLS OVERLAY ═══
+let dtOpen=false;
+function toggleDrawTools(){
+  dtOpen=!dtOpen;
+  document.getElementById('dtOverlay').classList.toggle('show',dtOpen);
+  document.getElementById('dtTrigger').classList.toggle('on',dtOpen);
+}
+// Click tool → highlight it
+document.querySelectorAll('#dtOverlay .dtb').forEach(btn=>btn.addEventListener('click',function(){
+  document.querySelectorAll('#dtOverlay .dtb').forEach(b=>b.classList.remove('on'));
+  this.classList.add('on');
+}));
 
 function applyLang(){
   // Text content
