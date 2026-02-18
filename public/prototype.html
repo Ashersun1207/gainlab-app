@@ -26,8 +26,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 .dot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
 .dg{background:var(--grn);box-shadow:0 0 3px var(--grn)}.dr{background:var(--t3)}
 .spc{flex:1}
-.tick{font-size:9px;color:var(--t3);font-family:monospace;display:flex;gap:8px}
-.tick span{display:flex;gap:3px}
+/* (ticker removed) */
 .hb{padding:3px 8px;border-radius:5px;font-size:11px;font-weight:500;color:var(--t2);background:0;border:1px solid var(--brd);cursor:pointer;display:flex;align-items:center;gap:3px;transition:.15s}
 .hb:hover{background:var(--bgH);color:var(--t1)}
 .hb.ac{background:var(--acc);border-color:var(--acc);color:#fff}
@@ -189,6 +188,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 .ddi .dn_{font-size:11px;font-weight:600}.ddi .dm{font-size:9px;color:var(--t3);margin-left:4px}
 .ddi .dk{font-size:8px;padding:1px 4px;border-radius:2px;background:var(--bg3);color:var(--t3)}
 
+/* ═══ INDICATOR SELECTOR ═══ */
+.ind-sel{position:relative;z-index:201;display:inline-flex;align-items:center}
+.ind-trigger{padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;color:var(--t2);cursor:pointer;background:var(--bg3);border:1px solid var(--brd);transition:.15s;display:flex;align-items:center;gap:3px;white-space:nowrap}
+.ind-trigger:hover{background:var(--bgH);color:var(--t1);border-color:var(--brd2)}
+.ind-count{background:var(--acc);color:#fff;font-size:8px;padding:0 4px;border-radius:8px;font-weight:700;min-width:14px;text-align:center}
+.ind-panel{width:240px}
+.ind-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;transition:.1s}
+.ind-item:hover{background:var(--bgH)}
+.ind-toggle{width:28px;height:16px;border-radius:8px;background:var(--bg3);border:1px solid var(--brd);position:relative;transition:.2s;flex-shrink:0}
+.ind-toggle::after{content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:var(--t3);transition:.2s}
+.ind-item.on .ind-toggle{background:var(--acc);border-color:var(--acc)}
+.ind-item.on .ind-toggle::after{left:14px;background:#fff}
+.ind-name{font-size:11px;font-weight:600;min-width:36px}
+.ind-item .dm{font-size:9px;color:var(--t3)}
+.ind-tags{display:flex;gap:2px;flex-wrap:wrap}
+.ind-tag{font-size:8px;font-weight:600;padding:1px 4px;border-radius:3px;background:rgba(96,165,250,.1);color:#60a5fa}
+
 /* Widget label annotations */
 .wlbl{position:absolute;font-size:9px;color:var(--t2);font-weight:500;opacity:.6;pointer-events:none;z-index:5}
 
@@ -200,8 +216,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
   .wg{grid-template-columns:1fr;height:auto;max-height:300px;overflow-y:auto}
   .kwh-row{flex-wrap:wrap;gap:2px}
   .dt{display:none} /* 手机隐藏画图工具 */
-  .tick{display:none} /* 手机隐藏 ticker */
-  .hsep:nth-child(4),.hsep:nth-child(2){display:none}
+  .ind-tags{display:none} /* 手机隐藏 tag */
   .dd{width:calc(100vw - 60px);left:-6px}
 }
 @media(max-width:480px){
@@ -222,12 +237,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
     <div class="pill"><div class="dot dr"></div>US</div>
     <div class="pill"><div class="dot dr"></div>A股</div>
     <div class="pill"><div class="dot dg"></div>贵金属</div>
-  </div>
-  <div class="hsep"></div>
-  <div class="tick">
-    <span>BTC <b class="up">68,144</b></span>
-    <span>ETH <b class="up">3,812</b></span>
-    <span>XAU <b class="up">4,886</b></span>
   </div>
   <div class="spc"></div>
   <div class="hb">🌙</div>
@@ -310,20 +319,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 
           <div class="vs"></div>
 
-          <!-- Indicators (in widget, like TV) -->
-          <button class="ib on">MA</button>
-          <button class="ib on">BOLL</button>
-          <button class="ib">RSI</button>
-          <button class="ib">MACD</button>
-          <button class="ib">VWAP</button>
-          <button class="ib">KDJ</button>
-          <button class="ib">ATR</button>
-
-          <div class="vs"></div>
-
-          <!-- Overlay toggles -->
-          <button class="ib on" style="color:var(--grn)">VP</button>
-          <button class="ib on" style="color:var(--gld)">WRB</button>
+          <!-- Indicator selector (overlay panel) -->
+          <div class="ind-sel" id="indSel">
+            <button class="ib ind-trigger" onclick="toggleInd()">📊 指标 <span class="ind-count">4</span> ▾</button>
+            <div class="dd-overlay ind-overlay" id="indOverlay" onclick="closeInd(event)"></div>
+            <div class="dd ind-panel" id="indPanel">
+              <input type="text" placeholder="搜索指标..." id="indInput">
+              <div class="dd-section">主图叠加</div>
+              <div class="ind-item on" data-ind="MA"><div class="ind-toggle"></div><span class="ind-name">MA</span><span class="dm">移动平均线</span></div>
+              <div class="ind-item" data-ind="EMA"><div class="ind-toggle"></div><span class="ind-name">EMA</span><span class="dm">指数移动平均</span></div>
+              <div class="ind-item on" data-ind="BOLL"><div class="ind-toggle"></div><span class="ind-name">BOLL</span><span class="dm">布林带</span></div>
+              <div class="ind-item on" data-ind="VWAP"><div class="ind-toggle"></div><span class="ind-name">VWAP</span><span class="dm">成交量加权均价</span></div>
+              <div class="ind-item on" data-ind="VP"><div class="ind-toggle"></div><span class="ind-name">VP</span><span class="dm">筹码分布</span></div>
+              <div class="ind-item" data-ind="WRB"><div class="ind-toggle"></div><span class="ind-name">WRB</span><span class="dm">宽幅K线信号</span></div>
+              <div class="dd-section">副图指标</div>
+              <div class="ind-item" data-ind="RSI"><div class="ind-toggle"></div><span class="ind-name">RSI</span><span class="dm">相对强弱</span></div>
+              <div class="ind-item" data-ind="MACD"><div class="ind-toggle"></div><span class="ind-name">MACD</span><span class="dm">指数平滑异同</span></div>
+              <div class="ind-item" data-ind="KDJ"><div class="ind-toggle"></div><span class="ind-name">KDJ</span><span class="dm">随机指标</span></div>
+              <div class="ind-item" data-ind="ATR"><div class="ind-toggle"></div><span class="ind-name">ATR</span><span class="dm">真实波幅</span></div>
+            </div>
+          </div>
+          <!-- Active indicator tags -->
+          <span class="ind-tags" id="indTags"></span>
 
           <div class="vs"></div>
 
@@ -536,6 +553,47 @@ document.querySelectorAll('.ddi').forEach(el=>el.addEventListener('click',functi
   document.querySelector('.sym-m').textContent=mkt;
   closeDD();genCandles();
 }));
+// === Indicator panel ===
+function toggleInd(){
+  const p=document.getElementById('indPanel'),o=document.getElementById('indOverlay');
+  const open=!p.classList.contains('show');
+  p.classList.toggle('show');o.classList.toggle('show');
+  if(open){const inp=document.getElementById('indInput');inp.value='';inp.focus();filterInd('');}
+}
+function closeInd(e){
+  if(e)e.stopPropagation();
+  document.getElementById('indPanel').classList.remove('show');
+  document.getElementById('indOverlay').classList.remove('show');
+}
+function filterInd(q){
+  q=q.toLowerCase();
+  document.querySelectorAll('.ind-item').forEach(el=>{
+    const t=(el.dataset.ind+' '+el.textContent).toLowerCase();
+    el.style.display=t.includes(q)?'':'none';
+  });
+  document.querySelectorAll('.ind-panel .dd-section').forEach(el=>{
+    let next=el.nextElementSibling,vis=false;
+    while(next&&!next.classList.contains('dd-section')){
+      if(next.classList.contains('ind-item')&&next.style.display!=='none')vis=true;
+      next=next.nextElementSibling;
+    }
+    el.style.display=vis?'':'none';
+  });
+}
+document.getElementById('indInput')?.addEventListener('input',e=>filterInd(e.target.value));
+document.querySelectorAll('.ind-item').forEach(el=>el.addEventListener('click',function(e){
+  e.stopPropagation();
+  this.classList.toggle('on');
+  updateIndTags();
+}));
+function updateIndTags(){
+  const active=[];
+  document.querySelectorAll('.ind-item.on').forEach(el=>active.push(el.dataset.ind));
+  document.querySelector('.ind-count').textContent=active.length;
+  document.getElementById('indTags').innerHTML=active.map(n=>`<span class="ind-tag">${n}</span>`).join('');
+}
+updateIndTags();
+
 genCandles();genVP();genHM();
 </script>
 </body>
