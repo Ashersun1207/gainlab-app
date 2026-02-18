@@ -34,14 +34,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 /* ═══ MAIN ═══ */
 .mn{flex:1;display:flex;overflow:hidden;min-height:0}
 
-/* Left Add-Widget Bar */
-.lbar{width:44px;background:var(--bg1);border-right:1px solid var(--brd);display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:1px;flex-shrink:0}
+/* Left Sidebar — icon strip + expandable sub-panel */
+.sidebar-wrap{display:flex;flex-shrink:0;height:100%}
+.lbar{width:44px;background:var(--bg1);border-right:1px solid var(--brd);display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:1px;flex-shrink:0;z-index:10}
 .lb{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;color:var(--t3);background:0;border:0;position:relative;transition:.15s}
 .lb:hover{background:var(--bgH);color:var(--t1)}
 .lb.on{background:rgba(37,99,235,.15);color:var(--acc)}
 .lb .tp{position:absolute;left:110%;top:50%;transform:translateY(-50%);padding:2px 6px;border-radius:3px;background:var(--bg3);border:1px solid var(--brd);color:var(--t1);font-size:9px;white-space:nowrap;opacity:0;pointer-events:none;transition:.15s;z-index:99}
 .lb:hover .tp{opacity:1}
 .lsep{width:20px;height:1px;background:var(--brd);margin:4px 0}
+
+/* Sub-panel (expandable) */
+.sub-panel{width:0;overflow:hidden;background:var(--bg1);border-right:1px solid transparent;transition:width .2s ease,border-color .2s ease;display:flex;flex-direction:column}
+.sub-panel.open{width:180px;border-right-color:var(--brd)}
+.sub-panel-header{padding:8px 10px 6px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sub-panel-title{font-size:11px;font-weight:700;color:var(--t1)}
+.sub-panel-close{background:0;border:0;color:var(--t3);cursor:pointer;font-size:12px;padding:2px;border-radius:3px;transition:.15s}
+.sub-panel-close:hover{background:var(--bgH);color:var(--t1)}
+.sub-panel-list{flex:1;overflow-y:auto;padding:0 6px 8px}
+.sub-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:5px;cursor:pointer;transition:.12s;font-size:11px;color:var(--t2)}
+.sub-item:hover{background:var(--bgH);color:var(--t1)}
+.sub-item-icon{font-size:13px;flex-shrink:0;width:18px;text-align:center}
+.sub-item-text{display:flex;flex-direction:column;min-width:0}
+.sub-item-name{font-weight:600;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub-item-desc{font-size:8px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sub-sep{height:1px;background:var(--brd);margin:4px 8px}
 
 /* Content */
 .ct{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
@@ -247,21 +264,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 <!-- ═══ MAIN ═══ -->
 <div class="mn">
 
-  <!-- Left: Add Widget Bar -->
-  <div class="lbar" style="position:relative">
+  <!-- Left: Sidebar wrap (icon bar + expandable sub-panel) -->
+  <div class="sidebar-wrap" style="position:relative">
     <span class="t-label" style="top:4px;left:48px;z-index:500">T2: Sidebar</span>
-    <button class="lb" style="font-size:10px;color:var(--t2);font-weight:700" title="Add Widget">
-      <span style="background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">GL</span>
-    </button>
-    <div class="lsep"></div>
-    <button class="lb on">📈<span class="tp">K线图</span></button>
-    <button class="lb">🔥<span class="tp">板块热力图</span></button>
-    <button class="lb">💰<span class="tp">基本面</span></button>
-    <button class="lb">📐<span class="tp">多资产叠加</span></button>
-    <div class="lsep"></div>
-    <button class="lb">💬<span class="tp">AI 对话</span></button>
-    <div style="flex:1"></div>
-    <button class="lb" style="font-size:18px;color:var(--acc)">＋<span class="tp">添加 Widget</span></button>
+    <div class="lbar">
+      <button class="lb" style="font-size:10px;color:var(--t2);font-weight:700" title="GainLab">
+        <span style="background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">GL</span>
+      </button>
+      <div class="lsep"></div>
+      <button class="lb on" data-panel="charts" onclick="togglePanel('charts',this)">📈<span class="tp">图表</span></button>
+      <button class="lb" data-panel="heatmap" onclick="togglePanel('heatmap',this)">🔥<span class="tp">热力图</span></button>
+      <button class="lb" data-panel="fundamentals" onclick="togglePanel('fundamentals',this)">💰<span class="tp">基本面</span></button>
+      <button class="lb" data-panel="overlay" onclick="togglePanel('overlay',this)">📐<span class="tp">叠加对比</span></button>
+      <div class="lsep"></div>
+      <button class="lb" data-panel="ai" onclick="togglePanel('ai',this)">💬<span class="tp">AI 对话</span></button>
+      <div style="flex:1"></div>
+      <button class="lb" data-panel="all" onclick="togglePanel('all',this)" style="font-size:18px;color:var(--acc)">＋<span class="tp">添加 Widget</span></button>
+    </div>
+    <!-- Expandable sub-panel -->
+    <div class="sub-panel" id="subPanel">
+      <div class="sub-panel-header">
+        <span class="sub-panel-title" id="subPanelTitle">图表</span>
+        <button class="sub-panel-close" onclick="closePanel()">✕</button>
+      </div>
+      <div class="sub-panel-list" id="subPanelList"></div>
+    </div>
   </div>
 
   <!-- Content -->
@@ -591,6 +618,102 @@ document.querySelectorAll('.pb').forEach(btn=>btn.addEventListener('click',funct
 }));
 
 genCandles();genVP();genHM();
+
+// ═══ SIDEBAR SUB-PANEL ═══
+const panelData={
+  charts:{
+    title:'图表',
+    items:[
+      {icon:'📈',name:'K线图',desc:'蜡烛图 + 技术指标'},
+      {icon:'📉',name:'分时图',desc:'实时分时走势'},
+      {icon:'📊',name:'深度图',desc:'买卖盘口深度'},
+      {sep:true},
+      {icon:'🕯️',name:'Heikin-Ashi',desc:'平均K线'},
+      {icon:'📐',name:'Renko',desc:'砖形图'},
+    ]
+  },
+  heatmap:{
+    title:'热力图',
+    items:[
+      {icon:'🔥',name:'Crypto 热力图',desc:'加密货币涨跌分布'},
+      {icon:'🏭',name:'板块热力图',desc:'A股/美股板块'},
+      {icon:'📊',name:'涨跌幅排行',desc:'Top gainers/losers'},
+      {sep:true},
+      {icon:'🌍',name:'全球市场',desc:'各国指数概览'},
+    ]
+  },
+  fundamentals:{
+    title:'基本面',
+    items:[
+      {icon:'💰',name:'财务概览',desc:'P/E, P/B, ROE 等'},
+      {icon:'📋',name:'财报对比',desc:'多标的横向对比'},
+      {icon:'💵',name:'现金流',desc:'经营/投资/筹资'},
+      {sep:true},
+      {icon:'📰',name:'新闻摘要',desc:'相关新闻聚合'},
+    ]
+  },
+  overlay:{
+    title:'叠加对比',
+    items:[
+      {icon:'📐',name:'多资产叠加',desc:'价格走势对比'},
+      {icon:'📏',name:'相关性矩阵',desc:'资产相关性热力图'},
+      {icon:'⚖️',name:'比率图',desc:'A/B 价格比率'},
+    ]
+  },
+  ai:{
+    title:'AI 助手',
+    items:[
+      {icon:'💬',name:'对话面板',desc:'自然语言交互'},
+      {icon:'🔍',name:'智能分析',desc:'AI 技术分析'},
+      {icon:'📝',name:'研报生成',desc:'自动生成分析报告'},
+    ]
+  },
+  all:{
+    title:'所有组件',
+    items:[
+      {icon:'📈',name:'K线图',desc:'蜡烛图 + 技术指标'},
+      {icon:'📉',name:'分时图',desc:'实时分时走势'},
+      {icon:'📊',name:'深度图',desc:'买卖盘口深度'},
+      {sep:true},
+      {icon:'🔥',name:'Crypto 热力图',desc:'加密货币涨跌分布'},
+      {icon:'🏭',name:'板块热力图',desc:'A股/美股板块'},
+      {icon:'📊',name:'涨跌幅排行',desc:'Top gainers/losers'},
+      {sep:true},
+      {icon:'💰',name:'财务概览',desc:'P/E, P/B, ROE 等'},
+      {icon:'📋',name:'财报对比',desc:'多标的横向对比'},
+      {sep:true},
+      {icon:'📐',name:'多资产叠加',desc:'价格走势对比'},
+      {icon:'💬',name:'对话面板',desc:'自然语言交互'},
+    ]
+  }
+};
+let activePanel=null;
+function togglePanel(id,btn){
+  const panel=document.getElementById('subPanel');
+  // If same panel clicked, close it
+  if(activePanel===id){closePanel();return;}
+  // Update active button
+  document.querySelectorAll('.lb[data-panel]').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  // Populate and open
+  const data=panelData[id];
+  if(!data)return;
+  document.getElementById('subPanelTitle').textContent=data.title;
+  const list=document.getElementById('subPanelList');
+  list.innerHTML=data.items.map(item=>{
+    if(item.sep)return'<div class="sub-sep"></div>';
+    return`<div class="sub-item"><span class="sub-item-icon">${item.icon}</span><div class="sub-item-text"><span class="sub-item-name">${item.name}</span><span class="sub-item-desc">${item.desc}</span></div></div>`;
+  }).join('');
+  panel.classList.add('open');
+  activePanel=id;
+}
+function closePanel(){
+  document.getElementById('subPanel').classList.remove('open');
+  document.querySelectorAll('.lb[data-panel]').forEach(b=>b.classList.remove('on'));
+  // Restore default K-line as active
+  document.querySelector('.lb[data-panel="charts"]')?.classList.add('on');
+  activePanel=null;
+}
 </script>
 </body>
 </html>
