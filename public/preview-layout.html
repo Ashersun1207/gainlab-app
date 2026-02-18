@@ -34,38 +34,50 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 /* ═══ MAIN ═══ */
 .mn{flex:1;display:flex;overflow:hidden;min-height:0}
 
-/* Left Sidebar — Koyfin-style icon strip + expandable sub-panel */
-.sidebar-wrap{display:flex;flex-shrink:0;height:100%}
-.lbar{width:38px;background:var(--bg1);border-right:1px solid var(--brd);display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:2px;flex-shrink:0;z-index:10}
-.lb{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);background:0;border:0;position:relative;transition:.12s}
-.lb svg{width:16px;height:16px}
-.lb:hover{background:var(--bgH);color:var(--t1)}
-.lb.on{background:var(--acc);color:#fff}
-.lb .tp{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);padding:3px 8px;border-radius:4px;background:#1a1a2e;border:1px solid var(--brd2);color:var(--t1);font-size:10px;white-space:nowrap;opacity:0;pointer-events:none;transition:.12s;z-index:99;box-shadow:0 4px 12px rgba(0,0,0,.4)}
-.lb:hover .tp{opacity:1}
-.lsep{width:18px;height:1px;background:var(--brd);margin:4px 0}
+/* ═══ SIDEBAR — Koyfin single-panel, collapsed/expanded ═══ */
+.sidebar{width:42px;background:var(--bg1);border-right:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0;z-index:10;transition:width .2s ease;overflow:hidden}
+.sidebar.open{width:250px}
 
-/* Sub-panel (expandable) — Koyfin style */
-.sub-panel{width:0;overflow:hidden;background:var(--bg1);border-right:1px solid transparent;transition:width .2s ease,border-color .2s ease;display:flex;flex-direction:column}
-.sub-panel.open{width:240px;border-right-color:var(--brd)}
-.sub-panel-header{padding:10px 14px 8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid var(--brd)}
-.sub-panel-title{font-size:13px;font-weight:700;color:var(--t1)}
-.sub-panel-close{background:0;border:0;color:var(--t3);cursor:pointer;font-size:11px;padding:4px;border-radius:3px;transition:.12s}
-.sub-panel-close:hover{background:var(--bgH);color:var(--t1)}
-.sub-panel-list{flex:1;overflow-y:auto;padding:4px 0 8px}
-.sub-section{font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;padding:14px 14px 6px;user-select:none}
-.sub-section:first-child{padding-top:8px}
-.sub-item{display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:0;cursor:pointer;transition:.1s;font-size:12px;color:var(--t2);position:relative;margin:0}
-.sub-item:hover{background:var(--bgH);color:var(--t1)}
-.sub-item.active{color:var(--t1);background:rgba(37,99,235,.08)}
-.sub-item-icon{font-size:10px;flex-shrink:0;width:18px;height:18px;display:flex;align-items:center;justify-content:center;color:var(--t3);font-weight:600;font-family:'SF Mono',monospace}
-.sub-item-text{display:flex;flex-direction:column;min-width:0;flex:1}
-.sub-item-name{font-weight:500;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sub-item-desc{display:none}
-.sub-item-badge{font-size:8px;font-weight:700;color:var(--t3);background:var(--bg3);padding:1px 5px;border-radius:3px;border:1px solid var(--brd);letter-spacing:.3px;flex-shrink:0}
-.sub-sep{height:1px;background:var(--brd);margin:4px 14px}
+/* Top: hamburger + logo row */
+.sb-top{height:40px;display:flex;align-items:center;padding:0 0 0 3px;flex-shrink:0;border-bottom:1px solid var(--brd);gap:8px;overflow:hidden}
+.sb-toggle{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:0;background:0;color:var(--t2);cursor:pointer;border-radius:6px;transition:.12s;flex-shrink:0}
+.sb-toggle:hover{background:var(--bgH);color:var(--t1)}
+.sb-toggle svg{width:18px;height:18px}
+.sb-logo{font-size:14px;font-weight:700;background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;opacity:0;transition:opacity .15s}
+.sidebar.open .sb-logo{opacity:1}
 
-/* CSS icon classes removed — using inline SVG now */
+/* Nav items */
+.sb-nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:4px 0}
+.sb-section{font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;padding:12px 0 4px 14px;user-select:none;white-space:nowrap;overflow:hidden;height:0;opacity:0;transition:height .15s,opacity .15s,padding .15s}
+.sidebar.open .sb-section{height:auto;opacity:1;padding:12px 0 4px 14px}
+.sb-section:first-child{padding-top:6px}
+.sidebar.open .sb-section:first-child{padding-top:6px}
+
+.sb-item{display:flex;align-items:center;height:36px;padding:0 3px;cursor:pointer;transition:.1s;color:var(--t2);position:relative;overflow:hidden;white-space:nowrap;gap:0}
+.sb-item:hover{background:var(--bgH);color:var(--t1)}
+.sb-item.on{color:var(--t1)}
+
+/* Icon wrapper — always centered in 42px collapsed, left-aligned in expanded */
+.sb-ico{width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border-radius:6px;transition:.12s}
+.sb-ico svg{width:16px;height:16px}
+.sb-item.on .sb-ico{background:var(--acc);color:#fff}
+
+/* Text + badge — hidden when collapsed, visible when open */
+.sb-text{font-size:12px;font-weight:500;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;opacity:0;transition:opacity .15s;margin-left:6px}
+.sidebar.open .sb-text{opacity:1}
+.sb-badge{font-size:8px;font-weight:700;color:var(--t3);background:var(--bg3);padding:1px 5px;border-radius:3px;border:1px solid var(--brd);letter-spacing:.3px;flex-shrink:0;opacity:0;transition:opacity .15s;margin-right:8px}
+.sidebar.open .sb-badge{opacity:1}
+
+/* Separator */
+.sb-sep{height:1px;margin:4px 10px;background:var(--brd)}
+
+/* Tooltip (collapsed only) */
+.sb-item .sb-tip{position:absolute;left:46px;top:50%;transform:translateY(-50%);padding:3px 8px;border-radius:4px;background:#1a1a2e;border:1px solid var(--brd2);color:var(--t1);font-size:10px;white-space:nowrap;opacity:0;pointer-events:none;transition:.12s;z-index:99;box-shadow:0 4px 12px rgba(0,0,0,.4)}
+.sb-item:hover .sb-tip{opacity:1}
+.sidebar.open .sb-item .sb-tip{opacity:0 !important;pointer-events:none}
+
+/* Bottom spacer + add button */
+.sb-bottom{flex-shrink:0;padding:4px 3px 8px;border-top:1px solid var(--brd)}
 
 /* Content */
 .ct{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
@@ -233,9 +245,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:768px){
   .cp{display:none} /* 手机隐藏聊天面板 */
-  .lbar{width:34px}
-  .lb{width:26px;height:26px}
-  .lb svg{width:14px;height:14px}
+  .sidebar{width:36px}
+  .sidebar.open{width:220px}
+  .sb-ico svg{width:14px;height:14px}
   .wg{grid-template-columns:1fr;height:auto;max-height:300px;overflow-y:auto}
   .kwh-row{flex-wrap:wrap;gap:2px}
   .sym-t{font-size:11px}
@@ -248,7 +260,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
   .ind-panel{width:calc(100vw - 60px)}
 }
 @media(max-width:480px){
-  .lbar{display:none}
+  .sidebar{display:none}
   .hdr{padding:0 6px;gap:6px}
   .pill{font-size:9px;padding:2px 5px}
 }
@@ -277,30 +289,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 <!-- ═══ MAIN ═══ -->
 <div class="mn">
 
-  <!-- Left: Sidebar wrap (icon bar + expandable sub-panel) -->
-  <div class="sidebar-wrap">
-    <div class="lbar" style="position:relative">
-      <span class="t-label" style="bottom:4px;left:50%;transform:translateX(-50%);font-size:7px;padding:1px 4px">T2</span>
-      <button class="lb" title="GainLab" style="margin-bottom:2px">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12V7l3-3 3 3 4-5v10" stroke="url(#gl)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="gl" x1="2" y1="4" x2="14" y2="12"><stop stop-color="#60a5fa"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs></svg>
+  <!-- Left: Single sidebar, collapsed/expanded (Koyfin style) -->
+  <div class="sidebar" id="sidebar" style="position:relative">
+    <span class="t-label" style="bottom:4px;left:50%;transform:translateX(-50%);font-size:7px;padding:1px 4px;z-index:20">T2</span>
+    <!-- Top bar: hamburger + logo -->
+    <div class="sb-top">
+      <button class="sb-toggle" onclick="toggleSidebar()" id="sbToggle">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="4.5" x2="15" y2="4.5"/><line x1="3" y1="9" x2="15" y2="9"/><line x1="3" y1="13.5" x2="15" y2="13.5"/></svg>
       </button>
-      <div class="lsep"></div>
-      <button class="lb on" data-panel="charts" onclick="togglePanel('charts',this)"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="9" width="3" height="6" rx=".5"/><rect x="5.5" y="5" width="3" height="10" rx=".5"/><rect x="10" y="1" width="3" height="14" rx=".5"/></svg><span class="tp" data-i18n="sb_charts">图表</span></button>
-      <button class="lb" data-panel="heatmap" onclick="togglePanel('heatmap',this)"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6.5" height="6.5" rx="1"/><rect x="8.5" y="1" width="6.5" height="6.5" rx="1" opacity=".5"/><rect x="1" y="8.5" width="6.5" height="6.5" rx="1" opacity=".5"/><rect x="8.5" y="8.5" width="6.5" height="6.5" rx="1" opacity=".3"/></svg><span class="tp" data-i18n="sb_heatmap">热力图</span></button>
-      <button class="lb" data-panel="fundamentals" onclick="togglePanel('fundamentals',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1h10a1 1 0 011 1v12a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1zm1 3h8v1.5H4V4zm0 3h5v1.5H4V7zm0 3h7v1.5H4V10z"/></svg><span class="tp" data-i18n="sb_fund">基本面</span></button>
-      <button class="lb" data-panel="overlay" onclick="togglePanel('overlay',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="9" height="9" rx="1.5"/><rect x="6" y="6" width="9" height="9" rx="1.5"/></svg><span class="tp" data-i18n="sb_overlay">叠加对比</span></button>
-      <div class="lsep"></div>
-      <button class="lb" data-panel="ai" onclick="togglePanel('ai',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-3 3V3a1 1 0 011-1z"/></svg><span class="tp" data-i18n="sb_ai">AI 对话</span></button>
-      <div style="flex:1"></div>
-      <button class="lb" data-panel="all" onclick="togglePanel('all',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7 2h2v5h5v2H9v5H7V9H2V7h5V2z"/></svg><span class="tp" data-i18n="sb_add">添加 Widget</span></button>
+      <span class="sb-logo">GainLab</span>
     </div>
-    <!-- Expandable sub-panel -->
-    <div class="sub-panel" id="subPanel">
-      <div class="sub-panel-header">
-        <span class="sub-panel-title" id="subPanelTitle">图表</span>
-        <button class="sub-panel-close" onclick="closePanel()">✕</button>
+    <!-- Nav list -->
+    <div class="sb-nav" id="sbNav"></div>
+    <!-- Bottom: add widget -->
+    <div class="sb-bottom">
+      <div class="sb-item" onclick="alert('Add widget')">
+        <div class="sb-ico"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7 2h2v5h5v2H9v5H7V9H2V7h5V2z"/></svg></div>
+        <span class="sb-text" data-i18n="sb_add">添加 Widget</span>
+        <span class="sb-tip" data-i18n="sb_add">添加 Widget</span>
       </div>
-      <div class="sub-panel-list" id="subPanelList"></div>
     </div>
   </div>
 
@@ -632,107 +639,66 @@ document.querySelectorAll('.pb').forEach(btn=>btn.addEventListener('click',funct
 
 genCandles();genVP();genHM();
 
-// ═══ SIDEBAR SUB-PANEL ═══
-function getPanelData(){return{
-  charts:{
-    titleKey:'sp_charts',
-    items:[
-      {sectionKey:'sec_candle'},
-      {icon:'K',nameKey:'it_kline',badge:'CK'},
-      {icon:'HA',nameKey:'it_ha'},
-      {icon:'R',nameKey:'it_renko'},
-      {sectionKey:'sec_trend'},
-      {icon:'T',nameKey:'it_tick',badge:'TK'},
-      {icon:'D',nameKey:'it_depth',badge:'DP'},
-    ]
-  },
-  heatmap:{
-    titleKey:'sp_heatmap',
-    items:[
-      {sectionKey:'sec_market'},
-      {icon:'C',nameKey:'it_crypto',badge:'HM'},
-      {icon:'S',nameKey:'it_sector',badge:'SC'},
-      {icon:'▲▼',nameKey:'it_rank',badge:'GL'},
-      {sectionKey:'sec_macro'},
-      {icon:'G',nameKey:'it_global'},
-    ]
-  },
-  fundamentals:{
-    titleKey:'sp_fund',
-    items:[
-      {sectionKey:'sec_valuation'},
-      {icon:'$',nameKey:'it_overview',badge:'FD'},
-      {icon:'vs',nameKey:'it_compare',badge:'CMP'},
-      {sectionKey:'sec_finance'},
-      {icon:'CF',nameKey:'it_cashflow'},
-      {sectionKey:'sec_news'},
-      {icon:'N',nameKey:'it_news',badge:'NW'},
-    ]
-  },
-  overlay:{
-    titleKey:'sp_overlay',
-    items:[
-      {sectionKey:'sec_compare'},
-      {icon:'⫽',nameKey:'it_multi',badge:'OV'},
-      {icon:'ρ',nameKey:'it_corr',badge:'CR'},
-      {icon:'÷',nameKey:'it_ratio'},
-    ]
-  },
-  ai:{
-    titleKey:'sp_ai',
-    items:[
-      {sectionKey:'sec_interact'},
-      {icon:'▷',nameKey:'it_chat_panel',badge:'AI'},
-      {icon:'fx',nameKey:'it_ai_analysis'},
-      {sectionKey:'sec_output'},
-      {icon:'∑',nameKey:'it_report'},
-    ]
-  },
-  all:{
-    titleKey:'sp_all',
-    items:[
-      {sectionKey:'sec_charts'},
-      {icon:'K',nameKey:'it_kline',badge:'CK'},
-      {icon:'T',nameKey:'it_tick',badge:'TK'},
-      {icon:'D',nameKey:'it_depth',badge:'DP'},
-      {sectionKey:'sec_heatmap'},
-      {icon:'C',nameKey:'it_crypto',badge:'HM'},
-      {icon:'S',nameKey:'it_sector',badge:'SC'},
-      {icon:'▲▼',nameKey:'it_rank',badge:'GL'},
-      {sectionKey:'sec_fund'},
-      {icon:'$',nameKey:'it_overview',badge:'FD'},
-      {icon:'vs',nameKey:'it_compare',badge:'CMP'},
-      {sectionKey:'sec_other'},
-      {icon:'⫽',nameKey:'it_multi',badge:'OV'},
-      {icon:'▷',nameKey:'it_chat_panel',badge:'AI'},
-    ]
-  }
-};};
-let activePanel=null;
-function togglePanel(id,btn){
-  const panel=document.getElementById('subPanel');
-  if(activePanel===id){closePanel();return;}
-  document.querySelectorAll('.lb[data-panel]').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  const pd=getPanelData();
-  const data=pd[id];
-  if(!data)return;
-  document.getElementById('subPanelTitle').textContent=t(data.titleKey);
-  const list=document.getElementById('subPanelList');
-  list.innerHTML=data.items.map(item=>{
-    if(item.sectionKey)return`<div class="sub-section">${t(item.sectionKey)}</div>`;
-    const badge=item.badge?`<span class="sub-item-badge">${item.badge}</span>`:'';
-    return`<div class="sub-item"><span class="sub-item-icon">${item.icon}</span><div class="sub-item-text"><span class="sub-item-name">${t(item.nameKey)}</span></div>${badge}</div>`;
+// ═══ SIDEBAR (single panel, Koyfin style) ═══
+const sidebarItems=[
+  // Each item: {section, nameKey, icon(svg string), badge, id}
+  {sectionKey:'sec_charts'},
+  {id:'kline',nameKey:'it_kline',badge:'CK',on:true,
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="9" width="3" height="6" rx=".5"/><rect x="5.5" y="5" width="3" height="10" rx=".5"/><rect x="10" y="1" width="3" height="14" rx=".5"/></svg>'},
+  {id:'tick',nameKey:'it_tick',badge:'TK',
+   svg:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,12 4,8 7,10 10,4 13,6 15,2"/></svg>'},
+  {id:'depth',nameKey:'it_depth',badge:'DP',
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor" opacity=".85"><path d="M1 14V8l3-1 3 2 3-4 4-2v11z" opacity=".3"/><path d="M1 14V10l3 1 3-3 3 2 4-4v8z" opacity=".5"/></svg>'},
+  {sectionKey:'sec_heatmap'},
+  {id:'heatmap',nameKey:'it_crypto',badge:'HM',
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6.5" height="6.5" rx="1"/><rect x="8.5" y="1" width="6.5" height="6.5" rx="1" opacity=".5"/><rect x="1" y="8.5" width="6.5" height="6.5" rx="1" opacity=".5"/><rect x="8.5" y="8.5" width="6.5" height="6.5" rx="1" opacity=".3"/></svg>'},
+  {id:'sector',nameKey:'it_sector',badge:'SC',
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="4" height="4" rx=".5"/><rect x="6" y="1" width="4" height="4" rx=".5" opacity=".7"/><rect x="11" y="1" width="4" height="4" rx=".5" opacity=".4"/><rect x="1" y="6" width="4" height="4" rx=".5" opacity=".7"/><rect x="6" y="6" width="4" height="4" rx=".5" opacity=".5"/><rect x="11" y="6" width="4" height="4" rx=".5" opacity=".3"/><rect x="1" y="11" width="14" height="4" rx=".5" opacity=".2"/></svg>'},
+  {id:'rank',nameKey:'it_rank',badge:'GL',
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l2.5 4H1.5L4 2z" opacity=".8"/><path d="M12 14l-2.5-4h5L12 14z" opacity=".5"/><rect x="7" y="6" width="2" height="4" rx=".5" opacity=".4"/></svg>'},
+  {sectionKey:'sec_fund'},
+  {id:'fund',nameKey:'it_overview',badge:'FD',
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1h10a1 1 0 011 1v12a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1zm1 3h8v1.5H4V4zm0 3h5v1.5H4V7zm0 3h7v1.5H4V10z"/></svg>'},
+  {id:'compare',nameKey:'it_compare',badge:'CMP',
+   svg:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="9" height="9" rx="1.5"/><rect x="6" y="6" width="9" height="9" rx="1.5"/></svg>'},
+  {sep:true},
+  {sectionKey:'sec_other'},
+  {id:'ai',nameKey:'it_chat_panel',badge:'AI',
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-3 3V3a1 1 0 011-1z"/></svg>'},
+  {id:'analysis',nameKey:'it_ai_analysis',
+   svg:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></svg>'},
+  {id:'report',nameKey:'it_report',
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 1h5l4 4v9a1 1 0 01-1 1H4a1 1 0 01-1-1V2a1 1 0 011-1zm4.5.5V5H12"/><rect x="5" y="7" width="6" height="1" rx=".3"/><rect x="5" y="9.5" width="4" height="1" rx=".3"/></svg>'},
+];
+
+function renderSidebar(){
+  const nav=document.getElementById('sbNav');
+  nav.innerHTML=sidebarItems.map(item=>{
+    if(item.sep)return'<div class="sb-sep"></div>';
+    if(item.sectionKey)return`<div class="sb-section">${t(item.sectionKey)}</div>`;
+    const badge=item.badge?`<span class="sb-badge">${item.badge}</span>`:'';
+    const cls=item.on?'sb-item on':'sb-item';
+    return`<div class="${cls}" data-id="${item.id}">
+      <div class="sb-ico">${item.svg}</div>
+      <span class="sb-text">${t(item.nameKey)}</span>
+      ${badge}
+      <span class="sb-tip">${t(item.nameKey)}</span>
+    </div>`;
   }).join('');
-  panel.classList.add('open');
-  activePanel=id;
+  // Click handlers
+  nav.querySelectorAll('.sb-item').forEach(el=>el.addEventListener('click',function(){
+    nav.querySelectorAll('.sb-item').forEach(e=>e.classList.remove('on'));
+    this.classList.add('on');
+  }));
 }
-function closePanel(){
-  document.getElementById('subPanel').classList.remove('open');
-  document.querySelectorAll('.lb[data-panel]').forEach(b=>b.classList.remove('on'));
-  document.querySelector('.lb[data-panel="charts"]')?.classList.add('on');
-  activePanel=null;
+
+let sidebarOpen=false;
+function toggleSidebar(){
+  sidebarOpen=!sidebarOpen;
+  document.getElementById('sidebar').classList.toggle('open',sidebarOpen);
 }
+
+renderSidebar();
 
 // ═══ i18n SYSTEM ═══
 const i18n={
@@ -836,13 +802,8 @@ function applyLang(){
   });
   // Lang button
   document.getElementById('langBtn').textContent=curLang==='zh'?'EN':'中';
-  // Re-render active sub-panel if open
-  if(activePanel){
-    const btn=document.querySelector(`.lb[data-panel="${activePanel}"]`);
-    const id=activePanel;
-    activePanel=null; // force re-render
-    togglePanel(id,btn);
-  }
+  // Re-render sidebar nav
+  renderSidebar();
 }
 
 function toggleLang(){
