@@ -2,10 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { init, dispose, registerOverlay } from './KLineChart/index';
 import type { KLineData, Chart } from './klinechart';
 import { wrbHighlightTemplate } from './overlays/wrbHighlight';
+import { volumeProfileTemplate } from './overlays/volumeProfile';
 import { detectWRB } from '../WRBWidget/detectWRB';
+import { calculateVP } from '../VolumeProfileWidget/calculateVP';
 
-// Register WRB highlight overlay template once
+// Register overlay templates once
 registerOverlay(wrbHighlightTemplate);
+registerOverlay(volumeProfileTemplate);
 
 // BTC 30 条日线 fallback 数据（Binance 被墙时使用）
 const SAMPLE_DATA: KLineData[] = [
@@ -46,6 +49,7 @@ interface KLineWidgetProps {
   data?: KLineData[];
   indicators?: string[];
   showWRB?: boolean;
+  showVP?: boolean;
 }
 
 async function fetchBinanceKline(symbol: string): Promise<KLineData[] | null> {
@@ -75,6 +79,7 @@ export function KLineWidget({
   data: externalData,
   indicators = ['RSI'],
   showWRB = false,
+  showVP = false,
 }: KLineWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Chart | null>(null);
@@ -185,6 +190,33 @@ export function KLineWidget({
       chart.removeOverlay({ name: 'wrb_highlight' });
     }
   }, [showWRB, externalData]);
+
+  // ── Volume Profile overlay effect ──
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+
+    if (showVP) {
+      const data = externalData ?? (chart.getDataList?.() as KLineData[] | undefined) ?? [];
+      if (data.length > 0) {
+        const vpData = calculateVP(data, 50);
+
+        // 用一个 anchor point（图表中间价位）创建 overlay
+        const midPrice = (vpData.vah + vpData.val) / 2 || data[0].close;
+        const midTs = data[Math.floor(data.length / 2)].timestamp;
+
+        chart.createOverlay({
+          name: 'volume_profile',
+          lock: true,
+          visible: true,
+          points: [{ timestamp: midTs, value: midPrice }],
+          extendData: { vpData },
+        });
+      }
+    } else {
+      chart.removeOverlay({ name: 'volume_profile' });
+    }
+  }, [showVP, externalData]);
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', background: '#12122a' }}>

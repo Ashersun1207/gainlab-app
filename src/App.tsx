@@ -228,6 +228,7 @@ function App() {
                 data={effectiveKlineData}
                 indicators={activeIndicators}
                 showWRB={drawerTool === 'wrb'}
+                showVP={drawerTool === 'volume_profile'}
               />
             </Suspense>
           </ErrorBoundary>
@@ -370,6 +371,7 @@ function App() {
                 data={effectiveKlineData}
                 indicators={activeIndicators}
                 showWRB={drawerTool === 'wrb'}
+                showVP={drawerTool === 'volume_profile'}
               />
             </Suspense>
           </ErrorBoundary>
