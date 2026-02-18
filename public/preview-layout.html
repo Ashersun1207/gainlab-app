@@ -278,12 +278,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
   <div class="pills">
     <div class="pill on"><div class="dot dg"></div>Crypto</div>
     <div class="pill"><div class="dot dr"></div>US</div>
-    <div class="pill"><div class="dot dr"></div>A股</div>
-    <div class="pill"><div class="dot dg"></div>贵金属</div>
+    <div class="pill"><div class="dot dr"></div><span data-i18n="pill_ashare">A股</span></div>
+    <div class="pill"><div class="dot dg"></div><span data-i18n="pill_metal">贵金属</span></div>
   </div>
   <div class="spc"></div>
   <!-- hsep removed with ticker -->
   <div class="hb" style="font-size:10px">◐</div>
+  <div class="hb" id="langBtn" onclick="toggleLang()" style="font-size:10px;font-weight:600;letter-spacing:.3px;min-width:26px;justify-content:center">EN</div>
   <div class="hb ac">Agent</div>
 </div>
 
@@ -298,14 +299,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
         <span style="background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">GL</span>
       </button>
       <div class="lsep"></div>
-      <button class="lb on" data-panel="charts" onclick="togglePanel('charts',this)"><span class="ico ico-chart"></span><span class="tp">图表</span></button>
-      <button class="lb" data-panel="heatmap" onclick="togglePanel('heatmap',this)"><span class="ico ico-heat"></span><span class="tp">热力图</span></button>
-      <button class="lb" data-panel="fundamentals" onclick="togglePanel('fundamentals',this)"><span class="ico ico-fund"></span><span class="tp">基本面</span></button>
-      <button class="lb" data-panel="overlay" onclick="togglePanel('overlay',this)"><span class="ico ico-overlay"></span><span class="tp">叠加对比</span></button>
+      <button class="lb on" data-panel="charts" onclick="togglePanel('charts',this)"><span class="ico ico-chart"></span><span class="tp" data-i18n="sb_charts">图表</span></button>
+      <button class="lb" data-panel="heatmap" onclick="togglePanel('heatmap',this)"><span class="ico ico-heat"></span><span class="tp" data-i18n="sb_heatmap">热力图</span></button>
+      <button class="lb" data-panel="fundamentals" onclick="togglePanel('fundamentals',this)"><span class="ico ico-fund"></span><span class="tp" data-i18n="sb_fund">基本面</span></button>
+      <button class="lb" data-panel="overlay" onclick="togglePanel('overlay',this)"><span class="ico ico-overlay"></span><span class="tp" data-i18n="sb_overlay">叠加对比</span></button>
       <div class="lsep"></div>
-      <button class="lb" data-panel="ai" onclick="togglePanel('ai',this)"><span class="ico ico-chat"></span><span class="tp">AI 对话</span></button>
+      <button class="lb" data-panel="ai" onclick="togglePanel('ai',this)"><span class="ico ico-chat"></span><span class="tp" data-i18n="sb_ai">AI 对话</span></button>
       <div style="flex:1"></div>
-      <button class="lb" data-panel="all" onclick="togglePanel('all',this)" style="color:var(--acc)"><span class="ico ico-plus"></span><span class="tp">添加 Widget</span></button>
+      <button class="lb" data-panel="all" onclick="togglePanel('all',this)" style="color:var(--acc)"><span class="ico ico-plus"></span><span class="tp" data-i18n="sb_add">添加 Widget</span></button>
     </div>
     <!-- Expandable sub-panel -->
     <div class="sub-panel" id="subPanel">
@@ -334,7 +335,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
             <span class="sym-v">▾</span>
             <div class="dd-overlay" id="ddOverlay" onclick="closeDD(event)"></div>
             <div class="dd" id="dd">
-              <input type="text" placeholder="搜索标的 / Search symbol..." id="ddInput">
+              <input type="text" data-i18n-ph="ph_sym_search" placeholder="搜索标的 / Search symbol..." id="ddInput">
               <div class="dd-section">Crypto</div>
               <div class="ddi" data-sym="BTCUSDT" data-mkt="Crypto"><div><span class="dn_">BTC/USDT</span><span class="dm">Bitcoin</span></div><span class="dk">Crypto</span></div>
               <div class="ddi" data-sym="ETHUSDT" data-mkt="Crypto"><div><span class="dn_">ETH/USDT</span><span class="dm">Ethereum</span></div><span class="dk">Crypto</span></div>
@@ -375,22 +376,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 
           <!-- Indicator selector (overlay panel) -->
           <div class="ind-sel" id="indSel">
-            <button class="ib ind-trigger" onclick="toggleInd()">fx 指标 <span class="ind-count">4</span> ▾</button>
+            <button class="ib ind-trigger" onclick="toggleInd()">fx <span data-i18n="ind_label">指标</span> <span class="ind-count">4</span> ▾</button>
             <div class="dd-overlay ind-overlay" id="indOverlay" onclick="closeInd(event)"></div>
             <div class="dd ind-panel" id="indPanel">
-              <input type="text" placeholder="搜索指标..." id="indInput">
-              <div class="dd-section">主图叠加</div>
-              <div class="ind-item on" data-ind="MA"><div class="ind-toggle"></div><span class="ind-name">MA</span><span class="dm">移动平均线</span></div>
-              <div class="ind-item" data-ind="EMA"><div class="ind-toggle"></div><span class="ind-name">EMA</span><span class="dm">指数移动平均</span></div>
-              <div class="ind-item on" data-ind="BOLL"><div class="ind-toggle"></div><span class="ind-name">BOLL</span><span class="dm">布林带</span></div>
-              <div class="ind-item on" data-ind="VWAP"><div class="ind-toggle"></div><span class="ind-name">VWAP</span><span class="dm">成交量加权均价</span></div>
-              <div class="ind-item on" data-ind="VP"><div class="ind-toggle"></div><span class="ind-name">VP</span><span class="dm">筹码分布</span></div>
-              <div class="ind-item" data-ind="WRB"><div class="ind-toggle"></div><span class="ind-name">WRB</span><span class="dm">宽幅K线信号</span></div>
-              <div class="dd-section">副图指标</div>
-              <div class="ind-item" data-ind="RSI"><div class="ind-toggle"></div><span class="ind-name">RSI</span><span class="dm">相对强弱</span></div>
-              <div class="ind-item" data-ind="MACD"><div class="ind-toggle"></div><span class="ind-name">MACD</span><span class="dm">指数平滑异同</span></div>
-              <div class="ind-item" data-ind="KDJ"><div class="ind-toggle"></div><span class="ind-name">KDJ</span><span class="dm">随机指标</span></div>
-              <div class="ind-item" data-ind="ATR"><div class="ind-toggle"></div><span class="ind-name">ATR</span><span class="dm">真实波幅</span></div>
+              <input type="text" data-i18n-ph="ph_ind_search" placeholder="搜索指标..." id="indInput">
+              <div class="dd-section" data-i18n="ind_main_overlay">主图叠加</div>
+              <div class="ind-item on" data-ind="MA"><div class="ind-toggle"></div><span class="ind-name">MA</span><span class="dm" data-i18n="ind_ma">移动平均线</span></div>
+              <div class="ind-item" data-ind="EMA"><div class="ind-toggle"></div><span class="ind-name">EMA</span><span class="dm" data-i18n="ind_ema">指数移动平均</span></div>
+              <div class="ind-item on" data-ind="BOLL"><div class="ind-toggle"></div><span class="ind-name">BOLL</span><span class="dm" data-i18n="ind_boll">布林带</span></div>
+              <div class="ind-item on" data-ind="VWAP"><div class="ind-toggle"></div><span class="ind-name">VWAP</span><span class="dm" data-i18n="ind_vwap">成交量加权均价</span></div>
+              <div class="ind-item on" data-ind="VP"><div class="ind-toggle"></div><span class="ind-name">VP</span><span class="dm" data-i18n="ind_vp">筹码分布</span></div>
+              <div class="ind-item" data-ind="WRB"><div class="ind-toggle"></div><span class="ind-name">WRB</span><span class="dm" data-i18n="ind_wrb">宽幅K线信号</span></div>
+              <div class="dd-section" data-i18n="ind_sub_panel">副图指标</div>
+              <div class="ind-item" data-ind="RSI"><div class="ind-toggle"></div><span class="ind-name">RSI</span><span class="dm" data-i18n="ind_rsi">相对强弱</span></div>
+              <div class="ind-item" data-ind="MACD"><div class="ind-toggle"></div><span class="ind-name">MACD</span><span class="dm" data-i18n="ind_macd">指数平滑异同</span></div>
+              <div class="ind-item" data-ind="KDJ"><div class="ind-toggle"></div><span class="ind-name">KDJ</span><span class="dm" data-i18n="ind_kdj">随机指标</span></div>
+              <div class="ind-item" data-ind="ATR"><div class="ind-toggle"></div><span class="ind-name">ATR</span><span class="dm" data-i18n="ind_atr">真实波幅</span></div>
             </div>
           </div>
           <!-- Active indicator tags -->
@@ -400,19 +401,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 
           <!-- Drawing tools (in widget, like TV MarkBar) -->
           <div class="dt">
-            <button class="dtb" title="趋势线">╱</button>
-            <button class="dtb" title="水平线">━</button>
-            <button class="dtb" title="矩形">▭</button>
-            <button class="dtb" title="斐波那契" style="font-size:9px;font-weight:700;font-family:'SF Mono',monospace">Fib</button>
-            <button class="dtb" title="标注" style="font-size:10px">⊕</button>
-            <button class="dtb" title="更多画图">⋯</button>
+            <button class="dtb" data-i18n-title="dt_trend"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="12" x2="12" y2="2"/></svg></button>
+            <button class="dtb" data-i18n-title="dt_hline"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="1" y1="7" x2="13" y2="7"/></svg></button>
+            <button class="dtb" data-i18n-title="dt_rect"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><rect x="2" y="3" width="10" height="8" rx="1"/></svg></button>
+            <button class="dtb" data-i18n-title="dt_fib"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-dasharray="2 1.5"><line x1="1" y1="2" x2="13" y2="2"/><line x1="1" y1="5.5" x2="13" y2="5.5"/><line x1="1" y1="8" x2="13" y2="8"/><line x1="1" y1="12" x2="13" y2="12"/></svg></button>
+            <button class="dtb" data-i18n-title="dt_note"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="7" cy="7" r="4"/><line x1="7" y1="3" x2="7" y2="7"/><line x1="7" y1="7" x2="9.5" y2="9"/></svg></button>
+            <button class="dtb" data-i18n-title="dt_more"><svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="11" cy="7" r="1.2"/></svg></button>
           </div>
 
           <!-- Widget controls (right side) -->
           <div style="margin-left:auto;display:flex;gap:1px">
-            <button class="dtb" title="设置" style="font-size:13px">⚙</button>
-            <button class="dtb" title="截图" style="font-size:11px">⎘</button>
-            <button class="dtb" title="全屏">⛶</button>
+            <button class="dtb" data-i18n-title="wc_settings"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><circle cx="7" cy="7" r="2.2"/><path d="M7 1.5v1.3M7 11.2v1.3M1.5 7h1.3M11.2 7h1.3M3.1 3.1l.9.9M10 10l.9.9M3.1 10.9l.9-.9M10 4l.9-.9"/></svg></button>
+            <button class="dtb" data-i18n-title="wc_screenshot"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="3" width="11" height="8.5" rx="1.5"/><circle cx="7" cy="7.5" r="2"/><circle cx="10" cy="4.8" r=".6" fill="currentColor"/></svg></button>
+            <button class="dtb" data-i18n-title="wc_fullscreen"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="1.5,5 1.5,1.5 5,1.5"/><polyline points="9,1.5 12.5,1.5 12.5,5"/><polyline points="12.5,9 12.5,12.5 9,12.5"/><polyline points="5,12.5 1.5,12.5 1.5,9"/></svg></button>
           </div>
         </div>
       </div>
@@ -500,29 +501,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
       <button style="background:0;border:0;color:var(--t2);cursor:pointer;font-size:14px">✕</button>
     </div>
     <div class="cm">
-      <div class="msg a">Hi — 我可以帮你分析行情、生成图表。试试下面的快捷操作：</div>
-      <div class="msg u">帮我看看 BTC 的筹码分布</div>
+      <div class="msg a" data-i18n="chat_welcome">Hi — 我可以帮你分析行情、生成图表。试试下面的快捷操作：</div>
+      <div class="msg u" data-i18n="chat_q1">帮我看看 BTC 的筹码分布</div>
       <div class="msg a">
-        BTC/USDT 筹码分析完成<br><br>
+        <span data-i18n="chat_a1_title">BTC/USDT 筹码分析完成</span><br><br>
         <b>POC:</b> $67,850<br>
         <b>VAH:</b> $69,200 · <b>VAL:</b> $66,400<br><br>
-        当前价在 POC 上方，多头占优。
-        <div class="tb">volume_profile → K线已叠加</div>
+        <span data-i18n="chat_a1_body">当前价在 POC 上方，多头占优。</span>
+        <div class="tb" data-i18n="chat_a1_tool">volume_profile → K线已叠加</div>
       </div>
-      <div class="msg u">对比 AAPL 和 MSFT</div>
+      <div class="msg u" data-i18n="chat_q2">对比 AAPL 和 MSFT</div>
       <div class="msg a">
-        正在获取基本面数据...
+        <span data-i18n="chat_a2">正在获取基本面数据...</span>
         <div class="tb">fundamentals ···</div>
       </div>
     </div>
     <div class="cqa">
-      <div class="qa">BTC 筹码</div>
-      <div class="qa">热力图</div>
+      <div class="qa" data-i18n="qa_vp">BTC 筹码</div>
+      <div class="qa" data-i18n="qa_hm">热力图</div>
       <div class="qa">AAPL K线</div>
-      <div class="qa">WRB 信号</div>
+      <div class="qa" data-i18n="qa_wrb">WRB 信号</div>
     </div>
     <div class="ci">
-      <input type="text" placeholder="输入指令或问题...">
+      <input type="text" data-i18n-ph="ph_chat" placeholder="输入指令或问题...">
       <button class="csb">↑</button>
     </div>
   </div>
@@ -646,98 +647,95 @@ document.querySelectorAll('.pb').forEach(btn=>btn.addEventListener('click',funct
 genCandles();genVP();genHM();
 
 // ═══ SIDEBAR SUB-PANEL ═══
-const panelData={
+function getPanelData(){return{
   charts:{
-    title:'图表',
+    titleKey:'sp_charts',
     items:[
-      {section:'蜡烛图'},
-      {icon:'K',name:'K线图'},
-      {icon:'HA',name:'Heikin-Ashi'},
-      {icon:'R',name:'Renko'},
-      {section:'走势'},
-      {icon:'T',name:'分时图'},
-      {icon:'D',name:'深度图'},
+      {sectionKey:'sec_candle'},
+      {icon:'K',nameKey:'it_kline'},
+      {icon:'HA',nameKey:'it_ha'},
+      {icon:'R',nameKey:'it_renko'},
+      {sectionKey:'sec_trend'},
+      {icon:'T',nameKey:'it_tick'},
+      {icon:'D',nameKey:'it_depth'},
     ]
   },
   heatmap:{
-    title:'热力图',
+    titleKey:'sp_heatmap',
     items:[
-      {section:'市场'},
-      {icon:'C',name:'Crypto'},
-      {icon:'S',name:'板块'},
-      {icon:'▲▼',name:'涨跌幅排行'},
-      {section:'宏观'},
-      {icon:'G',name:'全球市场'},
+      {sectionKey:'sec_market'},
+      {icon:'C',nameKey:'it_crypto'},
+      {icon:'S',nameKey:'it_sector'},
+      {icon:'▲▼',nameKey:'it_rank'},
+      {sectionKey:'sec_macro'},
+      {icon:'G',nameKey:'it_global'},
     ]
   },
   fundamentals:{
-    title:'基本面',
+    titleKey:'sp_fund',
     items:[
-      {section:'估值'},
-      {icon:'$',name:'财务概览'},
-      {icon:'vs',name:'财报对比'},
-      {section:'财务'},
-      {icon:'CF',name:'现金流'},
-      {section:'资讯'},
-      {icon:'N',name:'新闻摘要'},
+      {sectionKey:'sec_valuation'},
+      {icon:'$',nameKey:'it_overview'},
+      {icon:'vs',nameKey:'it_compare'},
+      {sectionKey:'sec_finance'},
+      {icon:'CF',nameKey:'it_cashflow'},
+      {sectionKey:'sec_news'},
+      {icon:'N',nameKey:'it_news'},
     ]
   },
   overlay:{
-    title:'叠加对比',
+    titleKey:'sp_overlay',
     items:[
-      {section:'对比'},
-      {icon:'⫽',name:'多资产叠加'},
-      {icon:'ρ',name:'相关性矩阵'},
-      {icon:'÷',name:'比率图'},
+      {sectionKey:'sec_compare'},
+      {icon:'⫽',nameKey:'it_multi'},
+      {icon:'ρ',nameKey:'it_corr'},
+      {icon:'÷',nameKey:'it_ratio'},
     ]
   },
   ai:{
-    title:'AI 助手',
+    titleKey:'sp_ai',
     items:[
-      {section:'交互'},
-      {icon:'▷',name:'对话面板'},
-      {icon:'fx',name:'智能分析'},
-      {section:'输出'},
-      {icon:'∑',name:'研报生成'},
+      {sectionKey:'sec_interact'},
+      {icon:'▷',nameKey:'it_chat_panel'},
+      {icon:'fx',nameKey:'it_ai_analysis'},
+      {sectionKey:'sec_output'},
+      {icon:'∑',nameKey:'it_report'},
     ]
   },
   all:{
-    title:'所有组件',
+    titleKey:'sp_all',
     items:[
-      {section:'图表'},
-      {icon:'K',name:'K线图'},
-      {icon:'T',name:'分时图'},
-      {icon:'D',name:'深度图'},
-      {section:'热力图'},
-      {icon:'C',name:'Crypto'},
-      {icon:'S',name:'板块'},
-      {icon:'▲▼',name:'涨跌幅排行'},
-      {section:'基本面'},
-      {icon:'$',name:'财务概览'},
-      {icon:'vs',name:'财报对比'},
-      {section:'其他'},
-      {icon:'⫽',name:'多资产叠加'},
-      {icon:'▷',name:'对话面板'},
+      {sectionKey:'sec_charts'},
+      {icon:'K',nameKey:'it_kline'},
+      {icon:'T',nameKey:'it_tick'},
+      {icon:'D',nameKey:'it_depth'},
+      {sectionKey:'sec_heatmap'},
+      {icon:'C',nameKey:'it_crypto'},
+      {icon:'S',nameKey:'it_sector'},
+      {icon:'▲▼',nameKey:'it_rank'},
+      {sectionKey:'sec_fund'},
+      {icon:'$',nameKey:'it_overview'},
+      {icon:'vs',nameKey:'it_compare'},
+      {sectionKey:'sec_other'},
+      {icon:'⫽',nameKey:'it_multi'},
+      {icon:'▷',nameKey:'it_chat_panel'},
     ]
   }
-};
+};};
 let activePanel=null;
 function togglePanel(id,btn){
   const panel=document.getElementById('subPanel');
-  // If same panel clicked, close it
   if(activePanel===id){closePanel();return;}
-  // Update active button
   document.querySelectorAll('.lb[data-panel]').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
-  // Populate and open
-  const data=panelData[id];
+  const pd=getPanelData();
+  const data=pd[id];
   if(!data)return;
-  document.getElementById('subPanelTitle').textContent=data.title;
+  document.getElementById('subPanelTitle').textContent=t(data.titleKey);
   const list=document.getElementById('subPanelList');
   list.innerHTML=data.items.map(item=>{
-    if(item.sep)return'<div class="sub-sep"></div>';
-    if(item.section)return`<div class="sub-section">${item.section}</div>`;
-    return`<div class="sub-item"><span class="sub-item-icon">${item.icon}</span><div class="sub-item-text"><span class="sub-item-name">${item.name}</span></div></div>`;
+    if(item.sectionKey)return`<div class="sub-section">${t(item.sectionKey)}</div>`;
+    return`<div class="sub-item"><span class="sub-item-icon">${item.icon}</span><div class="sub-item-text"><span class="sub-item-name">${t(item.nameKey)}</span></div></div>`;
   }).join('');
   panel.classList.add('open');
   activePanel=id;
@@ -745,9 +743,124 @@ function togglePanel(id,btn){
 function closePanel(){
   document.getElementById('subPanel').classList.remove('open');
   document.querySelectorAll('.lb[data-panel]').forEach(b=>b.classList.remove('on'));
-  // Restore default K-line as active
   document.querySelector('.lb[data-panel="charts"]')?.classList.add('on');
   activePanel=null;
+}
+
+// ═══ i18n SYSTEM ═══
+const i18n={
+  zh:{
+    // Header pills
+    pill_ashare:'A股', pill_metal:'贵金属',
+    // Sidebar tooltips
+    sb_charts:'图表', sb_heatmap:'热力图', sb_fund:'基本面',
+    sb_overlay:'叠加对比', sb_ai:'AI 对话', sb_add:'添加 Widget',
+    // Indicator
+    ind_label:'指标',
+    ind_main_overlay:'主图叠加', ind_sub_panel:'副图指标',
+    ind_ma:'移动平均线', ind_ema:'指数移动平均', ind_boll:'布林带',
+    ind_vwap:'成交量加权均价', ind_vp:'筹码分布', ind_wrb:'宽幅K线信号',
+    ind_rsi:'相对强弱', ind_macd:'指数平滑异同', ind_kdj:'随机指标', ind_atr:'真实波幅',
+    // Drawing tools
+    dt_trend:'趋势线', dt_hline:'水平线', dt_rect:'矩形',
+    dt_fib:'斐波那契', dt_note:'标注', dt_more:'更多画图',
+    // Widget controls
+    wc_settings:'设置', wc_screenshot:'截图', wc_fullscreen:'全屏',
+    // Placeholders
+    ph_sym_search:'搜索标的...', ph_ind_search:'搜索指标...', ph_chat:'输入指令或问题...',
+    // Chat
+    chat_welcome:'Hi — 我可以帮你分析行情、生成图表。试试下面的快捷操作：',
+    chat_q1:'帮我看看 BTC 的筹码分布',
+    chat_a1_title:'BTC/USDT 筹码分析完成',
+    chat_a1_body:'当前价在 POC 上方，多头占优。',
+    chat_a1_tool:'volume_profile → K线已叠加',
+    chat_q2:'对比 AAPL 和 MSFT',
+    chat_a2:'正在获取基本面数据...',
+    qa_vp:'BTC 筹码', qa_hm:'热力图', qa_wrb:'WRB 信号',
+    // Sub-panel titles
+    sp_charts:'图表', sp_heatmap:'热力图', sp_fund:'基本面',
+    sp_overlay:'叠加对比', sp_ai:'AI 助手', sp_all:'所有组件',
+    // Sub-panel sections & items
+    sec_candle:'蜡烛图', sec_trend:'走势', sec_market:'市场', sec_macro:'宏观',
+    sec_valuation:'估值', sec_finance:'财务', sec_news:'资讯',
+    sec_compare:'对比', sec_interact:'交互', sec_output:'输出',
+    sec_charts:'图表', sec_heatmap:'热力图', sec_fund:'基本面', sec_other:'其他',
+    it_kline:'K线图', it_ha:'Heikin-Ashi', it_renko:'Renko',
+    it_tick:'分时图', it_depth:'深度图',
+    it_crypto:'Crypto', it_sector:'板块', it_rank:'涨跌幅排行', it_global:'全球市场',
+    it_overview:'财务概览', it_compare:'财报对比', it_cashflow:'现金流', it_news:'新闻摘要',
+    it_multi:'多资产叠加', it_corr:'相关性矩阵', it_ratio:'比率图',
+    it_chat_panel:'对话面板', it_ai_analysis:'智能分析', it_report:'研报生成',
+  },
+  en:{
+    pill_ashare:'A-Share', pill_metal:'Metals',
+    sb_charts:'Charts', sb_heatmap:'Heatmap', sb_fund:'Fundamentals',
+    sb_overlay:'Overlay', sb_ai:'AI Chat', sb_add:'Add Widget',
+    ind_label:'Indicators',
+    ind_main_overlay:'Main Overlay', ind_sub_panel:'Sub-chart',
+    ind_ma:'Moving Average', ind_ema:'Exp. Moving Avg', ind_boll:'Bollinger Bands',
+    ind_vwap:'Vol-Weighted Avg Price', ind_vp:'Volume Profile', ind_wrb:'Wide Range Bar',
+    ind_rsi:'Relative Strength', ind_macd:'MACD', ind_kdj:'Stochastic', ind_atr:'Avg True Range',
+    dt_trend:'Trend Line', dt_hline:'Horizontal Line', dt_rect:'Rectangle',
+    dt_fib:'Fibonacci', dt_note:'Annotate', dt_more:'More Tools',
+    wc_settings:'Settings', wc_screenshot:'Screenshot', wc_fullscreen:'Fullscreen',
+    ph_sym_search:'Search symbol...', ph_ind_search:'Search indicator...', ph_chat:'Enter command or question...',
+    chat_welcome:'Hi — I can help you analyze markets and generate charts. Try these quick actions:',
+    chat_q1:'Show me BTC volume profile',
+    chat_a1_title:'BTC/USDT volume profile complete',
+    chat_a1_body:'Price above POC — bulls in control.',
+    chat_a1_tool:'volume_profile → overlaid on chart',
+    chat_q2:'Compare AAPL vs MSFT',
+    chat_a2:'Fetching fundamentals data...',
+    qa_vp:'BTC Profile', qa_hm:'Heatmap', qa_wrb:'WRB Signals',
+    sp_charts:'Charts', sp_heatmap:'Heatmap', sp_fund:'Fundamentals',
+    sp_overlay:'Overlay', sp_ai:'AI Assistant', sp_all:'All Widgets',
+    sec_candle:'Candlestick', sec_trend:'Trend', sec_market:'Markets', sec_macro:'Macro',
+    sec_valuation:'Valuation', sec_finance:'Financials', sec_news:'News',
+    sec_compare:'Compare', sec_interact:'Interact', sec_output:'Output',
+    sec_charts:'Charts', sec_heatmap:'Heatmap', sec_fund:'Fundamentals', sec_other:'Other',
+    it_kline:'Candlestick', it_ha:'Heikin-Ashi', it_renko:'Renko',
+    it_tick:'Tick Chart', it_depth:'Depth Chart',
+    it_crypto:'Crypto', it_sector:'Sectors', it_rank:'Gainers/Losers', it_global:'Global Markets',
+    it_overview:'Financial Overview', it_compare:'Earnings Compare', it_cashflow:'Cash Flow', it_news:'News Feed',
+    it_multi:'Multi-Asset Overlay', it_corr:'Correlation Matrix', it_ratio:'Ratio Chart',
+    it_chat_panel:'Chat Panel', it_ai_analysis:'AI Analysis', it_report:'Research Report',
+  }
+};
+let curLang='zh';
+
+function t(key){return i18n[curLang][key]||key;}
+
+function applyLang(){
+  // Text content
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.dataset.i18n;
+    if(i18n[curLang][k])el.textContent=i18n[curLang][k];
+  });
+  // Placeholders
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    const k=el.dataset.i18nPh;
+    if(i18n[curLang][k])el.placeholder=i18n[curLang][k];
+  });
+  // Titles (tooltips)
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{
+    const k=el.dataset.i18nTitle;
+    if(i18n[curLang][k])el.title=i18n[curLang][k];
+  });
+  // Lang button
+  document.getElementById('langBtn').textContent=curLang==='zh'?'EN':'中';
+  // Re-render active sub-panel if open
+  if(activePanel){
+    const btn=document.querySelector(`.lb[data-panel="${activePanel}"]`);
+    const id=activePanel;
+    activePanel=null; // force re-render
+    togglePanel(id,btn);
+  }
+}
+
+function toggleLang(){
+  curLang=curLang==='zh'?'en':'zh';
+  applyLang();
 }
 </script>
 </body>
