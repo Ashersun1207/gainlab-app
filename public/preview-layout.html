@@ -112,24 +112,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 .vs{width:1px;height:16px;background:var(--brd);margin:0 3px;flex-shrink:0}
 
 /* Period buttons */
-/* Period selector */
-.tf-sel{display:flex;align-items:center;gap:2px;position:relative;z-index:201}
-.tf-active{display:flex;align-items:center;gap:2px}
-.tf-pill{padding:1px 5px;border-radius:3px;font-size:10px;font-weight:500;color:#fff;background:var(--acc);cursor:pointer;border:0;transition:.15s;flex-shrink:0}
-.tf-pill:hover{background:var(--acc2)}
-.tf-pill:first-child{font-weight:700}
-.tf-more{padding:1px 5px;border-radius:3px;font-size:10px;font-weight:500;color:var(--t3);cursor:pointer;background:0;border:0;transition:.15s;flex-shrink:0}
-.tf-more:hover{color:var(--t1);background:var(--bgH)}
-.tf-dd{display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--bg2);border:1px solid var(--brd2);border-radius:6px;padding:6px;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:300}
-.tf-dd.show{display:block}
-.tf-dd-title{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:2px 4px 4px;margin-bottom:2px}
-.tf-dd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px}
-.tf-dd-item{padding:4px 6px;border-radius:4px;font-size:10px;font-weight:500;color:var(--t2);cursor:pointer;background:0;border:0;text-align:center;transition:.12s}
-.tf-dd-item:hover{background:var(--bgH);color:var(--t1)}
-.tf-dd-item.on{color:#fff;background:var(--acc)}
-.tf-dd-hint{font-size:8px;color:var(--t3);padding:4px 4px 0;border-top:1px solid var(--brd);margin-top:4px}
-.tf-dd-bg{position:fixed;inset:0;z-index:299}
-.tf-dd-bg.show{display:block}.tf-dd-bg{display:none}
+/* Period bar: all timeframes shown, pinned ones highlighted */
+.tf-bar{display:flex;align-items:center;gap:2px}
+.tf-btn{padding:1px 5px;border-radius:3px;font-size:10px;font-weight:500;color:var(--t3);cursor:pointer;background:0;border:1px solid transparent;transition:.15s;flex-shrink:0}
+.tf-btn:hover{color:var(--t1);background:var(--bgH)}
+.tf-btn.active{color:#fff;background:var(--acc)}
+.tf-btn.pinned{color:var(--t1);border-color:var(--brd2)}
+.tf-btn.pinned.active{color:#fff;background:var(--acc);border-color:var(--acc)}
+.tf-edit-btn{width:18px;height:18px;display:flex;align-items:center;justify-content:center;border:0;background:0;color:var(--t3);cursor:pointer;border-radius:3px;transition:.12s;flex-shrink:0}
+.tf-edit-btn:hover{background:var(--bgH);color:var(--t1)}
+.tf-edit-btn.editing{color:var(--acc)}
 
 /* Chart type selector */
 .ct-sel{position:relative;z-index:201}
@@ -398,17 +390,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 
           <div class="vs"></div>
 
-          <!-- Period selector (overlay, max 3 shown) -->
-          <div class="tf-sel" id="tfSel">
-            <div class="tf-active" id="tfActive"></div>
-            <button class="tf-more" onclick="toggleTfDropdown()" id="tfMoreBtn">▾</button>
-            <div class="tf-dd-bg" id="tfDdBg" onclick="closeTfDropdown()"></div>
-            <div class="tf-dd" id="tfDd">
-              <div class="tf-dd-title" data-i18n="tf_title">Timeframe</div>
-              <div class="tf-dd-grid" id="tfGrid"></div>
-              <div class="tf-dd-hint" data-i18n="tf_hint">Max 3</div>
-            </div>
-          </div>
+          <!-- Period buttons: pinned (highlighted) + others -->
+          <div class="tf-bar" id="tfBar"></div>
+          <button class="tf-edit-btn" onclick="toggleTfEdit()" id="tfEditBtn" title="Edit pinned timeframes">
+            <svg viewBox="0 0 12 12" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><circle cx="6" cy="2" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="6" cy="10" r="1"/></svg>
+          </button>
 
           <div class="vs"></div>
 
@@ -693,40 +679,41 @@ function updateIndTags(){
 }
 updateIndTags();
 
-// === Timeframe selector (overlay, max 3) ===
-const allTimeframes=['1m','5m','15m','30m','1H','2H','4H','1D','1W','1M'];
-let selectedTFs=['1D'];
-const MAX_TF=3;
+// === Timeframe bar: all shown, max 3 pinned as shortcuts ===
+const allTimeframes=['1m','5m','15m','1H','4H','1D','1W','1M'];
+let pinnedTFs=['1H','1D','1W']; // highlighted shortcuts
+let activeTF='1D'; // currently viewing
+const MAX_PIN=3;
+let tfEditMode=false;
 
-function renderTfActive(){
-  const box=document.getElementById('tfActive');
-  box.innerHTML=selectedTFs.map((tf,i)=>`<button class="tf-pill" onclick="removeTf('${tf}')" title="${i===0?'Primary':''}">${tf}</button>`).join('');
-  document.getElementById('tfMoreBtn').textContent=selectedTFs.length+'/'+MAX_TF+' ▾';
+function renderTfBar(){
+  const bar=document.getElementById('tfBar');
+  bar.innerHTML=allTimeframes.map(tf=>{
+    const isActive=tf===activeTF;
+    const isPinned=pinnedTFs.includes(tf);
+    const cls=['tf-btn'];
+    if(isPinned)cls.push('pinned');
+    if(isActive)cls.push('active');
+    if(tfEditMode) return `<button class="${cls.join(' ')}" onclick="togglePin('${tf}')">${tf}</button>`;
+    return `<button class="${cls.join(' ')}" onclick="setActiveTF('${tf}')">${tf}</button>`;
+  }).join('');
+  document.getElementById('tfEditBtn').classList.toggle('editing',tfEditMode);
 }
-function renderTfGrid(){
-  const grid=document.getElementById('tfGrid');
-  grid.innerHTML=allTimeframes.map(tf=>`<button class="tf-dd-item${selectedTFs.includes(tf)?' on':''}" onclick="toggleTf('${tf}')">${tf}</button>`).join('');
+function setActiveTF(tf){
+  activeTF=tf;
+  renderTfBar();genCandles();
 }
-function toggleTf(tf){
-  const idx=selectedTFs.indexOf(tf);
-  if(idx>=0){if(selectedTFs.length>1)selectedTFs.splice(idx,1);}
-  else{if(selectedTFs.length<MAX_TF)selectedTFs.push(tf);}
-  renderTfActive();renderTfGrid();genCandles();
+function togglePin(tf){
+  const idx=pinnedTFs.indexOf(tf);
+  if(idx>=0){pinnedTFs.splice(idx,1);}
+  else if(pinnedTFs.length<MAX_PIN){pinnedTFs.push(tf);}
+  renderTfBar();
 }
-function removeTf(tf){
-  if(selectedTFs.length>1){selectedTFs=selectedTFs.filter(t=>t!==tf);renderTfActive();renderTfGrid();genCandles();}
+function toggleTfEdit(){
+  tfEditMode=!tfEditMode;
+  renderTfBar();
 }
-function toggleTfDropdown(){
-  const dd=document.getElementById('tfDd'),bg=document.getElementById('tfDdBg');
-  const show=!dd.classList.contains('show');
-  dd.classList.toggle('show',show);bg.classList.toggle('show',show);
-  if(show)renderTfGrid();
-}
-function closeTfDropdown(){
-  document.getElementById('tfDd').classList.remove('show');
-  document.getElementById('tfDdBg').classList.remove('show');
-}
-renderTfActive();
+renderTfBar();
 
 // === Chart type selector ===
 const chartTypes=[
@@ -952,9 +939,9 @@ function applyLang(){
   });
   // Lang button
   document.getElementById('langBtn').textContent=curLang==='zh'?'EN':'中';
-  // Re-render sidebar nav + TF selector + chart type
+  // Re-render sidebar nav + TF bar + chart type
   renderSidebar();
-  renderTfActive();
+  renderTfBar();
   renderCtBtn();
 }
 
