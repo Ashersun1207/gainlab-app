@@ -75,6 +75,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 /* Separator */
 .sb-sep{height:1px;margin:4px 10px;background:var(--brd)}
 
+/* Scene expand arrow */
+.sb-arrow{font-size:8px;color:var(--t3);margin-left:auto;margin-right:2px;opacity:0;transition:opacity .15s}
+.sidebar.open .sb-arrow{opacity:1}
+.sb-item.expanded .sb-arrow{color:var(--acc)}
+
+/* Scene children (widgets list) */
+.sb-children{padding:2px 0 4px 0;display:flex;flex-direction:column;gap:1px}
+.sb-child{padding:4px 12px 4px 46px;font-size:10px;color:var(--t2);cursor:pointer;border-radius:0 4px 4px 0;transition:.12s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-child:hover{color:var(--t1);background:var(--bgH)}
+
 /* Tooltip (collapsed only) */
 .sb-item .sb-tip{position:absolute;left:46px;top:50%;transform:translateY(-50%);padding:3px 8px;border-radius:4px;background:#1a1a2e;border:1px solid var(--brd2);color:var(--t1);font-size:10px;white-space:nowrap;opacity:0;pointer-events:none;transition:.12s;z-index:99;box-shadow:0 4px 12px rgba(0,0,0,.4)}
 .sb-item:hover .sb-tip{opacity:1}
@@ -766,69 +776,93 @@ genCandles();genVP();genHM();
 
 // ═══ SIDEBAR (single panel, Koyfin style) ═══
 const sidebarItems=[
-  // Koyfin-style grouping: MARKETS → CHARTS → DASHBOARDS → AI TOOLS
-  {sectionKey:'sec_markets'},
-  {id:'watchlist',nameKey:'it_watchlist',badge:'MYW',
-   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l2.2 4.5 5 .7-3.6 3.5.9 5L8 12.4 3.5 14.7l.9-5L.8 6.2l5-.7z"/></svg>'},
-  {id:'movers',nameKey:'it_movers',badge:'MOV',
-   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l2.5 4H1.5L4 2z" opacity=".8"/><path d="M12 14l-2.5-4h5L12 14z" opacity=".5"/><rect x="7" y="6" width="2" height="4" rx=".5" opacity=".4"/></svg>'},
-  {id:'screen',nameKey:'it_screen',badge:'MYS',
-   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V4a1 1 0 011-1zm1 2v2h4V5H3zm0 3.5v2h4v-2H3zm5.5-3.5v2H14V5H8.5zm0 3.5v2H14v-2H8.5z"/></svg>'},
+  // Top: high-freq entries (no section header, like Koyfin top)
+  {id:'ai',nameKey:'sc_ai_chat',badge:'AI',
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-3 3V3a1 1 0 011-1z"/></svg>',
+   children:[{nameKey:'w_chat_panel'},{nameKey:'w_ai_cmd'}]},
+  {id:'snapshot',nameKey:'sc_snapshot',badge:'NOW',
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l2.5 4H1.5L4 2z" opacity=".8"/><path d="M12 14l-2.5-4h5L12 14z" opacity=".5"/><rect x="7" y="6" width="2" height="4" rx=".5" opacity=".4"/></svg>',
+   children:[{nameKey:'w_gainers_losers'},{nameKey:'w_heatmap'},{nameKey:'w_key_indices'}]},
+  {id:'watchlist',nameKey:'sc_watchlist',badge:'MYW',
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l2.2 4.5 5 .7-3.6 3.5.9 5L8 12.4 3.5 14.7l.9-5L.8 6.2l5-.7z"/></svg>',
+   children:[{nameKey:'w_watchlist_table'},{nameKey:'w_mini_charts'}]},
 
-  {sectionKey:'sec_charts'},
-  {id:'kline',nameKey:'it_kline',badge:'CK',on:true,
-   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="9" width="3" height="6" rx=".5"/><rect x="5.5" y="5" width="3" height="10" rx=".5"/><rect x="10" y="1" width="3" height="14" rx=".5"/></svg>'},
-  {id:'tick',nameKey:'it_tick',badge:'TK',
-   svg:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,12 4,8 7,10 10,4 13,6 15,2"/></svg>'},
-  {id:'depth',nameKey:'it_depth',badge:'DP',
-   svg:'<svg viewBox="0 0 16 16" fill="currentColor" opacity=".85"><path d="M1 14V8l3-1 3 2 3-4 4-2v11z" opacity=".3"/><path d="M1 14V10l3 1 3-3 3 2 4-4v8z" opacity=".5"/></svg>'},
-
+  // DASHBOARDS: scene = multi-widget combo
   {sectionKey:'sec_dashboards'},
-  {id:'heatmap',nameKey:'it_crypto',badge:'HM',
-   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6.5" height="6.5" rx="1"/><rect x="8.5" y="1" width="6.5" height="6.5" rx="1" opacity=".5"/><rect x="1" y="8.5" width="6.5" height="6.5" rx="1" opacity=".5"/><rect x="8.5" y="8.5" width="6.5" height="6.5" rx="1" opacity=".3"/></svg>'},
-  {id:'sector',nameKey:'it_sector',badge:'SETF',
-   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="4" height="4" rx=".5"/><rect x="6" y="1" width="4" height="4" rx=".5" opacity=".7"/><rect x="11" y="1" width="4" height="4" rx=".5" opacity=".4"/><rect x="1" y="6" width="4" height="4" rx=".5" opacity=".7"/><rect x="6" y="6" width="4" height="4" rx=".5" opacity=".5"/><rect x="11" y="6" width="4" height="4" rx=".5" opacity=".3"/><rect x="1" y="11" width="14" height="4" rx=".5" opacity=".2"/></svg>'},
-  {id:'rank',nameKey:'it_rank',badge:'GL',
-   svg:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><line x1="2" y1="13" x2="2" y2="9"/><line x1="5.5" y1="13" x2="5.5" y2="6"/><line x1="9" y1="13" x2="9" y2="3"/><line x1="12.5" y1="13" x2="12.5" y2="7"/><polyline points="9,2 13,2 13,5" fill="none"/></svg>'},
-  {id:'global',nameKey:'it_global',badge:'WEI',
-   svg:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6.5"/><ellipse cx="8" cy="8" rx="3" ry="6.5"/><line x1="1.5" y1="8" x2="14.5" y2="8"/></svg>'},
-  {id:'fx',nameKey:'it_fx',badge:'FX',
-   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.5 3a3.5 3.5 0 100 7h.5v3H3v-1.5h2V10h-.5a5 5 0 110-10H5v3h-.5zm7 10a3.5 3.5 0 100-7H11V3h2v1.5h-2V6h.5a5 5 0 110 10H11v-3h.5z" opacity=".8"/></svg>'},
+  {id:'stock_analysis',nameKey:'sc_stock_analysis',badge:'CK',on:true,
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="9" width="3" height="6" rx=".5"/><rect x="5.5" y="5" width="3" height="10" rx=".5"/><rect x="10" y="1" width="3" height="14" rx=".5"/></svg>',
+   children:[{nameKey:'w_kline'},{nameKey:'w_volume_profile'},{nameKey:'w_wrb'},{nameKey:'w_indicators'}]},
+  {id:'market_heat',nameKey:'sc_market_heat',badge:'HM',
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6.5" height="6.5" rx="1"/><rect x="8.5" y="1" width="6.5" height="6.5" rx="1" opacity=".5"/><rect x="1" y="8.5" width="6.5" height="6.5" rx="1" opacity=".5"/><rect x="8.5" y="8.5" width="6.5" height="6.5" rx="1" opacity=".3"/></svg>',
+   children:[{nameKey:'w_crypto_heatmap'},{nameKey:'w_sector_heatmap'},{nameKey:'w_rank'}]},
+  {id:'fundamentals',nameKey:'sc_fundamentals',badge:'FD',
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1h10a1 1 0 011 1v12a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1zm1 3h8v1.5H4V4zm0 3h5v1.5H4V7zm0 3h7v1.5H4V10z"/></svg>',
+   children:[{nameKey:'w_financials'},{nameKey:'w_earnings_compare'},{nameKey:'w_cashflow'}]},
+  {id:'multi_compare',nameKey:'sc_multi_compare',badge:'CMP',
+   svg:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="9" height="9" rx="1.5"/><rect x="6" y="6" width="9" height="9" rx="1.5"/></svg>',
+   children:[{nameKey:'w_overlay'},{nameKey:'w_correlation'},{nameKey:'w_ratio'}]},
+  {id:'global_idx',nameKey:'sc_global',badge:'WEI',
+   svg:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6.5"/><ellipse cx="8" cy="8" rx="3" ry="6.5"/><line x1="1.5" y1="8" x2="14.5" y2="8"/></svg>',
+   children:[{nameKey:'w_world_indices'},{nameKey:'w_fx_matrix'}]},
+  {id:'macro',nameKey:'sc_macro',badge:'ECON',
+   svg:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><polyline points="1,13 4,9 7,11 10,5 13,7 15,3"/><line x1="1" y1="14" x2="15" y2="14"/></svg>',
+   children:[{nameKey:'w_rates'},{nameKey:'w_gdp_cpi'}]},
 
-  {sectionKey:'sec_fund'},
-  {id:'fund',nameKey:'it_overview',badge:'FD',
-   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1h10a1 1 0 011 1v12a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1zm1 3h8v1.5H4V4zm0 3h5v1.5H4V7zm0 3h7v1.5H4V10z"/></svg>'},
-  {id:'compare',nameKey:'it_compare',badge:'CMP',
-   svg:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="9" height="9" rx="1.5"/><rect x="6" y="6" width="9" height="9" rx="1.5"/></svg>'},
+  // PORTFOLIO TOOLS (placeholder, empty children for now)
+  {sectionKey:'sec_portfolio'},
+  {id:'my_portfolio',nameKey:'sc_portfolio',badge:'MYP',
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 4h12a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V5a1 1 0 011-1zm4-2h4v2H6V2z"/></svg>',
+   children:[{nameKey:'w_holdings'},{nameKey:'w_pnl'}]},
+  {id:'risk',nameKey:'sc_risk',badge:'RISK',
+   svg:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M8 1l7 13H1z"/><line x1="8" y1="6" x2="8" y2="9.5"/><circle cx="8" cy="11.5" r=".5" fill="currentColor"/></svg>',
+   children:[{nameKey:'w_var'},{nameKey:'w_drawdown'}]},
 
+  // AI TOOLS
   {sep:true},
   {sectionKey:'sec_ai'},
-  {id:'ai',nameKey:'it_chat_panel',badge:'AI',
-   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-3 3V3a1 1 0 011-1z"/></svg>'},
-  {id:'analysis',nameKey:'it_ai_analysis',badge:'ANA',
-   svg:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></svg>'},
-  {id:'report',nameKey:'it_report',badge:'RPT',
-   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 1h5l4 4v9a1 1 0 01-1 1H4a1 1 0 01-1-1V2a1 1 0 011-1zm4.5.5V5H12"/><rect x="5" y="7" width="6" height="1" rx=".3"/><rect x="5" y="9.5" width="4" height="1" rx=".3"/></svg>'},
+  {id:'ai_analysis',nameKey:'sc_ai_analysis',badge:'ANA',
+   svg:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 1.5"/></svg>',
+   children:[{nameKey:'w_signal_scan'},{nameKey:'w_strategy'}]},
+  {id:'ai_report',nameKey:'sc_ai_report',badge:'RPT',
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 1h5l4 4v9a1 1 0 01-1 1H4a1 1 0 01-1-1V2a1 1 0 011-1zm4.5.5V5H12"/><rect x="5" y="7" width="6" height="1" rx=".3"/><rect x="5" y="9.5" width="4" height="1" rx=".3"/></svg>',
+   children:[{nameKey:'w_report_gen'},{nameKey:'w_summary'}]},
+  {id:'ai_screen',nameKey:'sc_ai_screen',badge:'MYS',
+   svg:'<svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V4a1 1 0 011-1zm1 2v2h4V5H3zm0 3.5v2h4v-2H3zm5.5-3.5v2H14V5H8.5zm0 3.5v2H14v-2H8.5z"/></svg>',
+   children:[{nameKey:'w_screener'},{nameKey:'w_filter_builder'}]},
 ];
 
+let expandedScene=null;
 function renderSidebar(){
   const nav=document.getElementById('sbNav');
+  const isOpen=document.getElementById('sidebar').classList.contains('open');
   nav.innerHTML=sidebarItems.map(item=>{
     if(item.sep)return'<div class="sb-sep"></div>';
     if(item.sectionKey)return`<div class="sb-section">${t(item.sectionKey)}</div>`;
     const badge=item.badge?`<span class="sb-badge">${item.badge}</span>`:'';
-    const cls=item.on?'sb-item on':'sb-item';
+    const isExpanded=expandedScene===item.id;
+    const cls='sb-item'+(item.on?' on':'')+(isExpanded?' expanded':'');
+    const arrow=item.children&&item.children.length?`<span class="sb-arrow">${isExpanded?'▾':'›'}</span>`:'';
+    let childHtml='';
+    if(item.children&&isExpanded&&isOpen){
+      childHtml='<div class="sb-children">'+item.children.map(c=>
+        `<div class="sb-child">${t(c.nameKey)}</div>`
+      ).join('')+'</div>';
+    }
     return`<div class="${cls}" data-id="${item.id}">
       <div class="sb-ico">${item.svg}</div>
       <span class="sb-text">${t(item.nameKey)}</span>
-      ${badge}
+      ${arrow}${badge}
       <span class="sb-tip">${t(item.nameKey)}</span>
-    </div>`;
+    </div>${childHtml}`;
   }).join('');
-  // Click handlers
+  // Click: select scene + toggle expand
   nav.querySelectorAll('.sb-item').forEach(el=>el.addEventListener('click',function(){
+    const id=this.dataset.id;
+    const item=sidebarItems.find(i=>i.id===id);
     nav.querySelectorAll('.sb-item').forEach(e=>e.classList.remove('on'));
     this.classList.add('on');
+    if(item&&item.children){expandedScene=expandedScene===id?null:id;renderSidebar();}
+    else{expandedScene=null;renderSidebar();}
   }));
 }
 
@@ -880,14 +914,30 @@ const i18n={
     sec_candle:'蜡烛图', sec_trend:'走势', sec_market:'市场', sec_macro:'宏观',
     sec_valuation:'估值', sec_finance:'财务', sec_news:'资讯',
     sec_compare:'对比', sec_interact:'交互', sec_output:'输出',
-    sec_markets:'市场', sec_charts:'图表', sec_dashboards:'看板', sec_fund:'基本面', sec_ai:'AI 工具',
+    sec_dashboards:'看板', sec_portfolio:'投资组合', sec_ai:'AI 工具',
     it_kline:'K线图', it_ha:'Heikin-Ashi', it_renko:'Renko',
     it_tick:'分时图', it_depth:'深度图',
-    it_watchlist:'自选股', it_movers:'涨跌排行', it_screen:'条件筛选',
-    it_crypto:'Crypto', it_sector:'板块', it_rank:'涨跌幅排行', it_global:'全球指数', it_fx:'外汇',
-    it_overview:'财务概览', it_compare:'财报对比', it_cashflow:'现金流', it_news:'新闻摘要',
-    it_multi:'多资产叠加', it_corr:'相关性矩阵', it_ratio:'比率图',
-    it_chat_panel:'对话面板', it_ai_analysis:'智能分析', it_report:'研报生成',
+    // Scenes
+    sc_ai_chat:'AI 对话', sc_snapshot:'行情快照', sc_watchlist:'自选股',
+    sc_stock_analysis:'个股分析', sc_market_heat:'市场热力', sc_fundamentals:'基本面',
+    sc_multi_compare:'多资产对比', sc_global:'全球指数', sc_macro:'宏观经济',
+    sc_portfolio:'我的持仓', sc_risk:'风险分析',
+    sc_ai_analysis:'智能分析', sc_ai_report:'研报生成', sc_ai_screen:'条件筛选',
+    // Widgets (children)
+    w_chat_panel:'对话面板', w_ai_cmd:'指令快捷',
+    w_gainers_losers:'涨跌排行', w_heatmap:'热力图', w_key_indices:'关键指数',
+    w_watchlist_table:'自选列表', w_mini_charts:'迷你图',
+    w_kline:'K线图', w_volume_profile:'筹码分布', w_wrb:'WRB 信号', w_indicators:'指标面板',
+    w_crypto_heatmap:'Crypto 热力', w_sector_heatmap:'板块热力', w_rank:'涨跌幅排行',
+    w_financials:'财务概览', w_earnings_compare:'财报对比', w_cashflow:'现金流',
+    w_overlay:'叠加走势', w_correlation:'相关性矩阵', w_ratio:'比率图',
+    w_world_indices:'全球指数', w_fx_matrix:'汇率矩阵',
+    w_rates:'利率', w_gdp_cpi:'GDP / CPI',
+    w_holdings:'持仓明细', w_pnl:'盈亏总览',
+    w_var:'VaR 敞口', w_drawdown:'最大回撤',
+    w_signal_scan:'信号扫描', w_strategy:'策略回测',
+    w_report_gen:'生成报告', w_summary:'AI 摘要',
+    w_screener:'筛选器', w_filter_builder:'条件构建',
   },
   en:{
     pill_ashare:'A-Share', pill_metal:'Metals',
@@ -916,14 +966,28 @@ const i18n={
     sec_candle:'Candlestick', sec_trend:'Trend', sec_market:'Markets', sec_macro:'Macro',
     sec_valuation:'Valuation', sec_finance:'Financials', sec_news:'News',
     sec_compare:'Compare', sec_interact:'Interact', sec_output:'Output',
-    sec_markets:'Markets', sec_charts:'Charts', sec_dashboards:'Dashboards', sec_fund:'Fundamentals', sec_ai:'AI Tools',
+    sec_dashboards:'Dashboards', sec_portfolio:'Portfolio Tools', sec_ai:'AI Tools',
     it_kline:'Candlestick', it_ha:'Heikin-Ashi', it_renko:'Renko',
     it_tick:'Tick Chart', it_depth:'Depth Chart',
-    it_watchlist:'My Watchlists', it_movers:'Market Movers', it_screen:'My Screens',
-    it_crypto:'Crypto', it_sector:'Sectors', it_rank:'Gainers/Losers', it_global:'World Indices', it_fx:'Currencies',
-    it_overview:'Financial Overview', it_compare:'Earnings Compare', it_cashflow:'Cash Flow', it_news:'News Feed',
-    it_multi:'Multi-Asset Overlay', it_corr:'Correlation Matrix', it_ratio:'Ratio Chart',
-    it_chat_panel:'Chat Panel', it_ai_analysis:'AI Analysis', it_report:'Research Report',
+    sc_ai_chat:'AI Chat', sc_snapshot:'Market Snapshot', sc_watchlist:'My Watchlists',
+    sc_stock_analysis:'Stock Analysis', sc_market_heat:'Market Heatmap', sc_fundamentals:'Fundamentals',
+    sc_multi_compare:'Multi-Asset Compare', sc_global:'World Indices', sc_macro:'World Economics',
+    sc_portfolio:'My Portfolio', sc_risk:'Risk Analysis',
+    sc_ai_analysis:'AI Analysis', sc_ai_report:'Research Report', sc_ai_screen:'Screener',
+    w_chat_panel:'Chat Panel', w_ai_cmd:'Quick Commands',
+    w_gainers_losers:'Gainers/Losers', w_heatmap:'Heatmap', w_key_indices:'Key Indices',
+    w_watchlist_table:'Watchlist Table', w_mini_charts:'Mini Charts',
+    w_kline:'Candlestick', w_volume_profile:'Volume Profile', w_wrb:'WRB Signals', w_indicators:'Indicators',
+    w_crypto_heatmap:'Crypto Heatmap', w_sector_heatmap:'Sector Heatmap', w_rank:'Gainers/Losers',
+    w_financials:'Financials', w_earnings_compare:'Earnings Compare', w_cashflow:'Cash Flow',
+    w_overlay:'Overlay Chart', w_correlation:'Correlation Matrix', w_ratio:'Ratio Chart',
+    w_world_indices:'World Indices', w_fx_matrix:'FX Matrix',
+    w_rates:'Interest Rates', w_gdp_cpi:'GDP / CPI',
+    w_holdings:'Holdings', w_pnl:'P&L Overview',
+    w_var:'VaR Exposure', w_drawdown:'Max Drawdown',
+    w_signal_scan:'Signal Scanner', w_strategy:'Strategy Backtest',
+    w_report_gen:'Generate Report', w_summary:'AI Summary',
+    w_screener:'Screener', w_filter_builder:'Filter Builder',
   }
 };
 let curLang='zh';
