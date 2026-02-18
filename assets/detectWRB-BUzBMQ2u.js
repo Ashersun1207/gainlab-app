@@ -1,1 +1,0 @@
-function i(s){const n=[];for(let e=3;e<s.length;e++){const c=Math.abs(s[e].close-s[e].open),o=(Math.abs(s[e-1].close-s[e-1].open)+Math.abs(s[e-2].close-s[e-2].open)+Math.abs(s[e-3].close-s[e-3].open))/3;o>0&&c>o*1.5&&n.push({timestamp:s[e].timestamp,type:"wrb",direction:s[e].close>=s[e].open?"bullish":"bearish",score:Math.min(c/o,5)})}return n}export{i as d};
