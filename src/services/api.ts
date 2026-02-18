@@ -112,3 +112,13 @@ export async function fetchWorkerScreener(
   };
   return data.data ?? [];
 }
+
+/** Fetch multiple quotes in parallel (batch) */
+export async function fetchBatchQuotes(
+  items: Array<{ symbol: string; market: MarketType }>,
+): Promise<Array<{ price: number; change: number; changePercent: number } | null>> {
+  const results = await Promise.allSettled(
+    items.map(({ symbol, market }) => fetchWorkerQuote(symbol, market)),
+  );
+  return results.map((r) => (r.status === 'fulfilled' ? r.value : null));
+}

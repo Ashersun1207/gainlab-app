@@ -65,9 +65,17 @@ gainlab-app/
 │   │   │   └── useOverlayData.ts  # 多 symbol 并行 fetch
 │   │   ├── FundamentalsWidget/
 │   │   │   └── index.tsx       # 基本面数据柱状图
-│   │   └── WRBWidget/
-│   │       ├── index.tsx       # WRB 信号检测列表
-│   │       └── detectWRB.ts    # WRB 检测逻辑
+│   │   ├── WRBWidget/
+│   │   │   ├── index.tsx       # WRB 信号检测列表
+│   │   │   └── detectWRB.ts    # WRB 检测逻辑
+│   │   ├── QuoteTableWidget/
+│   │   │   └── index.tsx       # 通用报价表（W1，复用于 W5/W6）
+│   │   ├── SentimentWidget/
+│   │   │   └── index.tsx       # 市场情绪仪表盘（W4，VIX + Fear & Greed gauge）
+│   │   ├── GlobalIndexWidget/
+│   │   │   └── index.tsx       # 全球指数（W5，复用 QuoteTableWidget）
+│   │   └── ForexCommodityWidget/
+│   │       └── index.tsx       # 外汇 + 大宗商品（W6，复用 QuoteTableWidget）
 │   │
 │   ├── chat/
 │   │   ├── ChatPanel.tsx       # 对话框 UI（输入框 + 消息列表）
@@ -81,7 +89,7 @@ gainlab-app/
 │   │   └── useMcpStream.ts     # SSE 流式响应 hook + Widget 回调
 │   │
 │   ├── services/
-│   │   ├── api.ts              # CF Worker API 封装（kline/quote/search/fundamentals/screener）
+│   │   ├── api.ts              # CF Worker API 封装（kline/quote/search/fundamentals/screener/batchQuotes）
 │   │   ├── dataAdapter.ts      # 渲染目标路由 + MCP 数据格式转换
 │   │   ├── marketData.ts       # useMarketData 的数据获取实现
 │   │   └── mcpClient.ts        # CF Worker SSE 通信 + think 过滤
@@ -327,6 +335,8 @@ Drawer 展开 → renderDrawerContent()
 | 多资产叠加 | ECharts (line) | OverlayWidget |
 | 基本面柱状图 | ECharts (bar) | FundamentalsWidget |
 | WRB 信号 | 纯 HTML 列表 | WRBWidget |
+| 报价表（四市场/全球指数/外汇大宗） | 纯 HTML 表格 | QuoteTableWidget |
+| 市场情绪（VIX + Fear & Greed） | ECharts (gauge) | SentimentWidget |
 | Chat 推送图表 | ECharts (dynamic) | EChartsWidget |
 
 ---

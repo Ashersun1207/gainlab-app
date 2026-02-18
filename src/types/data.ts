@@ -45,3 +45,19 @@ export interface FundamentalsData {
   metrics: Record<string, number | string>;
   chartOption?: Record<string, unknown>; // 预构建的 ECharts option
 }
+
+/** Quote table row */
+export interface QuoteRow {
+  symbol: string;
+  displayName: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  market: 'crypto' | 'us' | 'cn' | 'metal' | 'index' | 'forex';
+}
+
+/** Sentiment data */
+export interface SentimentData {
+  vix: { value: number; change: number; level: 'low' | 'normal' | 'high' | 'extreme' };
+  fearGreed: { value: number; label: string; change: number };
+}
