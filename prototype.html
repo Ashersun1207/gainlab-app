@@ -218,6 +218,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
   .dt{display:none} /* 手机隐藏画图工具 */
   .ind-tags{display:none} /* 手机隐藏 tag */
   .dd{width:calc(100vw - 60px);left:-6px}
+  .ind-panel{width:calc(100vw - 60px)}
 }
 @media(max-width:480px){
   .lbar{display:none}
@@ -239,6 +240,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
     <div class="pill"><div class="dot dg"></div>贵金属</div>
   </div>
   <div class="spc"></div>
+  <!-- hsep removed with ticker -->
   <div class="hb">🌙</div>
   <div class="hb ac">🤖 Agent</div>
 </div>
@@ -253,11 +255,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
     </button>
     <div class="lsep"></div>
     <button class="lb on">📈<span class="tp">K线图</span></button>
-    <button class="lb">📊<span class="tp">VP 筹码分布</span></button>
     <button class="lb">🔥<span class="tp">板块热力图</span></button>
     <button class="lb">💰<span class="tp">基本面</span></button>
     <button class="lb">📐<span class="tp">多资产叠加</span></button>
-    <button class="lb">🔍<span class="tp">WRB 信号</span></button>
     <div class="lsep"></div>
     <button class="lb">💬<span class="tp">AI 对话</span></button>
     <div style="flex:1"></div>
@@ -532,11 +532,12 @@ function closeDD(e){
 }
 function filterDD(q){
   q=q.toLowerCase();
-  document.querySelectorAll('.ddi').forEach(el=>{
+  const dd=document.getElementById('dd');
+  dd.querySelectorAll('.ddi').forEach(el=>{
     const t=(el.dataset.sym+' '+el.textContent).toLowerCase();
     el.style.display=t.includes(q)?'':'none';
   });
-  document.querySelectorAll('.dd-section').forEach(el=>{
+  dd.querySelectorAll('.dd-section').forEach(el=>{
     let next=el.nextElementSibling,vis=false;
     while(next&&!next.classList.contains('dd-section')){
       if(next.classList.contains('ddi')&&next.style.display!=='none')vis=true;
@@ -567,11 +568,12 @@ function closeInd(e){
 }
 function filterInd(q){
   q=q.toLowerCase();
-  document.querySelectorAll('.ind-item').forEach(el=>{
+  const panel=document.getElementById('indPanel');
+  panel.querySelectorAll('.ind-item').forEach(el=>{
     const t=(el.dataset.ind+' '+el.textContent).toLowerCase();
     el.style.display=t.includes(q)?'':'none';
   });
-  document.querySelectorAll('.ind-panel .dd-section').forEach(el=>{
+  panel.querySelectorAll('.dd-section').forEach(el=>{
     let next=el.nextElementSibling,vis=false;
     while(next&&!next.classList.contains('dd-section')){
       if(next.classList.contains('ind-item')&&next.style.display!=='none')vis=true;
@@ -593,6 +595,13 @@ function updateIndTags(){
   document.getElementById('indTags').innerHTML=active.map(n=>`<span class="ind-tag">${n}</span>`).join('');
 }
 updateIndTags();
+
+// === Period buttons ===
+document.querySelectorAll('.pb').forEach(btn=>btn.addEventListener('click',function(){
+  document.querySelectorAll('.pb').forEach(b=>b.classList.remove('on'));
+  this.classList.add('on');
+  genCandles();
+}));
 
 genCandles();genVP();genHM();
 </script>
