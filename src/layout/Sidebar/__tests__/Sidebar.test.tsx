@@ -1,115 +1,123 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { MarketTabs } from '../MarketTabs';
-import { AssetList } from '../AssetList';
-import { ToolBar } from '../ToolBar';
-import { SearchBox } from '../SearchBox';
-import type { Asset, Quote } from '../../../types/market';
+import { Sidebar } from '../index';
 
-describe('MarketTabs', () => {
-  it('renders all 4 market tabs', () => {
-    render(<MarketTabs active="crypto" onChange={vi.fn()} />);
-    expect(screen.getByText('加密')).toBeInTheDocument();
-    expect(screen.getByText('美股')).toBeInTheDocument();
-    expect(screen.getByText('A股')).toBeInTheDocument();
-    expect(screen.getByText('贵金属')).toBeInTheDocument();
+describe('Sidebar (new 44px widget catalog)', () => {
+  it('renders the GL logo', () => {
+    render(<Sidebar />);
+    expect(screen.getByTestId('sidebar-logo')).toBeInTheDocument();
+    expect(screen.getByTestId('sidebar-logo')).toHaveTextContent('GL');
   });
 
-  it('calls onChange when tab clicked', () => {
-    const onChange = vi.fn();
-    render(<MarketTabs active="crypto" onChange={onChange} />);
-    fireEvent.click(screen.getByText('美股'));
-    expect(onChange).toHaveBeenCalledWith('us');
+  it('renders 5 widget buttons (kline, heatmap, fundamentals, overlay, wrb)', () => {
+    render(<Sidebar />);
+    expect(screen.getByTestId('widget-kline')).toBeInTheDocument();
+    expect(screen.getByTestId('widget-heatmap')).toBeInTheDocument();
+    expect(screen.getByTestId('widget-fundamentals')).toBeInTheDocument();
+    expect(screen.getByTestId('widget-overlay')).toBeInTheDocument();
+    expect(screen.getByTestId('widget-wrb')).toBeInTheDocument();
   });
 
-  it('highlights the active tab', () => {
-    render(<MarketTabs active="us" onChange={vi.fn()} />);
-    const usButton = screen.getByText('美股').closest('button');
-    expect(usButton?.className).toContain('bg-[#1e1e3a]');
-  });
-});
-
-describe('AssetList', () => {
-  const assets: Asset[] = [
-    { symbol: 'BTCUSDT', name: 'Bitcoin', market: 'crypto', displaySymbol: 'BTC' },
-    { symbol: 'ETHUSDT', name: 'Ethereum', market: 'crypto', displaySymbol: 'ETH' },
-  ];
-
-  const quotes = new Map<string, Quote>([
-    ['BTCUSDT', { symbol: 'BTCUSDT', price: 69000, change: 1200, changePercent: 1.77 }],
-  ]);
-
-  it('renders asset list with display symbols', () => {
-    render(
-      <AssetList assets={assets} quotes={quotes} activeSymbol="BTCUSDT" onSelect={vi.fn()} />,
-    );
-    expect(screen.getByText('BTC')).toBeInTheDocument();
-    expect(screen.getByText('ETH')).toBeInTheDocument();
+  it('renders layout preset button', () => {
+    render(<Sidebar />);
+    expect(screen.getByTestId('widget-layout')).toBeInTheDocument();
   });
 
-  it('shows price for quoted assets', () => {
-    render(
-      <AssetList assets={assets} quotes={quotes} activeSymbol="" onSelect={vi.fn()} />,
-    );
-    expect(screen.getByText('+1.77%')).toBeInTheDocument();
+  it('renders chat button', () => {
+    render(<Sidebar />);
+    expect(screen.getByTestId('widget-chat')).toBeInTheDocument();
   });
 
-  it('calls onSelect when asset clicked', () => {
-    const onSelect = vi.fn();
-    render(
-      <AssetList assets={assets} quotes={quotes} activeSymbol="" onSelect={onSelect} />,
-    );
-    fireEvent.click(screen.getByText('BTC'));
-    expect(onSelect).toHaveBeenCalledWith(assets[0]);
+  it('renders settings button', () => {
+    render(<Sidebar />);
+    expect(screen.getByTestId('widget-settings')).toBeInTheDocument();
   });
 
-  it('shows empty state when no assets', () => {
-    render(
-      <AssetList assets={[]} quotes={new Map()} activeSymbol="" onSelect={vi.fn()} />,
-    );
-    expect(screen.getByText('暂无数据')).toBeInTheDocument();
-  });
-});
-
-describe('ToolBar', () => {
-  it('renders all 3 tool buttons for us market (VP/WRB moved to overlay)', () => {
-    render(<ToolBar activeTool={null} market="us" onToolClick={vi.fn()} />);
-    const buttons = screen.getAllByRole('button');
-    expect(buttons).toHaveLength(3);
+  it('clicking kline button calls onAddWidget("kline")', () => {
+    const onAddWidget = vi.fn();
+    render(<Sidebar onAddWidget={onAddWidget} />);
+    fireEvent.click(screen.getByTestId('widget-kline'));
+    expect(onAddWidget).toHaveBeenCalledWith('kline');
   });
 
-  it('hides fundamentals for crypto market', () => {
-    render(<ToolBar activeTool={null} market="crypto" onToolClick={vi.fn()} />);
-    const buttons = screen.getAllByRole('button');
-    // crypto: overlay + heatmap = 2（fundamentals 不支持）
-    expect(buttons).toHaveLength(2);
+  it('clicking heatmap button calls onAddWidget("heatmap")', () => {
+    const onAddWidget = vi.fn();
+    render(<Sidebar onAddWidget={onAddWidget} />);
+    fireEvent.click(screen.getByTestId('widget-heatmap'));
+    expect(onAddWidget).toHaveBeenCalledWith('heatmap');
   });
 
-  it('highlights active tool', () => {
-    render(<ToolBar activeTool="heatmap" market="us" onToolClick={vi.fn()} />);
-    const buttons = screen.getAllByRole('button');
-    const heatmapBtn = buttons.find((b) => b.textContent === '🔥');
-    expect(heatmapBtn?.className).toContain('bg-[#2563eb]');
+  it('clicking fundamentals button calls onAddWidget("fundamentals")', () => {
+    const onAddWidget = vi.fn();
+    render(<Sidebar onAddWidget={onAddWidget} />);
+    fireEvent.click(screen.getByTestId('widget-fundamentals'));
+    expect(onAddWidget).toHaveBeenCalledWith('fundamentals');
   });
 
-  it('calls onToolClick when tool button clicked', () => {
-    const onToolClick = vi.fn();
-    render(<ToolBar activeTool={null} market="us" onToolClick={onToolClick} />);
-    const buttons = screen.getAllByRole('button');
-    const firstBtn = buttons[0];
-    if (firstBtn) fireEvent.click(firstBtn);
-    expect(onToolClick).toHaveBeenCalledWith('overlay');
-  });
-});
-
-describe('SearchBox', () => {
-  it('renders input with placeholder', () => {
-    render(<SearchBox onSearch={vi.fn()} />);
-    expect(screen.getByPlaceholderText('搜索资产...')).toBeInTheDocument();
+  it('clicking chat button calls onToggleChat()', () => {
+    const onToggleChat = vi.fn();
+    render(<Sidebar onToggleChat={onToggleChat} />);
+    fireEvent.click(screen.getByTestId('widget-chat'));
+    expect(onToggleChat).toHaveBeenCalledTimes(1);
   });
 
-  it('shows loading indicator when loading', () => {
-    render(<SearchBox onSearch={vi.fn()} loading={true} />);
-    expect(screen.getByText('搜索中...')).toBeInTheDocument();
+  it('sidebar container has w-[44px] class', () => {
+    const { container } = render(<Sidebar />);
+    const sidebar = container.firstChild as HTMLElement;
+    expect(sidebar.className).toContain('w-[44px]');
+  });
+
+  it('accepts legacy props without TypeScript errors (backward compat)', () => {
+    // This test verifies that old App.tsx props are accepted without errors.
+    // The props are passed but ignored in the new implementation.
+    const noop = vi.fn();
+    expect(() =>
+      render(
+        <Sidebar
+          activeMarket="crypto"
+          activeSymbol="BTCUSDT"
+          activeTool={null}
+          quotes={new Map()}
+          onMarketChange={noop}
+          onAssetSelect={noop}
+          onToolClick={noop}
+        />,
+      ),
+    ).not.toThrow();
+  });
+
+  it('clicking overlay button calls onAddWidget("overlay")', () => {
+    const onAddWidget = vi.fn();
+    render(<Sidebar onAddWidget={onAddWidget} />);
+    fireEvent.click(screen.getByTestId('widget-overlay'));
+    expect(onAddWidget).toHaveBeenCalledWith('overlay');
+  });
+
+  it('clicking wrb button calls onAddWidget("wrb")', () => {
+    const onAddWidget = vi.fn();
+    render(<Sidebar onAddWidget={onAddWidget} />);
+    fireEvent.click(screen.getByTestId('widget-wrb'));
+    expect(onAddWidget).toHaveBeenCalledWith('wrb');
+  });
+
+  it('clicking layout button calls onLayoutPreset("default")', () => {
+    const onLayoutPreset = vi.fn();
+    render(<Sidebar onLayoutPreset={onLayoutPreset} />);
+    fireEvent.click(screen.getByTestId('widget-layout'));
+    expect(onLayoutPreset).toHaveBeenCalledWith('default');
+  });
+
+  it('widget buttons have title attributes (tooltips)', () => {
+    render(<Sidebar />);
+    expect(screen.getByTitle('K线图')).toBeInTheDocument();
+    expect(screen.getByTitle('热力图')).toBeInTheDocument();
+    expect(screen.getByTitle('基本面')).toBeInTheDocument();
+    expect(screen.getByTitle('AI 对话')).toBeInTheDocument();
+    expect(screen.getByTitle('设置')).toBeInTheDocument();
+  });
+
+  it('renders without any required props (all props optional)', () => {
+    // Should render fine with zero props
+    expect(() => render(<Sidebar />)).not.toThrow();
   });
 });
