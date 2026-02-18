@@ -57,7 +57,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 .kwh-row{display:flex;align-items:center;gap:4px;padding:2px 0}
 
 /* Symbol selector */
-.sym{display:flex;align-items:center;gap:4px;padding:2px 6px;border-radius:4px;cursor:pointer;transition:.15s;position:relative;flex-shrink:0}
+.sym{display:flex;align-items:center;gap:4px;padding:2px 6px;border-radius:4px;cursor:pointer;transition:.15s;position:relative;flex-shrink:0;z-index:201}
 .sym:hover{background:var(--bgH)}
 .sym-icon{font-size:12px}
 .sym-t{font-size:12px;font-weight:600}
@@ -176,17 +176,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 .ci input:focus{border-color:var(--acc)}
 .csb{width:28px;height:28px;border-radius:6px;background:var(--acc);color:#fff;border:0;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 
-/* Dropdown */
-.dd{position:absolute;top:100%;left:0;margin-top:3px;width:220px;background:var(--bg1);border:1px solid var(--brd);border-radius:6px;padding:3px;box-shadow:0 6px 20px rgba(0,0,0,.4);z-index:200;display:none}
+/* Dropdown — overlay mode, covers chart */
+.dd-overlay{display:none;position:fixed;inset:0;z-index:199}
+.dd-overlay.show{display:block}
+.dd{position:absolute;top:100%;left:0;margin-top:3px;width:280px;max-height:360px;overflow-y:auto;background:var(--bg1);border:1px solid var(--brd2);border-radius:8px;padding:4px;box-shadow:0 12px 40px rgba(0,0,0,.6);z-index:200;display:none}
 .dd.show{display:block}
-.dd input{width:calc(100% - 8px);margin:3px 4px;padding:4px 7px;border-radius:3px;border:1px solid var(--brd);background:var(--bg3);color:var(--t1);font-size:10px;outline:0}
-.ddi{display:flex;align-items:center;justify-content:space-between;padding:4px 6px;border-radius:3px;cursor:pointer;transition:.1s}
+.dd input{width:calc(100% - 8px);margin:4px 4px 6px;padding:6px 8px;border-radius:4px;border:1px solid var(--brd);background:var(--bg3);color:var(--t1);font-size:11px;outline:0}
+.dd input:focus{border-color:var(--acc)}
+.dd-section{font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:6px 6px 2px;font-weight:600}
+.ddi{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:4px;cursor:pointer;transition:.1s}
 .ddi:hover{background:var(--bgH)}
-.ddi .dn_{font-size:11px;font-weight:600}.ddi .dm{font-size:9px;color:var(--t3)}
-.ddi .dk{font-size:8px;padding:1px 3px;border-radius:2px;background:var(--bg3);color:var(--t3)}
+.ddi .dn_{font-size:11px;font-weight:600}.ddi .dm{font-size:9px;color:var(--t3);margin-left:4px}
+.ddi .dk{font-size:8px;padding:1px 4px;border-radius:2px;background:var(--bg3);color:var(--t3)}
 
 /* Widget label annotations */
 .wlbl{position:absolute;font-size:9px;color:var(--t2);font-weight:500;opacity:.6;pointer-events:none;z-index:5}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:768px){
+  .cp{display:none} /* 手机隐藏聊天面板 */
+  .lbar{width:36px}
+  .lb{width:28px;height:28px;font-size:12px}
+  .wg{grid-template-columns:1fr;height:auto;max-height:300px;overflow-y:auto}
+  .kwh-row{flex-wrap:wrap;gap:2px}
+  .dt{display:none} /* 手机隐藏画图工具 */
+  .tick{display:none} /* 手机隐藏 ticker */
+  .hsep:nth-child(4),.hsep:nth-child(2){display:none}
+  .dd{width:calc(100vw - 60px);left:-6px}
+}
+@media(max-width:480px){
+  .lbar{display:none}
+  .hdr{padding:0 6px;gap:6px}
+  .pill{font-size:9px;padding:2px 5px}
+}
 </style>
 </head>
 <body>
@@ -247,14 +269,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
             <span class="sym-t">BTCUSDT</span>
             <span class="sym-m">Crypto</span>
             <span class="sym-v">▾</span>
+            <div class="dd-overlay" id="ddOverlay" onclick="closeDD(event)"></div>
             <div class="dd" id="dd">
-              <input type="text" placeholder="搜索标的 / Search symbol...">
-              <div class="ddi"><div><span class="dn_">BTC/USDT</span> <span class="dm">Bitcoin</span></div><span class="dk">Crypto</span></div>
-              <div class="ddi"><div><span class="dn_">ETH/USDT</span> <span class="dm">Ethereum</span></div><span class="dk">Crypto</span></div>
-              <div class="ddi"><div><span class="dn_">AAPL</span> <span class="dm">Apple Inc.</span></div><span class="dk">US</span></div>
-              <div class="ddi"><div><span class="dn_">NVDA</span> <span class="dm">NVIDIA</span></div><span class="dk">US</span></div>
-              <div class="ddi"><div><span class="dn_">601318</span> <span class="dm">中国平安</span></div><span class="dk">A股</span></div>
-              <div class="ddi"><div><span class="dn_">XAU/USD</span> <span class="dm">Gold</span></div><span class="dk">Metal</span></div>
+              <input type="text" placeholder="搜索标的 / Search symbol..." id="ddInput">
+              <div class="dd-section">Crypto</div>
+              <div class="ddi" data-sym="BTCUSDT" data-mkt="Crypto"><div><span class="dn_">BTC/USDT</span><span class="dm">Bitcoin</span></div><span class="dk">Crypto</span></div>
+              <div class="ddi" data-sym="ETHUSDT" data-mkt="Crypto"><div><span class="dn_">ETH/USDT</span><span class="dm">Ethereum</span></div><span class="dk">Crypto</span></div>
+              <div class="ddi" data-sym="SOLUSDT" data-mkt="Crypto"><div><span class="dn_">SOL/USDT</span><span class="dm">Solana</span></div><span class="dk">Crypto</span></div>
+              <div class="dd-section">US Stocks</div>
+              <div class="ddi" data-sym="AAPL" data-mkt="US"><div><span class="dn_">AAPL</span><span class="dm">Apple Inc.</span></div><span class="dk">US</span></div>
+              <div class="ddi" data-sym="NVDA" data-mkt="US"><div><span class="dn_">NVDA</span><span class="dm">NVIDIA</span></div><span class="dk">US</span></div>
+              <div class="ddi" data-sym="MSFT" data-mkt="US"><div><span class="dn_">MSFT</span><span class="dm">Microsoft</span></div><span class="dk">US</span></div>
+              <div class="dd-section">A股</div>
+              <div class="ddi" data-sym="601318" data-mkt="A股"><div><span class="dn_">601318</span><span class="dm">中国平安</span></div><span class="dk">A股</span></div>
+              <div class="ddi" data-sym="600519" data-mkt="A股"><div><span class="dn_">600519</span><span class="dm">贵州茅台</span></div><span class="dk">A股</span></div>
+              <div class="dd-section">Commodities</div>
+              <div class="ddi" data-sym="XAUUSD" data-mkt="Metal"><div><span class="dn_">XAU/USD</span><span class="dm">Gold</span></div><span class="dk">Metal</span></div>
+              <div class="ddi" data-sym="XAGUSD" data-mkt="Metal"><div><span class="dn_">XAG/USD</span><span class="dm">Silver</span></div><span class="dk">Metal</span></div>
             </div>
           </div>
 
@@ -471,8 +502,40 @@ function genHM(){
     return`<div class="hmc" style="background:${bg}"><span class="s" style="color:${tc}">${x.s}</span><span class="p" style="color:${tc}">${x.p>0?'+':''}${x.p}%</span></div>`;
   }).join('');
 }
-function toggleDD(){document.getElementById('dd').classList.toggle('show')}
-document.addEventListener('click',e=>{if(!document.getElementById('symSel').contains(e.target))document.getElementById('dd').classList.remove('show')});
+function toggleDD(){
+  const dd=document.getElementById('dd'),ov=document.getElementById('ddOverlay');
+  const open=!dd.classList.contains('show');
+  dd.classList.toggle('show');ov.classList.toggle('show');
+  if(open){const inp=document.getElementById('ddInput');inp.value='';inp.focus();filterDD('');}
+}
+function closeDD(e){
+  if(e)e.stopPropagation();
+  document.getElementById('dd').classList.remove('show');
+  document.getElementById('ddOverlay').classList.remove('show');
+}
+function filterDD(q){
+  q=q.toLowerCase();
+  document.querySelectorAll('.ddi').forEach(el=>{
+    const t=(el.dataset.sym+' '+el.textContent).toLowerCase();
+    el.style.display=t.includes(q)?'':'none';
+  });
+  document.querySelectorAll('.dd-section').forEach(el=>{
+    let next=el.nextElementSibling,vis=false;
+    while(next&&!next.classList.contains('dd-section')){
+      if(next.classList.contains('ddi')&&next.style.display!=='none')vis=true;
+      next=next.nextElementSibling;
+    }
+    el.style.display=vis?'':'none';
+  });
+}
+document.getElementById('ddInput')?.addEventListener('input',e=>filterDD(e.target.value));
+document.querySelectorAll('.ddi').forEach(el=>el.addEventListener('click',function(e){
+  e.stopPropagation();
+  const sym=this.dataset.sym,mkt=this.dataset.mkt;
+  document.querySelector('.sym-t').textContent=sym;
+  document.querySelector('.sym-m').textContent=mkt;
+  closeDD();genCandles();
+}));
 genCandles();genVP();genHM();
 </script>
 </body>
