@@ -131,6 +131,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 .tf-dd-bg{position:fixed;inset:0;z-index:299}
 .tf-dd-bg.show{display:block}.tf-dd-bg{display:none}
 
+/* Chart type selector */
+.ct-sel{position:relative;z-index:201}
+.ct-btn{display:flex;align-items:center;gap:4px;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:500;color:var(--t2);cursor:pointer;background:0;border:0;transition:.15s}
+.ct-btn:hover{background:var(--bgH);color:var(--t1)}
+.ct-icon{flex-shrink:0}
+.ct-label{white-space:nowrap}
+.ct-arrow{font-size:8px;color:var(--t3)}
+.ct-dd{display:none;position:absolute;top:calc(100% + 4px);left:0;background:var(--bg2);border:1px solid var(--brd2);border-radius:6px;padding:6px;min-width:140px;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:300}
+.ct-dd.show{display:block}
+.ct-dd-title{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:2px 4px 4px}
+.ct-dd-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:4px;font-size:10px;color:var(--t2);cursor:pointer;border:0;background:0;width:100%;transition:.12s}
+.ct-dd-item:hover{background:var(--bgH);color:var(--t1)}
+.ct-dd-item.on{color:var(--acc);background:rgba(37,99,235,.1)}
+.ct-dd-item svg{width:14px;height:14px;flex-shrink:0}
+.ct-dd-bg{position:fixed;inset:0;z-index:299;display:none}
+.ct-dd-bg.show{display:block}
+
 .pb{padding:1px 5px;border-radius:3px;font-size:10px;font-weight:500;color:var(--t3);cursor:pointer;background:0;border:0;transition:.15s;flex-shrink:0}
 .pb:hover{color:var(--t1);background:var(--bgH)}
 .pb.on{color:#fff;background:var(--acc)}
@@ -390,6 +407,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
               <div class="tf-dd-title" data-i18n="tf_title">Timeframe</div>
               <div class="tf-dd-grid" id="tfGrid"></div>
               <div class="tf-dd-hint" data-i18n="tf_hint">Max 3</div>
+            </div>
+          </div>
+
+          <div class="vs"></div>
+
+          <!-- Chart type selector -->
+          <div class="ct-sel" id="ctSel">
+            <button class="ct-btn" onclick="toggleCtDropdown()" id="ctBtn">
+              <svg class="ct-icon" id="ctIcon" viewBox="0 0 16 16" fill="currentColor" width="14" height="14"></svg>
+              <span class="ct-label" id="ctLabel"></span>
+              <span class="ct-arrow">▾</span>
+            </button>
+            <div class="ct-dd-bg" id="ctDdBg" onclick="closeCtDropdown()"></div>
+            <div class="ct-dd" id="ctDd">
+              <div class="ct-dd-title" data-i18n="ct_title">Chart Type</div>
+              <div id="ctList"></div>
             </div>
           </div>
 
@@ -695,6 +728,41 @@ function closeTfDropdown(){
 }
 renderTfActive();
 
+// === Chart type selector ===
+const chartTypes=[
+  {id:'candle_solid', labelKey:'ct_candle_solid', icon:'<path d="M7 1h2v3h2v8H5V4h2V1zm0 14h2v-2H7v2z"/>'},
+  {id:'candle_hollow', labelKey:'ct_candle_hollow', icon:'<rect x="5" y="4" width="6" height="8" rx=".5" fill="none" stroke="currentColor" stroke-width="1.2"/><line x1="8" y1="1" x2="8" y2="4" stroke="currentColor" stroke-width="1.2"/><line x1="8" y1="12" x2="8" y2="15" stroke="currentColor" stroke-width="1.2"/>'},
+  {id:'bar', labelKey:'ct_bar', icon:'<line x1="4" y1="2" x2="4" y2="14" stroke="currentColor" stroke-width="1.3"/><line x1="1" y1="4" x2="4" y2="4" stroke="currentColor" stroke-width="1.3"/><line x1="4" y1="10" x2="7" y2="10" stroke="currentColor" stroke-width="1.3"/><line x1="11" y1="4" x2="11" y2="14" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="6" x2="11" y2="6" stroke="currentColor" stroke-width="1.3"/><line x1="11" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="1.3"/>'},
+  {id:'line', labelKey:'ct_line', icon:'<polyline points="1,12 4,7 8,9 12,3 15,6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'},
+  {id:'area', labelKey:'ct_area', icon:'<path d="M1,12 L4,7 L8,9 L12,3 L15,6 L15,14 L1,14 Z" opacity=".3"/><polyline points="1,12 4,7 8,9 12,3 15,6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'}
+];
+let curChartType='candle_solid';
+
+function renderCtBtn(){
+  const ct=chartTypes.find(c=>c.id===curChartType);
+  document.getElementById('ctIcon').innerHTML=ct.icon;
+  document.getElementById('ctLabel').textContent=t(ct.labelKey);
+}
+function renderCtList(){
+  const list=document.getElementById('ctList');
+  list.innerHTML=chartTypes.map(ct=>`<button class="ct-dd-item${ct.id===curChartType?' on':''}" onclick="selectChartType('${ct.id}')"><svg viewBox="0 0 16 16" fill="currentColor">${ct.icon}</svg><span>${t(ct.labelKey)}</span></button>`).join('');
+}
+function selectChartType(id){
+  curChartType=id;
+  renderCtBtn();renderCtList();closeCtDropdown();genCandles();
+}
+function toggleCtDropdown(){
+  const dd=document.getElementById('ctDd'),bg=document.getElementById('ctDdBg');
+  const show=!dd.classList.contains('show');
+  dd.classList.toggle('show',show);bg.classList.toggle('show',show);
+  if(show)renderCtList();
+}
+function closeCtDropdown(){
+  document.getElementById('ctDd').classList.remove('show');
+  document.getElementById('ctDdBg').classList.remove('show');
+}
+renderCtBtn();
+
 genCandles();genVP();genHM();
 
 // ═══ SIDEBAR (single panel, Koyfin style) ═══
@@ -790,6 +858,9 @@ const i18n={
     qa_vp:'BTC 筹码', qa_hm:'热力图', qa_wrb:'WRB 信号',
     // Timeframe selector
     tf_title:'周期', tf_hint:'最多选 3 个',
+    // Chart type
+    ct_title:'图表类型',
+    ct_candle_solid:'实心K线', ct_candle_hollow:'空心K线', ct_bar:'美国线', ct_line:'折线图', ct_area:'面积图',
     // Sub-panel titles
     sp_charts:'图表', sp_heatmap:'热力图', sp_fund:'基本面',
     sp_overlay:'叠加对比', sp_ai:'AI 助手', sp_all:'所有组件',
@@ -827,6 +898,8 @@ const i18n={
     chat_a2:'Fetching fundamentals data...',
     qa_vp:'BTC Profile', qa_hm:'Heatmap', qa_wrb:'WRB Signals',
     tf_title:'Timeframe', tf_hint:'Max 3 selected',
+    ct_title:'Chart Type',
+    ct_candle_solid:'Candlestick', ct_candle_hollow:'Hollow Candle', ct_bar:'OHLC Bar', ct_line:'Line', ct_area:'Area',
     sp_charts:'Charts', sp_heatmap:'Heatmap', sp_fund:'Fundamentals',
     sp_overlay:'Overlay', sp_ai:'AI Assistant', sp_all:'All Widgets',
     sec_candle:'Candlestick', sec_trend:'Trend', sec_market:'Markets', sec_macro:'Macro',
@@ -879,9 +952,10 @@ function applyLang(){
   });
   // Lang button
   document.getElementById('langBtn').textContent=curLang==='zh'?'EN':'中';
-  // Re-render sidebar nav + TF selector
+  // Re-render sidebar nav + TF selector + chart type
   renderSidebar();
   renderTfActive();
+  renderCtBtn();
 }
 
 function toggleLang(){
