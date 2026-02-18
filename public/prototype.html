@@ -149,12 +149,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 .fi{display:flex;justify-content:space-between;padding:2px 5px;border-radius:3px;background:var(--bg3)}
 .fl{font-size:8px;color:var(--t3)}.fv{font-size:9px;font-weight:600;font-family:monospace}
 
-/* ═══ VP WIDGET ═══ */
-.vpw{display:flex;flex-direction:column;gap:2px;height:100%;justify-content:space-between}
-.vpr{display:flex;align-items:center;gap:3px;height:10px}
-.vpl{font-size:7px;color:var(--t3);width:32px;text-align:right;font-family:monospace;flex-shrink:0}
-.vpbw{flex:1;height:6px;display:flex;border-radius:2px;overflow:hidden}
-.vpwb{background:rgba(38,166,154,.5)}.vpws{background:rgba(239,83,80,.5)}
+/* VP widget CSS removed — VP is now KLine overlay only */
 
 /* ═══ CHAT ═══ */
 .cp{width:300px;background:var(--bg1);border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0}
@@ -396,19 +391,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
     <!-- ═══ BOTTOM WIDGET GRID ═══ -->
     <div class="wg">
 
-      <!-- Widget: Volume Profile -->
-      <div class="wp">
-        <div class="wph">
-          <div class="wph-title">📊 Volume Profile</div>
-          <div class="wph-sym">BTC ▾</div>
-          <div class="wph-spc"></div>
-          <button class="wph-btn">⟲</button>
-          <button class="wph-btn">⛶</button>
-          <button class="wph-btn">✕</button>
-        </div>
-        <div class="wpb" id="vpW"></div>
-      </div>
-
       <!-- Widget: Heatmap -->
       <div class="wp">
         <div class="wph">
@@ -503,14 +485,13 @@ function genCandles(){
   el.innerHTML=h;vol.innerHTML=v;
 }
 function genVP(){
-  const el=document.getElementById('vpo'),w=document.getElementById('vpW');
-  const vs=[25,35,50,65,75,85,100,90,70,55,40,20],ps=[72,71.2,70.4,69.6,69.2,68.4,67.85,67.2,66.4,65.6,64.8,64];
-  let h='',wh='';
-  vs.forEach((v,i)=>{const b=Math.random()*.6+.2;
+  const el=document.getElementById('vpo');
+  const vs=[25,35,50,65,75,85,100,90,70,55,40,20];
+  let h='';
+  vs.forEach((v)=>{const b=Math.random()*.6+.2;
     h+=`<div class="vpb"><div class="vpbu" style="width:${v*b}%"></div><div class="vpse" style="width:${v*(1-b)}%"></div></div>`;
-    wh+=`<div class="vpr"><span class="vpl">${ps[i]}k</span><div class="vpbw${i===6?' style="border:1px solid var(--gld)"':''}"><div class="vpwb" style="width:${v*b}%"></div><div class="vpws" style="width:${v*(1-b)}%"></div></div></div>`;
   });
-  el.innerHTML=h;w.innerHTML=`<div class="vpw">${wh}</div>`;
+  el.innerHTML=h;
 }
 function genHM(){
   const d=[{s:'BTC',p:2.3},{s:'ETH',p:1.8},{s:'SOL',p:5.2},{s:'BNB',p:-.4},{s:'XRP',p:-1.2},{s:'ADA',p:3.1},{s:'DOGE',p:8.4},{s:'AVAX',p:-2.1},{s:'DOT',p:.8},{s:'LINK',p:4.2},{s:'UNI',p:-.3},{s:'MATIC',p:1.5}];
