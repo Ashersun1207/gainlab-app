@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GainLab Layout Preview — T1/T2/T3 Components</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg0:#08081a;--bg1:#0d0d20;--bg2:#12122a;--bg3:#1a1a3e;
+  --bgH:#1e1e3a;--brd:#2a2a4a;--brd2:#3a3a6a;
+  --t1:#e0e0f0;--t2:#8888aa;--t3:#5a5a8a;
+  --acc:#2563eb;--acc2:#1d4ed8;
+  --grn:#26a69a;--red:#ef5350;--gld:#f0b90b;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,sans-serif;background:var(--bg0);color:var(--t1);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* ═══ T1: HEADER BAR ═══ */
+.header{
+  height:40px;background:var(--bg1);border-bottom:1px solid var(--brd);
+  display:flex;align-items:center;padding:0 10px;gap:10px;flex-shrink:0
+}
+.logo{font-size:14px;font-weight:700;background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hdiv{width:1px;height:18px;background:var(--brd);flex-shrink:0}
+.pills{display:flex;gap:6px;flex:1}
+.pill{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:500;padding:2px 7px;border-radius:4px;background:var(--bg3);color:var(--t2)}
+.dot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
+.dot-on{background:var(--grn)}
+.dot-off{background:var(--t3)}
+.hbtn{padding:3px 8px;border-radius:5px;font-size:11px;border:1px solid var(--brd);color:var(--t2);background:transparent;cursor:pointer}
+.hbtn.active{background:var(--acc);border-color:var(--acc);color:#fff}
+
+/* ═══ T2: SIDEBAR ═══ */
+.main{flex:1;display:flex;min-height:0;overflow:hidden}
+.sidebar{
+  width:44px;height:100%;display:flex;flex-direction:column;align-items:center;
+  background:var(--bg1);border-right:1px solid var(--brd);flex-shrink:0;padding:6px 0;gap:2px
+}
+.sb-logo{width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border-radius:6px;margin-bottom:2px}
+.sb-sep{width:20px;height:1px;background:var(--brd);margin:3px 0}
+.sb-btn{
+  width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:14px;cursor:pointer;color:var(--t3);background:transparent;border:0;
+  position:relative;transition:.15s
+}
+.sb-btn:hover{background:var(--bgH);color:var(--t1)}
+.sb-btn .tip{position:absolute;left:110%;top:50%;transform:translateY(-50%);padding:2px 6px;border-radius:3px;background:var(--bg3);border:1px solid var(--brd);color:var(--t1);font-size:9px;white-space:nowrap;opacity:0;pointer-events:none;transition:.15s;z-index:99}
+.sb-btn:hover .tip{opacity:1}
+.spacer{flex:1}
+
+/* ═══ CONTENT AREA (Mosaic placeholder) ═══ */
+.content{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+
+/* ═══ T3: WIDGET with internal controls ═══ */
+.widget{flex:1;display:flex;flex-direction:column;background:var(--bg2);border:1px solid var(--brd);border-radius:4px;margin:4px;overflow:hidden}
+.widget-header{
+  min-height:32px;background:var(--bg1);border-bottom:1px solid var(--brd);
+  display:flex;align-items:center;padding:0 6px;gap:4px;flex-shrink:0;flex-wrap:wrap
+}
+
+/* Symbol Selector */
+.sym-trigger{display:flex;align-items:center;gap:3px;padding:2px 6px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;color:var(--t1);background:transparent;border:0;transition:.15s}
+.sym-trigger:hover{background:var(--bgH)}
+.sym-arrow{color:var(--t3);font-size:10px}
+
+/* Price */
+.price{font-size:12px;font-weight:600;font-family:'SF Mono',monospace;color:var(--grn)}
+.change{font-size:10px;font-family:'SF Mono',monospace;font-weight:500}
+.up{color:var(--grn)}.dn{color:var(--red)}
+
+/* Separator */
+.vs{width:1px;height:16px;background:var(--brd);margin:0 2px;flex-shrink:0}
+
+/* Interval Picker */
+.intv{display:flex;gap:1px}
+.intv-btn{padding:1px 5px;border-radius:3px;font-size:10px;font-weight:500;color:var(--t3);cursor:pointer;background:transparent;border:0;transition:.15s}
+.intv-btn:hover{color:var(--t1)}
+.intv-btn.on{color:#fff;background:var(--acc)}
+
+/* Indicator Selector */
+.ind-trigger{display:flex;align-items:center;gap:3px;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;color:var(--t2);cursor:pointer;background:var(--bg3);border:1px solid var(--brd);transition:.15s}
+.ind-trigger:hover{background:var(--bgH);color:var(--t1)}
+.ind-badge{background:var(--acc);color:#fff;font-size:8px;padding:0 4px;border-radius:8px;font-weight:700;min-width:14px;text-align:center}
+
+/* Widget Controls */
+.wctl{margin-left:auto;display:flex;gap:1px}
+.wctl-btn{width:20px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;color:var(--t3);background:transparent;border:0;transition:.15s}
+.wctl-btn:hover{background:var(--bgH);color:var(--t1)}
+
+/* Chart placeholder */
+.chart-body{flex:1;background:var(--bg2);display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:13px;min-height:200px;position:relative}
+
+/* Bottom widgets grid */
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:0 4px 4px;flex-shrink:0}
+.mini-widget{background:var(--bg2);border:1px solid var(--brd);border-radius:4px;overflow:hidden;height:180px;display:flex;flex-direction:column}
+.mini-header{
+  height:26px;background:var(--bg3);border-bottom:1px solid var(--brd);
+  display:flex;align-items:center;padding:0 6px;gap:4px;flex-shrink:0
+}
+.mini-title{font-size:9px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.3px;display:flex;align-items:center;gap:3px}
+.mini-sym{font-size:9px;font-weight:500;color:var(--t1);cursor:pointer;padding:1px 4px;border-radius:2px}
+.mini-sym:hover{background:var(--bgH)}
+.mini-spc{flex:1}
+.mini-btn{width:16px;height:16px;border-radius:3px;border:0;background:transparent;color:var(--t3);font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.mini-btn:hover{background:var(--bgH);color:var(--t1)}
+.mini-body{flex:1;display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:11px}
+
+/* Chat panel placeholder */
+.chat{width:300px;background:var(--bg1);border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0}
+.chat-header{height:40px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;padding:0 10px}
+.chat-title{font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px}
+.chat-dot{width:5px;height:5px;border-radius:50%;background:var(--grn);box-shadow:0 0 3px var(--grn)}
+.chat-body{flex:1;display:flex;align-items:center;justify-content:center;color:var(--t3);font-size:11px}
+
+/* Label overlay */
+.label{position:absolute;top:8px;left:8px;font-size:9px;color:var(--acc);font-weight:600;background:rgba(37,99,235,.1);padding:2px 6px;border-radius:3px;pointer-events:none;z-index:10}
+.label-section{position:absolute;font-size:8px;color:var(--acc);font-weight:700;opacity:.5;pointer-events:none;z-index:10;letter-spacing:1px;text-transform:uppercase}
+
+/* Dropdown demo */
+.dd-demo{display:none;position:absolute;top:100%;left:0;margin-top:3px;width:280px;max-height:300px;overflow-y:auto;background:var(--bg1);border:1px solid var(--brd2);border-radius:8px;padding:4px;box-shadow:0 12px 40px rgba(0,0,0,.6);z-index:200}
+.dd-demo.show{display:block}
+.dd-demo input{width:calc(100% - 8px);margin:4px;padding:6px 8px;border-radius:4px;border:1px solid var(--brd);background:var(--bg3);color:var(--t1);font-size:11px;outline:0}
+.dd-sec{font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:6px 6px 2px;font-weight:600}
+.dd-item{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:4px;cursor:pointer;transition:.1s}
+.dd-item:hover{background:var(--bgH)}
+.dd-item .dn_{font-size:11px;font-weight:600}
+.dd-item .dm{font-size:9px;color:var(--t3);margin-left:4px}
+.dd-item .dk{font-size:8px;padding:1px 4px;border-radius:2px;background:var(--bg3);color:var(--t3)}
+
+/* Indicator panel demo */
+.ind-panel{display:none;position:absolute;top:100%;left:0;margin-top:3px;width:240px;max-height:300px;overflow-y:auto;background:var(--bg1);border:1px solid var(--brd2);border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.6);z-index:200;padding:4px}
+.ind-panel.show{display:block}
+.ind-panel input{width:calc(100% - 8px);margin:4px;padding:6px 8px;border-radius:4px;border:1px solid var(--brd);background:var(--bg3);color:var(--t1);font-size:11px;outline:0}
+.ind-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;transition:.1s}
+.ind-item:hover{background:var(--bgH)}
+.ind-toggle{width:28px;height:16px;border-radius:8px;background:var(--bg3);border:1px solid var(--brd);position:relative;transition:.2s;flex-shrink:0}
+.ind-toggle::after{content:'';position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:var(--t3);transition:.2s}
+.ind-item.on .ind-toggle{background:var(--acc);border-color:var(--acc)}
+.ind-item.on .ind-toggle::after{left:14px;background:#fff}
+.ind-name{font-size:11px;font-weight:600;min-width:36px}
+.ind-desc{font-size:9px;color:var(--t3)}
+
+/* Heatmap mini */
+.hm-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:2px;height:100%;padding:4px}
+.hm-cell{border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.hm-cell .s{font-size:8px;opacity:.9}.hm-cell .p{font-size:10px;font-weight:700}
+
+/* Fundamentals mini */
+.fund-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;padding:4px;align-content:start}
+.fund-item{display:flex;justify-content:space-between;padding:2px 5px;border-radius:3px;background:var(--bg3)}
+.fund-l{font-size:8px;color:var(--t3)}.fund-v{font-size:9px;font-weight:600;font-family:monospace}
+
+/* Annotation arrows */
+.anno{position:fixed;pointer-events:none;z-index:500}
+.anno-box{background:rgba(37,99,235,.15);border:1px solid var(--acc);border-radius:6px;padding:4px 8px;font-size:10px;color:var(--acc);font-weight:600;white-space:nowrap}
+
+@media(max-width:768px){
+  .chat{display:none}
+  .sidebar{width:36px}
+  .bottom-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ T1: HEADER BAR ═══ -->
+<div class="header" style="position:relative">
+  <span class="label-section" style="top:-2px;right:10px;font-size:10px;color:#60a5fa">← T1: HeaderBar</span>
+  <span class="logo">GainLab</span>
+  <div class="hdiv"></div>
+  <div class="pills">
+    <div class="pill"><div class="dot dot-on"></div>Crypto</div>
+    <div class="pill"><div class="dot dot-on"></div>US</div>
+    <div class="pill"><div class="dot dot-off"></div>A股</div>
+    <div class="pill"><div class="dot dot-on"></div>Metal</div>
+  </div>
+  <button class="hbtn">🌙</button>
+  <button class="hbtn active">🤖</button>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="main">
+
+  <!-- ═══ T2: SIDEBAR (44px) ═══ -->
+  <div class="sidebar" style="position:relative">
+    <span class="label-section" style="top:2px;left:46px;writing-mode:vertical-rl;transform:rotate(180deg)">T2: Sidebar</span>
+    <div class="sb-logo">GL</div>
+    <div class="sb-sep"></div>
+    <button class="sb-btn">📈<span class="tip">K线图</span></button>
+    <button class="sb-btn">🔥<span class="tip">热力图</span></button>
+    <button class="sb-btn">💰<span class="tip">基本面</span></button>
+    <button class="sb-btn">📐<span class="tip">叠加对比</span></button>
+    <button class="sb-btn">📊<span class="tip">WRB</span></button>
+    <div class="sb-sep"></div>
+    <button class="sb-btn">⊞<span class="tip">布局</span></button>
+    <div class="spacer"></div>
+    <button class="sb-btn">💬<span class="tip">AI 对话</span></button>
+    <button class="sb-btn">⚙️<span class="tip">设置</span></button>
+  </div>
+
+  <!-- ═══ CONTENT ═══ -->
+  <div class="content">
+
+    <!-- ═══ T3: K线 WIDGET (self-contained) ═══ -->
+    <div class="widget" style="position:relative">
+      <span class="label">T3: Widget 内部控件 — SymbolSelector + IntervalPicker + IndicatorSelector + WidgetControls</span>
+      <div class="widget-header">
+        <!-- T3: SymbolSelector -->
+        <div style="position:relative">
+          <button class="sym-trigger" id="symTrigger" onclick="toggleSymDD()">
+            🔍 <span style="font-weight:700">BTCUSDT</span>
+            <span style="font-size:9px;color:var(--t3);background:var(--bg3);padding:0 4px;border-radius:2px;margin-left:2px">Crypto</span>
+            <span class="sym-arrow">▾</span>
+          </button>
+          <!-- Symbol dropdown (demo) -->
+          <div class="dd-demo" id="symDD">
+            <input type="text" placeholder="搜索标的 / Search symbol...">
+            <div class="dd-sec">Crypto</div>
+            <div class="dd-item" onclick="selectSym('BTCUSDT','Crypto')"><div><span class="dn_">BTC</span><span class="dm">Bitcoin</span></div><span class="dk">Crypto</span></div>
+            <div class="dd-item" onclick="selectSym('ETHUSDT','Crypto')"><div><span class="dn_">ETH</span><span class="dm">Ethereum</span></div><span class="dk">Crypto</span></div>
+            <div class="dd-item" onclick="selectSym('SOLUSDT','Crypto')"><div><span class="dn_">SOL</span><span class="dm">Solana</span></div><span class="dk">Crypto</span></div>
+            <div class="dd-sec">US Stocks</div>
+            <div class="dd-item" onclick="selectSym('AAPL','US')"><div><span class="dn_">AAPL</span><span class="dm">Apple</span></div><span class="dk">US</span></div>
+            <div class="dd-item" onclick="selectSym('NVDA','US')"><div><span class="dn_">NVDA</span><span class="dm">NVIDIA</span></div><span class="dk">US</span></div>
+            <div class="dd-sec">A股</div>
+            <div class="dd-item" onclick="selectSym('601318','A股')"><div><span class="dn_">601318</span><span class="dm">中国平安</span></div><span class="dk">A股</span></div>
+            <div class="dd-sec">Commodities</div>
+            <div class="dd-item" onclick="selectSym('XAUUSD','Metal')"><div><span class="dn_">XAU/USD</span><span class="dm">Gold</span></div><span class="dk">Metal</span></div>
+          </div>
+        </div>
+
+        <span class="price">68,144.10</span>
+        <span class="change up">+2.34%</span>
+
+        <div class="vs"></div>
+
+        <!-- T3: IntervalPicker -->
+        <div class="intv">
+          <button class="intv-btn">1m</button>
+          <button class="intv-btn">5m</button>
+          <button class="intv-btn">15m</button>
+          <button class="intv-btn">1H</button>
+          <button class="intv-btn">4H</button>
+          <button class="intv-btn on">1D</button>
+          <button class="intv-btn">1W</button>
+          <button class="intv-btn">1M</button>
+        </div>
+
+        <div class="vs"></div>
+
+        <!-- T3: IndicatorSelector -->
+        <div style="position:relative">
+          <button class="ind-trigger" id="indTrigger" onclick="toggleIndPanel()">
+            📊 指标 <span class="ind-badge">4</span> ▾
+          </button>
+          <div class="ind-panel" id="indPanel">
+            <input type="text" placeholder="搜索指标...">
+            <div class="dd-sec">主图叠加</div>
+            <div class="ind-item on"><div class="ind-toggle"></div><span class="ind-name">MA</span><span class="ind-desc">移动平均线</span></div>
+            <div class="ind-item"><div class="ind-toggle"></div><span class="ind-name">EMA</span><span class="ind-desc">指数移动平均</span></div>
+            <div class="ind-item on"><div class="ind-toggle"></div><span class="ind-name">BOLL</span><span class="ind-desc">布林带</span></div>
+            <div class="ind-item on"><div class="ind-toggle"></div><span class="ind-name">VWAP</span><span class="ind-desc">成交量加权均价</span></div>
+            <div class="ind-item on"><div class="ind-toggle"></div><span class="ind-name">VP</span><span class="ind-desc">筹码分布</span></div>
+            <div class="ind-item"><div class="ind-toggle"></div><span class="ind-name">WRB</span><span class="ind-desc">宽幅K线信号</span></div>
+            <div class="dd-sec">副图指标</div>
+            <div class="ind-item"><div class="ind-toggle"></div><span class="ind-name">RSI</span><span class="ind-desc">相对强弱</span></div>
+            <div class="ind-item"><div class="ind-toggle"></div><span class="ind-name">MACD</span><span class="ind-desc">指数平滑异同</span></div>
+            <div class="ind-item"><div class="ind-toggle"></div><span class="ind-name">KDJ</span><span class="ind-desc">随机指标</span></div>
+            <div class="ind-item"><div class="ind-toggle"></div><span class="ind-name">ATR</span><span class="ind-desc">真实波幅</span></div>
+          </div>
+        </div>
+
+        <div class="vs"></div>
+
+        <!-- T3: WidgetControls -->
+        <div class="wctl">
+          <button class="wctl-btn" title="刷新">⟲</button>
+          <button class="wctl-btn" title="全屏">⛶</button>
+          <button class="wctl-btn" title="关闭">✕</button>
+        </div>
+      </div>
+
+      <!-- Chart body placeholder -->
+      <div class="chart-body">
+        <div style="text-align:center;opacity:.5">
+          <div style="font-size:40px;margin-bottom:8px">📈</div>
+          <div>K线图区域</div>
+          <div style="font-size:10px;margin-top:4px">（T5 完成后这里会是真实的 KLineChart）</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ BOTTOM WIDGETS (Mosaic preview) ═══ -->
+    <div class="bottom-grid">
+      <!-- Heatmap mini widget -->
+      <div class="mini-widget">
+        <div class="mini-header">
+          <div class="mini-title">🔥 Heatmap</div>
+          <div class="mini-sym">Crypto ▾</div>
+          <div class="mini-spc"></div>
+          <button class="mini-btn">⟲</button>
+          <button class="mini-btn">⛶</button>
+          <button class="mini-btn">✕</button>
+        </div>
+        <div class="mini-body" style="padding:0">
+          <div class="hm-grid" id="hmGrid"></div>
+        </div>
+      </div>
+
+      <!-- Fundamentals mini widget -->
+      <div class="mini-widget">
+        <div class="mini-header">
+          <div class="mini-title">💰 Fundamentals</div>
+          <div class="mini-sym">AAPL ▾</div>
+          <div class="mini-spc"></div>
+          <button class="mini-btn">⟲</button>
+          <button class="mini-btn">⛶</button>
+          <button class="mini-btn">✕</button>
+        </div>
+        <div class="mini-body" style="padding:0">
+          <div class="fund-grid">
+            <div class="fund-item"><span class="fund-l">P/E</span><span class="fund-v">33.2</span></div>
+            <div class="fund-item"><span class="fund-l">P/B</span><span class="fund-v">62.8</span></div>
+            <div class="fund-item"><span class="fund-l">MktCap</span><span class="fund-v up">3.45T</span></div>
+            <div class="fund-item"><span class="fund-l">Rev</span><span class="fund-v">391B</span></div>
+            <div class="fund-item"><span class="fund-l">EPS</span><span class="fund-v up">6.73</span></div>
+            <div class="fund-item"><span class="fund-l">DivYield</span><span class="fund-v">0.44%</span></div>
+            <div class="fund-item"><span class="fund-l">ROE</span><span class="fund-v up">171%</span></div>
+            <div class="fund-item"><span class="fund-l">D/E</span><span class="fund-v">1.87</span></div>
+            <div class="fund-item"><span class="fund-l">52W Hi</span><span class="fund-v">260</span></div>
+            <div class="fund-item"><span class="fund-l">52W Lo</span><span class="fund-v">164</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CHAT PANEL ═══ -->
+  <div class="chat">
+    <div class="chat-header">
+      <div class="chat-title"><div class="chat-dot"></div> GainLab AI</div>
+      <button style="background:0;border:0;color:var(--t2);cursor:pointer;font-size:14px">✕</button>
+    </div>
+    <div class="chat-body">
+      <div style="text-align:center;opacity:.6">
+        <div style="font-size:24px;margin-bottom:8px">💬</div>
+        <div>AI 对话面板</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Heatmap data
+const hmData=[{s:'BTC',p:2.3},{s:'ETH',p:1.8},{s:'SOL',p:5.2},{s:'BNB',p:-.4},{s:'XRP',p:-1.2},{s:'ADA',p:3.1},{s:'DOGE',p:8.4},{s:'AVAX',p:-2.1},{s:'DOT',p:.8},{s:'LINK',p:4.2},{s:'UNI',p:-.3},{s:'MATIC',p:1.5}];
+const hmEl=document.getElementById('hmGrid');
+hmEl.innerHTML=hmData.map(x=>{
+  const g=x.p>=0,i=Math.min(Math.abs(x.p)/8,1);
+  const bg=g?`rgba(38,166,154,${.15+i*.4})`:`rgba(239,83,80,${.15+i*.4})`;
+  const tc=g?'var(--grn)':'var(--red)';
+  return`<div class="hm-cell" style="background:${bg}"><span class="s" style="color:${tc}">${x.s}</span><span class="p" style="color:${tc}">${x.p>0?'+':''}${x.p}%</span></div>`;
+}).join('');
+
+// Symbol dropdown toggle
+function toggleSymDD(){
+  const dd=document.getElementById('symDD');
+  dd.classList.toggle('show');
+}
+function selectSym(sym,mkt){
+  document.querySelector('.sym-trigger span[style]').textContent=sym;
+  document.getElementById('symDD').classList.remove('show');
+}
+
+// Indicator panel toggle
+function toggleIndPanel(){
+  document.getElementById('indPanel').classList.toggle('show');
+}
+
+// Close dropdowns on outside click
+document.addEventListener('click',function(e){
+  if(!e.target.closest('#symTrigger')&&!e.target.closest('#symDD')){
+    document.getElementById('symDD').classList.remove('show');
+  }
+  if(!e.target.closest('#indTrigger')&&!e.target.closest('#indPanel')){
+    document.getElementById('indPanel').classList.remove('show');
+  }
+});
+
+// Toggle indicator items
+document.querySelectorAll('.ind-item').forEach(el=>el.addEventListener('click',function(){
+  this.classList.toggle('on');
+  const count=document.querySelectorAll('.ind-item.on').length;
+  document.querySelector('.ind-badge').textContent=count;
+}));
+
+// Interval buttons
+document.querySelectorAll('.intv-btn').forEach(btn=>btn.addEventListener('click',function(){
+  document.querySelectorAll('.intv-btn').forEach(b=>b.classList.remove('on'));
+  this.classList.add('on');
+}));
