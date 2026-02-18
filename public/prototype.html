@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GainLab v2 — Widget-Internal Controls</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg0:#08081a;--bg1:#0d0d20;--bg2:#12122a;--bg3:#1a1a3e;
+  --bgH:#1e1e3a;--brd:#2a2a4a;--brd2:#3a3a6a;
+  --t1:#e0e0f0;--t2:#8888aa;--t3:#5a5a8a;
+  --acc:#2563eb;--acc2:#1d4ed8;
+  --grn:#26a69a;--red:#ef5350;--gld:#f0b90b;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,sans-serif;background:var(--bg0);color:var(--t1);height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* ═══ HEADER ═══ */
+.hdr{height:40px;background:var(--bg1);border-bottom:1px solid var(--brd);display:flex;align-items:center;padding:0 10px;gap:10px;flex-shrink:0;z-index:100}
+.logo{font-size:14px;font-weight:700;background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hsep{width:1px;height:18px;background:var(--brd)}
+.pills{display:flex;gap:4px}
+.pill{display:flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:500;background:var(--bg3);color:var(--t2);cursor:pointer;border:1px solid transparent;transition:.15s}
+.pill:hover{background:var(--bgH);color:var(--t1)}
+.pill.on{border-color:var(--acc);color:var(--t1);background:rgba(37,99,235,.1)}
+.dot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
+.dg{background:var(--grn);box-shadow:0 0 3px var(--grn)}.dr{background:var(--t3)}
+.spc{flex:1}
+.tick{font-size:9px;color:var(--t3);font-family:monospace;display:flex;gap:8px}
+.tick span{display:flex;gap:3px}
+.hb{padding:3px 8px;border-radius:5px;font-size:11px;font-weight:500;color:var(--t2);background:0;border:1px solid var(--brd);cursor:pointer;display:flex;align-items:center;gap:3px;transition:.15s}
+.hb:hover{background:var(--bgH);color:var(--t1)}
+.hb.ac{background:var(--acc);border-color:var(--acc);color:#fff}
+
+/* ═══ MAIN ═══ */
+.mn{flex:1;display:flex;overflow:hidden;min-height:0}
+
+/* Left Add-Widget Bar */
+.lbar{width:44px;background:var(--bg1);border-right:1px solid var(--brd);display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:1px;flex-shrink:0}
+.lb{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;color:var(--t3);background:0;border:0;position:relative;transition:.15s}
+.lb:hover{background:var(--bgH);color:var(--t1)}
+.lb.on{background:rgba(37,99,235,.15);color:var(--acc)}
+.lb .tp{position:absolute;left:110%;top:50%;transform:translateY(-50%);padding:2px 6px;border-radius:3px;background:var(--bg3);border:1px solid var(--brd);color:var(--t1);font-size:9px;white-space:nowrap;opacity:0;pointer-events:none;transition:.15s;z-index:99}
+.lb:hover .tp{opacity:1}
+.lsep{width:20px;height:1px;background:var(--brd);margin:4px 0}
+
+/* Content */
+.ct{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+
+/* ═══ KLINE WIDGET (self-contained) ═══ */
+.kw{flex:1;display:flex;flex-direction:column;min-height:200px;border-bottom:1px solid var(--brd)}
+
+/* KLine Widget Internal Header — TV style */
+.kwh{min-height:32px;background:var(--bg1);border-bottom:1px solid var(--brd);display:flex;align-items:center;padding:0 6px;gap:0;flex-shrink:0;flex-wrap:wrap}
+
+/* Row 1: Symbol + Price + Periods */
+.kwh-row{display:flex;align-items:center;gap:4px;padding:2px 0}
+
+/* Symbol selector */
+.sym{display:flex;align-items:center;gap:4px;padding:2px 6px;border-radius:4px;cursor:pointer;transition:.15s;position:relative;flex-shrink:0}
+.sym:hover{background:var(--bgH)}
+.sym-icon{font-size:12px}
+.sym-t{font-size:12px;font-weight:600}
+.sym-m{font-size:9px;color:var(--t3);background:var(--bg3);padding:0px 4px;border-radius:2px}
+.sym-v{font-size:7px;color:var(--t3)}
+
+/* Price */
+.prc{font-size:12px;font-weight:600;font-family:'SF Mono',monospace;margin-right:2px}
+.chg{font-size:10px;font-family:'SF Mono',monospace;font-weight:500}
+.up{color:var(--grn)}.dn{color:var(--red)}
+
+/* Separator */
+.vs{width:1px;height:16px;background:var(--brd);margin:0 3px;flex-shrink:0}
+
+/* Period buttons */
+.pb{padding:1px 5px;border-radius:3px;font-size:10px;font-weight:500;color:var(--t3);cursor:pointer;background:0;border:0;transition:.15s;flex-shrink:0}
+.pb:hover{color:var(--t1);background:var(--bgH)}
+.pb.on{color:#fff;background:var(--acc)}
+
+/* Indicator buttons */
+.ib{padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;color:var(--t3);cursor:pointer;background:0;border:0;transition:.15s;flex-shrink:0}
+.ib:hover{color:var(--t2)}
+.ib.on{color:#60a5fa;background:rgba(96,165,250,.1)}
+
+/* Drawing tools (inside widget header) */
+.dt{display:flex;align-items:center;gap:1px;margin-left:auto;flex-shrink:0}
+.dtb{width:24px;height:24px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;color:var(--t3);background:0;border:0;transition:.15s}
+.dtb:hover{background:var(--bgH);color:var(--t1)}
+.dtb.on{color:var(--acc);background:rgba(37,99,235,.1)}
+
+/* Chart body */
+.kbody{flex:1;background:var(--bg2);position:relative;overflow:hidden;min-height:0}
+
+/* Fake candles */
+.candles{position:absolute;inset:0;display:flex;align-items:flex-end;gap:2px;padding:30px 55px 40px 35px}
+.c{display:flex;flex-direction:column;align-items:center;flex:1;max-width:8px;height:100%;position:relative}
+.cw{width:1px;position:absolute}
+.cb{width:100%;min-height:2px;border-radius:1px;position:absolute;z-index:1}
+
+/* Grid */
+.grd{position:absolute;inset:0;pointer-events:none}
+.gl{position:absolute;left:35px;right:48px;height:1px;background:rgba(42,42,74,.35)}
+.gll{position:absolute;right:0;transform:translateY(-50%);font-size:8px;color:var(--t3);font-family:monospace;width:46px;text-align:right;padding-right:3px}
+
+/* Volume */
+.va{position:absolute;bottom:0;left:35px;right:48px;height:40px;display:flex;align-items:flex-end;gap:2px;opacity:.3}
+.vb{flex:1;max-width:8px;border-radius:1px 1px 0 0}
+
+/* VP overlay */
+.vpo{position:absolute;top:30px;right:50px;bottom:40px;width:65px;display:flex;flex-direction:column;justify-content:space-between;gap:1px;opacity:.5}
+.vpb{height:4px;display:flex;border-radius:1px}
+.vpbu{background:rgba(38,166,154,.4)}
+.vpse{background:rgba(239,83,80,.4)}
+
+/* WRB markers */
+.wrb{position:absolute;pointer-events:none;font-size:8px;font-weight:700;padding:1px 4px;border-radius:2px}
+
+/* MA lines */
+.ma-line{position:absolute;top:30px;left:35px;right:48px;bottom:40px;pointer-events:none}
+.ma-line svg{width:100%;height:100%}
+
+/* ═══ RESIZE HANDLE ═══ */
+.rzh{height:4px;background:var(--brd);cursor:row-resize;flex-shrink:0;transition:.15s}
+.rzh:hover{background:var(--acc)}
+
+/* ═══ WIDGET GRID ═══ */
+.wg{height:240px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--brd);flex-shrink:0;overflow:hidden}
+
+/* Widget Panel */
+.wp{background:var(--bg2);display:flex;flex-direction:column;overflow:hidden}
+
+/* Widget panel header — also self-contained */
+.wph{height:26px;background:var(--bg3);border-bottom:1px solid var(--brd);display:flex;align-items:center;padding:0 6px;gap:4px;flex-shrink:0}
+.wph-title{font-size:9px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.3px;display:flex;align-items:center;gap:3px}
+.wph-sym{font-size:9px;font-weight:500;color:var(--t1);cursor:pointer;padding:1px 4px;border-radius:2px;transition:.15s}
+.wph-sym:hover{background:var(--bgH)}
+.wph-spc{flex:1}
+.wph-btn{width:16px;height:16px;border-radius:3px;border:0;background:0;color:var(--t3);font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.wph-btn:hover{background:var(--bgH);color:var(--t1)}
+
+.wpb{flex:1;overflow:hidden;padding:5px;min-height:0}
+
+/* ═══ HEATMAP ═══ */
+.hmg{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:2px;height:100%}
+.hmc{border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.hmc .s{font-size:8px;opacity:.9}.hmc .p{font-size:10px;font-weight:700}
+
+/* ═══ FUNDAMENTALS ═══ */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:3px;align-content:start}
+.fi{display:flex;justify-content:space-between;padding:2px 5px;border-radius:3px;background:var(--bg3)}
+.fl{font-size:8px;color:var(--t3)}.fv{font-size:9px;font-weight:600;font-family:monospace}
+
+/* ═══ VP WIDGET ═══ */
+.vpw{display:flex;flex-direction:column;gap:2px;height:100%;justify-content:space-between}
+.vpr{display:flex;align-items:center;gap:3px;height:10px}
+.vpl{font-size:7px;color:var(--t3);width:32px;text-align:right;font-family:monospace;flex-shrink:0}
+.vpbw{flex:1;height:6px;display:flex;border-radius:2px;overflow:hidden}
+.vpwb{background:rgba(38,166,154,.5)}.vpws{background:rgba(239,83,80,.5)}
+
+/* ═══ CHAT ═══ */
+.cp{width:300px;background:var(--bg1);border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0}
+.ch{height:40px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;padding:0 10px;flex-shrink:0}
+.chtl{font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px}
+.cdot{width:5px;height:5px;border-radius:50%;background:var(--grn);box-shadow:0 0 3px var(--grn)}
+.cm{flex:1;padding:10px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:90%;padding:7px 10px;border-radius:10px;font-size:11px;line-height:1.4}
+.msg.a{background:var(--bg3);align-self:flex-start;border-bottom-left-radius:3px}
+.msg.u{background:var(--acc);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
+.tb{display:inline-flex;align-items:center;gap:2px;padding:1px 5px;border-radius:3px;background:rgba(96,165,250,.15);color:#60a5fa;font-size:9px;font-weight:500;margin-top:4px}
+.cqa{padding:6px 10px;display:flex;gap:4px;flex-wrap:wrap;border-top:1px solid var(--brd)}
+.qa{padding:3px 8px;border-radius:10px;font-size:10px;color:var(--t2);background:var(--bg3);border:1px solid var(--brd);cursor:pointer;white-space:nowrap;transition:.15s}
+.qa:hover{background:var(--bgH);color:var(--t1);border-color:var(--acc)}
+.ci{padding:6px 10px;border-top:1px solid var(--brd);display:flex;gap:6px;flex-shrink:0}
+.ci input{flex:1;padding:6px 10px;border-radius:6px;border:1px solid var(--brd);background:var(--bg3);color:var(--t1);font-size:11px;outline:0}
+.ci input::placeholder{color:var(--t3)}
+.ci input:focus{border-color:var(--acc)}
+.csb{width:28px;height:28px;border-radius:6px;background:var(--acc);color:#fff;border:0;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* Dropdown */
+.dd{position:absolute;top:100%;left:0;margin-top:3px;width:220px;background:var(--bg1);border:1px solid var(--brd);border-radius:6px;padding:3px;box-shadow:0 6px 20px rgba(0,0,0,.4);z-index:200;display:none}
+.dd.show{display:block}
+.dd input{width:calc(100% - 8px);margin:3px 4px;padding:4px 7px;border-radius:3px;border:1px solid var(--brd);background:var(--bg3);color:var(--t1);font-size:10px;outline:0}
+.ddi{display:flex;align-items:center;justify-content:space-between;padding:4px 6px;border-radius:3px;cursor:pointer;transition:.1s}
+.ddi:hover{background:var(--bgH)}
+.ddi .dn_{font-size:11px;font-weight:600}.ddi .dm{font-size:9px;color:var(--t3)}
+.ddi .dk{font-size:8px;padding:1px 3px;border-radius:2px;background:var(--bg3);color:var(--t3)}
+
+/* Widget label annotations */
+.wlbl{position:absolute;font-size:9px;color:var(--t2);font-weight:500;opacity:.6;pointer-events:none;z-index:5}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER BAR — Global only ═══ -->
+<div class="hdr">
+  <div class="logo">GainLab</div>
+  <div class="hsep"></div>
+  <div class="pills">
+    <div class="pill on"><div class="dot dg"></div>Crypto</div>
+    <div class="pill"><div class="dot dr"></div>US</div>
+    <div class="pill"><div class="dot dr"></div>A股</div>
+    <div class="pill"><div class="dot dg"></div>贵金属</div>
+  </div>
+  <div class="hsep"></div>
+  <div class="tick">
+    <span>BTC <b class="up">68,144</b></span>
+    <span>ETH <b class="up">3,812</b></span>
+    <span>XAU <b class="up">4,886</b></span>
+  </div>
+  <div class="spc"></div>
+  <div class="hb">🌙</div>
+  <div class="hb ac">🤖 Agent</div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<div class="mn">
+
+  <!-- Left: Add Widget Bar -->
+  <div class="lbar">
+    <button class="lb" style="font-size:10px;color:var(--t2);font-weight:700" title="Add Widget">
+      <span style="background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">GL</span>
+    </button>
+    <div class="lsep"></div>
+    <button class="lb on">📈<span class="tp">K线图</span></button>
+    <button class="lb">📊<span class="tp">VP 筹码分布</span></button>
+    <button class="lb">🔥<span class="tp">板块热力图</span></button>
+    <button class="lb">💰<span class="tp">基本面</span></button>
+    <button class="lb">📐<span class="tp">多资产叠加</span></button>
+    <button class="lb">🔍<span class="tp">WRB 信号</span></button>
+    <div class="lsep"></div>
+    <button class="lb">💬<span class="tp">AI 对话</span></button>
+    <div style="flex:1"></div>
+    <button class="lb" style="font-size:18px;color:var(--acc)">＋<span class="tp">添加 Widget</span></button>
+  </div>
+
+  <!-- Content -->
+  <div class="ct">
+
+    <!-- ═══ K-LINE WIDGET (fully self-contained, TV-style) ═══ -->
+    <div class="kw">
+      <!-- Widget-internal header: Symbol + Price + Period + Indicator + Drawing tools -->
+      <div class="kwh">
+        <div class="kwh-row">
+          <!-- Symbol selector (like TV) -->
+          <div class="sym" id="symSel" onclick="toggleDD()">
+            <span class="sym-icon">🔍</span>
+            <span class="sym-t">BTCUSDT</span>
+            <span class="sym-m">Crypto</span>
+            <span class="sym-v">▾</span>
+            <div class="dd" id="dd">
+              <input type="text" placeholder="搜索标的 / Search symbol...">
+              <div class="ddi"><div><span class="dn_">BTC/USDT</span> <span class="dm">Bitcoin</span></div><span class="dk">Crypto</span></div>
+              <div class="ddi"><div><span class="dn_">ETH/USDT</span> <span class="dm">Ethereum</span></div><span class="dk">Crypto</span></div>
+              <div class="ddi"><div><span class="dn_">AAPL</span> <span class="dm">Apple Inc.</span></div><span class="dk">US</span></div>
+              <div class="ddi"><div><span class="dn_">NVDA</span> <span class="dm">NVIDIA</span></div><span class="dk">US</span></div>
+              <div class="ddi"><div><span class="dn_">601318</span> <span class="dm">中国平安</span></div><span class="dk">A股</span></div>
+              <div class="ddi"><div><span class="dn_">XAU/USD</span> <span class="dm">Gold</span></div><span class="dk">Metal</span></div>
+            </div>
+          </div>
+
+          <span class="prc up">68,144.10</span>
+          <span class="chg up">+2.34%</span>
+
+          <div class="vs"></div>
+
+          <!-- Period (in widget, like TV) -->
+          <button class="pb">1m</button>
+          <button class="pb">5m</button>
+          <button class="pb">15m</button>
+          <button class="pb">1H</button>
+          <button class="pb">4H</button>
+          <button class="pb on">1D</button>
+          <button class="pb">1W</button>
+
+          <div class="vs"></div>
+
+          <!-- Chart type (candle style) -->
+          <button class="dtb on" title="蜡烛图">🕯️</button>
+
+          <div class="vs"></div>
+
+          <!-- Indicators (in widget, like TV) -->
+          <button class="ib on">MA</button>
+          <button class="ib on">BOLL</button>
+          <button class="ib">RSI</button>
+          <button class="ib">MACD</button>
+          <button class="ib">VWAP</button>
+          <button class="ib">KDJ</button>
+          <button class="ib">ATR</button>
+
+          <div class="vs"></div>
+
+          <!-- Overlay toggles -->
+          <button class="ib on" style="color:var(--grn)">VP</button>
+          <button class="ib on" style="color:var(--gld)">WRB</button>
+
+          <div class="vs"></div>
+
+          <!-- Drawing tools (in widget, like TV MarkBar) -->
+          <div class="dt">
+            <button class="dtb" title="趋势线">╱</button>
+            <button class="dtb" title="水平线">━</button>
+            <button class="dtb" title="矩形">▭</button>
+            <button class="dtb" title="斐波那契">🔢</button>
+            <button class="dtb" title="标注">📌</button>
+            <button class="dtb" title="更多画图">⋯</button>
+          </div>
+
+          <!-- Widget controls (right side) -->
+          <div style="margin-left:auto;display:flex;gap:1px">
+            <button class="dtb" title="设置">⚙️</button>
+            <button class="dtb" title="截图">📷</button>
+            <button class="dtb" title="全屏">⛶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chart body -->
+      <div class="kbody">
+        <div class="grd">
+          <div class="gl" style="top:12%"><span class="gll">72,000</span></div>
+          <div class="gl" style="top:30%"><span class="gll">70,000</span></div>
+          <div class="gl" style="top:50%"><span class="gll">68,000</span></div>
+          <div class="gl" style="top:70%"><span class="gll">66,000</span></div>
+          <div class="gl" style="top:88%"><span class="gll">64,000</span></div>
+        </div>
+        <div class="candles" id="candles"></div>
+        <div class="va" id="vol"></div>
+        <div class="vpo" id="vpo"></div>
+        
+        <!-- WRB markers -->
+        <div class="wrb" style="top:20%;left:28%;background:rgba(38,166,154,.2);color:var(--grn);border:1px solid rgba(38,166,154,.4)">▲ Bull</div>
+        <div class="wrb" style="top:55%;left:62%;background:rgba(239,83,80,.2);color:var(--red);border:1px solid rgba(239,83,80,.4)">▼ Bear</div>
+        <div class="wrb" style="top:35%;left:75%;background:rgba(38,166,154,.2);color:var(--grn);border:1px solid rgba(38,166,154,.4)">▲ Bull</div>
+
+        <!-- POC label -->
+        <div style="position:absolute;top:48%;right:50px;font-size:8px;color:var(--gld);font-weight:600;pointer-events:none">── POC 67,850</div>
+        
+        <!-- Current price line -->
+        <div style="position:absolute;top:38%;left:35px;right:0;border-top:1px solid var(--grn);opacity:.5;pointer-events:none"></div>
+        <div style="position:absolute;top:38%;right:0;background:var(--grn);color:#fff;font-size:8px;padding:1px 4px;font-family:monospace;font-weight:600;pointer-events:none">68,144</div>
+      </div>
+    </div>
+
+    <!-- Resize -->
+    <div class="rzh"></div>
+
+    <!-- ═══ BOTTOM WIDGET GRID ═══ -->
+    <div class="wg">
+
+      <!-- Widget: Volume Profile -->
+      <div class="wp">
+        <div class="wph">
+          <div class="wph-title">📊 Volume Profile</div>
+          <div class="wph-sym">BTC ▾</div>
+          <div class="wph-spc"></div>
+          <button class="wph-btn">⟲</button>
+          <button class="wph-btn">⛶</button>
+          <button class="wph-btn">✕</button>
+        </div>
+        <div class="wpb" id="vpW"></div>
+      </div>
+
+      <!-- Widget: Heatmap -->
+      <div class="wp">
+        <div class="wph">
+          <div class="wph-title">🔥 Heatmap</div>
+          <div class="wph-sym">Crypto ▾</div>
+          <div class="wph-spc"></div>
+          <button class="wph-btn">⟲</button>
+          <button class="wph-btn">⛶</button>
+          <button class="wph-btn">✕</button>
+        </div>
+        <div class="wpb">
+          <div class="hmg" id="hm"></div>
+        </div>
+      </div>
+
+      <!-- Widget: Fundamentals -->
+      <div class="wp">
+        <div class="wph">
+          <div class="wph-title">💰 Fundamentals</div>
+          <div class="wph-sym">AAPL ▾</div>
+          <div class="wph-spc"></div>
+          <button class="wph-btn">⟲</button>
+          <button class="wph-btn">⛶</button>
+          <button class="wph-btn">✕</button>
+        </div>
+        <div class="wpb">
+          <div class="fg">
+            <div class="fi"><span class="fl">P/E</span><span class="fv">33.2</span></div>
+            <div class="fi"><span class="fl">P/B</span><span class="fv">62.8</span></div>
+            <div class="fi"><span class="fl">MktCap</span><span class="fv up">3.45T</span></div>
+            <div class="fi"><span class="fl">Rev</span><span class="fv">391B</span></div>
+            <div class="fi"><span class="fl">EPS</span><span class="fv up">6.73</span></div>
+            <div class="fi"><span class="fl">DivYield</span><span class="fv">0.44%</span></div>
+            <div class="fi"><span class="fl">ROE</span><span class="fv up">171%</span></div>
+            <div class="fi"><span class="fl">D/E</span><span class="fv">1.87</span></div>
+            <div class="fi"><span class="fl">52W Hi</span><span class="fv">260</span></div>
+            <div class="fi"><span class="fl">52W Lo</span><span class="fv">164</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ CHAT PANEL ═══ -->
+  <div class="cp">
+    <div class="ch">
+      <div class="chtl"><div class="cdot"></div> GainLab AI</div>
+      <button style="background:0;border:0;color:var(--t2);cursor:pointer;font-size:14px">✕</button>
+    </div>
+    <div class="cm">
+      <div class="msg a">👋 Hi! 我可以帮你分析行情、生成图表。试试下面的快捷操作 👇</div>
+      <div class="msg u">帮我看看 BTC 的筹码分布</div>
+      <div class="msg a">
+        BTC/USDT 筹码分析完成 📊<br><br>
+        <b>POC:</b> $67,850<br>
+        <b>VAH:</b> $69,200 · <b>VAL:</b> $66,400<br><br>
+        当前价在 POC 上方，多头占优。
+        <div class="tb">🔧 volume_profile → K线已叠加</div>
+      </div>
+      <div class="msg u">对比 AAPL 和 MSFT</div>
+      <div class="msg a">
+        正在获取基本面数据...
+        <div class="tb">⏳ fundamentals</div>
+      </div>
+    </div>
+    <div class="cqa">
+      <div class="qa">📊 BTC 筹码</div>
+      <div class="qa">🔥 热力图</div>
+      <div class="qa">📈 AAPL K线</div>
+      <div class="qa">🔍 WRB</div>
+    </div>
+    <div class="ci">
+      <input type="text" placeholder="输入指令或问题...">
+      <button class="csb">↑</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function genCandles(){
+  const el=document.getElementById('candles'),vol=document.getElementById('vol');
+  let p=67000,h='',v='';
+  for(let i=0;i<75;i++){
+    p=Math.max(63500,Math.min(72000,p+(Math.random()-.48)*750));
+    const o=p-400+Math.random()*800,c=p,hi=Math.max(o,c)+Math.random()*350,lo=Math.min(o,c)-Math.random()*350;
+    const bull=c>=o,col=bull?'var(--grn)':'var(--red)';
+    const t=((72000-hi)/8500)*100,b=((72000-lo)/8500)*100;
+    const bt=((72000-Math.max(o,c))/8500)*100,bb=((72000-Math.min(o,c))/8500)*100;
+    h+=`<div class="c"><div class="cw" style="top:${t}%;height:${b-t}%;background:${col}"></div><div class="cb" style="top:${bt}%;height:${Math.max(bb-bt,.5)}%;background:${col}"></div></div>`;
+    v+=`<div class="vb" style="height:${Math.random()*32+4}px;background:${col}"></div>`;
+  }
+  el.innerHTML=h;vol.innerHTML=v;
+}
+function genVP(){
+  const el=document.getElementById('vpo'),w=document.getElementById('vpW');
+  const vs=[25,35,50,65,75,85,100,90,70,55,40,20],ps=[72,71.2,70.4,69.6,69.2,68.4,67.85,67.2,66.4,65.6,64.8,64];
+  let h='',wh='';
+  vs.forEach((v,i)=>{const b=Math.random()*.6+.2;
+    h+=`<div class="vpb"><div class="vpbu" style="width:${v*b}%"></div><div class="vpse" style="width:${v*(1-b)}%"></div></div>`;
+    wh+=`<div class="vpr"><span class="vpl">${ps[i]}k</span><div class="vpbw${i===6?' style="border:1px solid var(--gld)"':''}"><div class="vpwb" style="width:${v*b}%"></div><div class="vpws" style="width:${v*(1-b)}%"></div></div></div>`;
+  });
+  el.innerHTML=h;w.innerHTML=`<div class="vpw">${wh}</div>`;
+}
+function genHM(){
+  const d=[{s:'BTC',p:2.3},{s:'ETH',p:1.8},{s:'SOL',p:5.2},{s:'BNB',p:-.4},{s:'XRP',p:-1.2},{s:'ADA',p:3.1},{s:'DOGE',p:8.4},{s:'AVAX',p:-2.1},{s:'DOT',p:.8},{s:'LINK',p:4.2},{s:'UNI',p:-.3},{s:'MATIC',p:1.5}];
+  document.getElementById('hm').innerHTML=d.map(x=>{
+    const g=x.p>=0,i=Math.min(Math.abs(x.p)/8,1),bg=g?`rgba(38,166,154,${.15+i*.4})`:`rgba(239,83,80,${.15+i*.4})`,tc=g?'var(--grn)':'var(--red)';
+    return`<div class="hmc" style="background:${bg}"><span class="s" style="color:${tc}">${x.s}</span><span class="p" style="color:${tc}">${x.p>0?'+':''}${x.p}%</span></div>`;
+  }).join('');
+}
+function toggleDD(){document.getElementById('dd').classList.toggle('show')}
+document.addEventListener('click',e=>{if(!document.getElementById('symSel').contains(e.target))document.getElementById('dd').classList.remove('show')});
+genCandles();genVP();genHM();
+</script>
+</body>
+</html>
