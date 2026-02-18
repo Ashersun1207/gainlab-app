@@ -14,10 +14,36 @@ export interface KLineData {
   [key: string]: unknown;
 }
 
+export interface OverlayCreate {
+  name: string;
+  id?: string;
+  groupId?: string;
+  group?: string;
+  paneId?: string;
+  lock?: boolean;
+  visible?: boolean;
+  zLevel?: number;
+  points?: Array<Partial<{ timestamp: number; dataIndex: number; value: number }>>;
+  extendData?: unknown;
+  styles?: Record<string, unknown> | null;
+  [key: string]: unknown;
+}
+
+export interface OverlayFilter {
+  id?: string;
+  groupId?: string;
+  group?: string;
+  name?: string;
+  paneId?: string;
+}
+
 export interface Chart {
   setDataList(data: KLineData[]): void;
+  getDataList(): KLineData[];
   updateData(data: KLineData): void;
   createIndicator(name: string, isStack?: boolean, options?: { id?: string }): string | null;
+  createOverlay(value: string | OverlayCreate | Array<string | OverlayCreate>): string | null | Array<string | null>;
+  removeOverlay(filter?: OverlayFilter): boolean;
   resize(): void;
   destroy(): void;
 }

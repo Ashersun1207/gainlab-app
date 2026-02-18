@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { init, dispose } from './KLineChart/index';
+import { init, dispose, registerOverlay } from './KLineChart/index';
 import type { KLineData, Chart } from './klinechart';
+import { wrbHighlightTemplate } from './overlays/wrbHighlight';
+import { detectWRB } from '../WRBWidget/detectWRB';
+
+// Register WRB highlight overlay template once
+registerOverlay(wrbHighlightTemplate);
 
 // BTC 30 条日线 fallback 数据（Binance 被墙时使用）
 const SAMPLE_DATA: KLineData[] = [
@@ -40,6 +45,7 @@ interface KLineWidgetProps {
   symbol?: string;
   data?: KLineData[];
   indicators?: string[];
+  showWRB?: boolean;
 }
 
 async function fetchBinanceKline(symbol: string): Promise<KLineData[] | null> {
@@ -68,6 +74,7 @@ export function KLineWidget({
   symbol = 'BTCUSDT',
   data: externalData,
   indicators = ['RSI'],
+  showWRB = false,
 }: KLineWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Chart | null>(null);
@@ -144,6 +151,40 @@ export function KLineWidget({
       chartRef.current = null;
     };
   }, [symbol, externalData, indicators]);
+
+  // ── WRB overlay effect ──
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+
+    if (showWRB) {
+      // Determine data source: use externalData if available, otherwise get from chart
+      const data = externalData ?? (chart.getDataList?.() as KLineData[] | undefined) ?? [];
+      const signals = detectWRB(data);
+
+      // Create an overlay for each WRB signal
+      for (const signal of signals) {
+        const bar = data.find((d) => d.timestamp === signal.timestamp);
+        if (!bar) continue;
+
+        chart.createOverlay({
+          name: 'wrb_highlight',
+          lock: true,
+          visible: true,
+          points: [
+            { timestamp: bar.timestamp, value: bar.open },
+            { timestamp: bar.timestamp, value: bar.close },
+          ],
+          extendData: {
+            direction: signal.direction,
+            score: signal.score,
+          },
+        });
+      }
+    } else {
+      chart.removeOverlay({ name: 'wrb_highlight' });
+    }
+  }, [showWRB, externalData]);
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', background: '#12122a' }}>

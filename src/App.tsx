@@ -227,6 +227,7 @@ function App() {
                 symbol={activeSymbol}
                 data={effectiveKlineData}
                 indicators={activeIndicators}
+                showWRB={drawerTool === 'wrb'}
               />
             </Suspense>
           </ErrorBoundary>
@@ -368,6 +369,7 @@ function App() {
                 symbol={activeSymbol}
                 data={effectiveKlineData}
                 indicators={activeIndicators}
+                showWRB={drawerTool === 'wrb'}
               />
             </Suspense>
           </ErrorBoundary>
