@@ -1,4 +1,6 @@
-export function HeaderBar(): JSX.Element {
+import type { ReactElement } from 'react';
+
+export function HeaderBar(): ReactElement {
   // Read BYOK config from localStorage to determine data source status
   let byokKeys: Record<string, string> = {};
   try {
