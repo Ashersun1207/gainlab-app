@@ -36,14 +36,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 
 /* Left Sidebar — Koyfin-style icon strip + expandable sub-panel */
 .sidebar-wrap{display:flex;flex-shrink:0;height:100%}
-.lbar{width:40px;background:var(--bg1);border-right:1px solid var(--brd);display:flex;flex-direction:column;align-items:center;padding:4px 0;gap:0;flex-shrink:0;z-index:10}
-.lb{width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;color:var(--t3);background:0;border:0;position:relative;transition:.12s;margin:1px 0}
+.lbar{width:38px;background:var(--bg1);border-right:1px solid var(--brd);display:flex;flex-direction:column;align-items:center;padding:6px 0;gap:2px;flex-shrink:0;z-index:10}
+.lb{width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);background:0;border:0;position:relative;transition:.12s}
+.lb svg{width:16px;height:16px}
 .lb:hover{background:var(--bgH);color:var(--t1)}
-.lb.on{background:transparent;color:var(--acc)}
-.lb.on::before{content:'';position:absolute;left:-6px;top:4px;bottom:4px;width:2px;border-radius:1px;background:var(--acc)}
-.lb .tp{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);padding:2px 6px;border-radius:3px;background:var(--bg3);border:1px solid var(--brd);color:var(--t1);font-size:9px;white-space:nowrap;opacity:0;pointer-events:none;transition:.12s;z-index:99}
+.lb.on{background:var(--acc);color:#fff}
+.lb .tp{position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);padding:3px 8px;border-radius:4px;background:#1a1a2e;border:1px solid var(--brd2);color:var(--t1);font-size:10px;white-space:nowrap;opacity:0;pointer-events:none;transition:.12s;z-index:99;box-shadow:0 4px 12px rgba(0,0,0,.4)}
 .lb:hover .tp{opacity:1}
-.lsep{width:16px;height:1px;background:var(--brd);margin:6px 0}
+.lsep{width:18px;height:1px;background:var(--brd);margin:4px 0}
 
 /* Sub-panel (expandable) — Koyfin style */
 .sub-panel{width:0;overflow:hidden;background:var(--bg1);border-right:1px solid transparent;transition:width .2s ease,border-color .2s ease;display:flex;flex-direction:column}
@@ -65,23 +65,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 .sub-item-badge{font-size:8px;font-weight:700;color:var(--t3);background:var(--bg3);padding:1px 5px;border-radius:3px;border:1px solid var(--brd);letter-spacing:.3px;flex-shrink:0}
 .sub-sep{height:1px;background:var(--brd);margin:4px 14px}
 
-/* ═══ CSS ICONS (sidebar) ═══ */
-.ico{width:14px;height:14px;position:relative;display:inline-block}
-.ico-chart{border-left:1.5px solid currentColor;border-bottom:1.5px solid currentColor;width:12px;height:10px}
-.ico-chart::after{content:'';position:absolute;bottom:1px;left:3px;width:2px;height:4px;background:currentColor;box-shadow:4px 0 0 0 currentColor, 4px -3px 0 0 currentColor, -4px 1px 0 0 currentColor}
-.ico-heat{width:12px;height:10px;display:grid;grid-template-columns:1fr 1fr;gap:1px}
-.ico-heat::before,.ico-heat::after{content:'';border-radius:1px}
-.ico-heat::before{background:var(--grn);box-shadow:inset 0 0 0 4px var(--grn)}
-.ico-heat::after{background:var(--red);box-shadow:inset 0 0 0 4px var(--red)}
-.ico-fund{width:10px;height:12px;border:1.5px solid currentColor;border-radius:1px;position:relative}
-.ico-fund::after{content:'';position:absolute;top:3px;left:2px;width:4px;height:1px;background:currentColor;box-shadow:0 3px 0 0 currentColor}
-.ico-overlay{width:12px;height:12px;position:relative}
-.ico-overlay::before{content:'';position:absolute;top:0;left:0;width:8px;height:8px;border:1.5px solid currentColor;border-radius:1px}
-.ico-overlay::after{content:'';position:absolute;bottom:0;right:0;width:8px;height:8px;border:1.5px solid var(--acc);border-radius:1px}
-.ico-chat{width:12px;height:10px;border:1.5px solid currentColor;border-radius:3px 3px 3px 0;position:relative}
-.ico-plus{width:12px;height:12px;position:relative}
-.ico-plus::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:10px;height:1.5px;background:currentColor}
-.ico-plus::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:1.5px;height:10px;background:currentColor}
+/* CSS icon classes removed — using inline SVG now */
 
 /* Content */
 .ct{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
@@ -250,7 +234,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 @media(max-width:768px){
   .cp{display:none} /* 手机隐藏聊天面板 */
   .lbar{width:34px}
-  .lb{width:24px;height:24px;font-size:11px}
+  .lb{width:26px;height:26px}
+  .lb svg{width:14px;height:14px}
   .wg{grid-template-columns:1fr;height:auto;max-height:300px;overflow-y:auto}
   .kwh-row{flex-wrap:wrap;gap:2px}
   .sym-t{font-size:11px}
@@ -296,18 +281,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
   <div class="sidebar-wrap">
     <div class="lbar" style="position:relative">
       <span class="t-label" style="bottom:4px;left:50%;transform:translateX(-50%);font-size:7px;padding:1px 4px">T2</span>
-      <button class="lb" style="font-size:9px;color:var(--t2);font-weight:700;letter-spacing:-.5px" title="GainLab">
-        <span style="background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">GL</span>
+      <button class="lb" title="GainLab" style="margin-bottom:2px">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12V7l3-3 3 3 4-5v10" stroke="url(#gl)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="gl" x1="2" y1="4" x2="14" y2="12"><stop stop-color="#60a5fa"/><stop offset="1" stop-color="#a78bfa"/></linearGradient></defs></svg>
       </button>
       <div class="lsep"></div>
-      <button class="lb on" data-panel="charts" onclick="togglePanel('charts',this)"><span class="ico ico-chart"></span><span class="tp" data-i18n="sb_charts">图表</span></button>
-      <button class="lb" data-panel="heatmap" onclick="togglePanel('heatmap',this)"><span class="ico ico-heat"></span><span class="tp" data-i18n="sb_heatmap">热力图</span></button>
-      <button class="lb" data-panel="fundamentals" onclick="togglePanel('fundamentals',this)"><span class="ico ico-fund"></span><span class="tp" data-i18n="sb_fund">基本面</span></button>
-      <button class="lb" data-panel="overlay" onclick="togglePanel('overlay',this)"><span class="ico ico-overlay"></span><span class="tp" data-i18n="sb_overlay">叠加对比</span></button>
+      <button class="lb on" data-panel="charts" onclick="togglePanel('charts',this)"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="9" width="3" height="6" rx=".5"/><rect x="5.5" y="5" width="3" height="10" rx=".5"/><rect x="10" y="1" width="3" height="14" rx=".5"/></svg><span class="tp" data-i18n="sb_charts">图表</span></button>
+      <button class="lb" data-panel="heatmap" onclick="togglePanel('heatmap',this)"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="1" width="6.5" height="6.5" rx="1"/><rect x="8.5" y="1" width="6.5" height="6.5" rx="1" opacity=".5"/><rect x="1" y="8.5" width="6.5" height="6.5" rx="1" opacity=".5"/><rect x="8.5" y="8.5" width="6.5" height="6.5" rx="1" opacity=".3"/></svg><span class="tp" data-i18n="sb_heatmap">热力图</span></button>
+      <button class="lb" data-panel="fundamentals" onclick="togglePanel('fundamentals',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1h10a1 1 0 011 1v12a1 1 0 01-1 1H3a1 1 0 01-1-1V2a1 1 0 011-1zm1 3h8v1.5H4V4zm0 3h5v1.5H4V7zm0 3h7v1.5H4V10z"/></svg><span class="tp" data-i18n="sb_fund">基本面</span></button>
+      <button class="lb" data-panel="overlay" onclick="togglePanel('overlay',this)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="9" height="9" rx="1.5"/><rect x="6" y="6" width="9" height="9" rx="1.5"/></svg><span class="tp" data-i18n="sb_overlay">叠加对比</span></button>
       <div class="lsep"></div>
-      <button class="lb" data-panel="ai" onclick="togglePanel('ai',this)"><span class="ico ico-chat"></span><span class="tp" data-i18n="sb_ai">AI 对话</span></button>
+      <button class="lb" data-panel="ai" onclick="togglePanel('ai',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-3 3V3a1 1 0 011-1z"/></svg><span class="tp" data-i18n="sb_ai">AI 对话</span></button>
       <div style="flex:1"></div>
-      <button class="lb" data-panel="all" onclick="togglePanel('all',this)" style="color:var(--acc)"><span class="ico ico-plus"></span><span class="tp" data-i18n="sb_add">添加 Widget</span></button>
+      <button class="lb" data-panel="all" onclick="togglePanel('all',this)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M7 2h2v5h5v2H9v5H7V9H2V7h5V2z"/></svg><span class="tp" data-i18n="sb_add">添加 Widget</span></button>
     </div>
     <!-- Expandable sub-panel -->
     <div class="sub-panel" id="subPanel">
