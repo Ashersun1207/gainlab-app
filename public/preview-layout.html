@@ -70,7 +70,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 .kwh{min-height:32px;background:var(--bg1);border-bottom:1px solid var(--brd);display:flex;align-items:center;padding:0 6px;gap:0;flex-shrink:0;flex-wrap:wrap}
 
 /* Row 1: Symbol + Price + Periods */
-.kwh-row{display:flex;align-items:center;gap:4px;padding:2px 0}
+.kwh-row{display:flex;align-items:center;gap:4px;padding:2px 0;flex-wrap:wrap;width:100%}
 
 /* Symbol selector */
 .sym{display:flex;align-items:center;gap:4px;padding:2px 6px;border-radius:4px;cursor:pointer;transition:.15s;position:relative;flex-shrink:0;z-index:201}
@@ -230,6 +230,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
   .lb{width:28px;height:28px;font-size:12px}
   .wg{grid-template-columns:1fr;height:auto;max-height:300px;overflow-y:auto}
   .kwh-row{flex-wrap:wrap;gap:2px}
+  .sym-t{font-size:11px}
+  .sym-m{display:none}
+  .prc{font-size:11px}
+  .chg{font-size:9px}
   .dt{display:none} /* 手机隐藏画图工具 */
   .ind-tags{display:none} /* 手机隐藏 tag */
   .dd{width:calc(100vw - 60px);left:-6px}
@@ -296,7 +300,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 
     <!-- ═══ K-LINE WIDGET (fully self-contained, TV-style) ═══ -->
     <div class="kw" style="position:relative">
-      <span class="t-label" style="top:36px;left:8px">T3: Widget 内部控件</span>
+      <span class="t-label" style="top:34px;left:8px;font-size:7px;padding:1px 4px;opacity:.7">T3</span>
       <!-- Widget-internal header: Symbol + Price + Period + Indicator + Drawing tools -->
       <div class="kwh">
         <div class="kwh-row">
