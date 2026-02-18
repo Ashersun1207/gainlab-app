@@ -698,7 +698,7 @@ function toggleSidebar(){
   document.getElementById('sidebar').classList.toggle('open',sidebarOpen);
 }
 
-renderSidebar();
+// renderSidebar() called after i18n init below
 
 // ═══ i18n SYSTEM ═══
 const i18n={
@@ -783,6 +783,9 @@ const i18n={
 let curLang='zh';
 
 function t(key){return i18n[curLang][key]||key;}
+
+// Now safe to render sidebar (depends on t())
+renderSidebar();
 
 function applyLang(){
   // Text content
