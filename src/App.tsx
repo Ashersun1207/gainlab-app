@@ -27,11 +27,7 @@ const LazyEChartsWidget = lazy(() =>
 const LazyHeatmapWidget = lazy(() =>
   import('./widgets/HeatmapWidget').then((m) => ({ default: m.HeatmapWidget })),
 );
-const LazyVolumeProfileWidget = lazy(() =>
-  import('./widgets/VolumeProfileWidget').then((m) => ({
-    default: m.VolumeProfileWidget,
-  })),
-);
+// VP/WRB 已改为 KLineChart overlay，不再需要独立 widget
 const LazyOverlayWidget = lazy(() =>
   import('./widgets/OverlayWidget').then((m) => ({ default: m.OverlayWidget })),
 );
@@ -40,9 +36,7 @@ const LazyFundamentalsWidget = lazy(() =>
     default: m.FundamentalsWidget,
   })),
 );
-const LazyWRBWidget = lazy(() =>
-  import('./widgets/WRBWidget').then((m) => ({ default: m.WRBWidget })),
-);
+// WRBWidget removed — now rendered as KLineChart overlay
 
 // --- Loading placeholder (dark themed) ---
 function LoadingPlaceholder() {
@@ -156,8 +150,7 @@ function App() {
 
   // ── 抽屉内容渲染 ──
   const renderDrawerContent = useCallback(() => {
-    // 用 useMarketData 的数据或 Chat 推送的数据
-    const effectiveKlineData = chatKlineData ?? klineData;
+    // VP/WRB 已改为 KLineChart overlay，不再需要独立 drawer
 
     switch (drawerTool) {
       // volume_profile & wrb: 已改为 KLineChart overlay，不再作为独立 widget
