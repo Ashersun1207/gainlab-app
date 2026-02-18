@@ -33,12 +33,12 @@ describe('Drawer', () => {
 
   it('renders correct icon for active tool', () => {
     render(
-      <Drawer open={true} activeTool="volume_profile" onClose={vi.fn()}>
-        <div>vp content</div>
+      <Drawer open={true} activeTool="overlay" onClose={vi.fn()}>
+        <div>overlay content</div>
       </Drawer>,
     );
-    expect(screen.getByText('📊')).toBeInTheDocument();
-    expect(screen.getByText('筹码分布')).toBeInTheDocument();
+    expect(screen.getByText('📈')).toBeInTheDocument();
+    expect(screen.getByText('多资产叠加')).toBeInTheDocument();
   });
 
   it('calls onClose when close button clicked', () => {
@@ -54,8 +54,8 @@ describe('Drawer', () => {
 
   it('sets drawer height to 40%', () => {
     const { container } = render(
-      <Drawer open={true} activeTool="wrb" onClose={vi.fn()}>
-        <div>wrb content</div>
+      <Drawer open={true} activeTool="heatmap" onClose={vi.fn()}>
+        <div>heatmap content</div>
       </Drawer>,
     );
     const drawer = container.firstChild as HTMLElement;

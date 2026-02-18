@@ -160,12 +160,7 @@ function App() {
     const effectiveKlineData = chatKlineData ?? klineData;
 
     switch (drawerTool) {
-      case 'volume_profile':
-        return (
-          <Suspense fallback={<LoadingPlaceholder />}>
-            <LazyVolumeProfileWidget klineData={effectiveKlineData} />
-          </Suspense>
-        );
+      // volume_profile & wrb: 已改为 KLineChart overlay，不再作为独立 widget
       case 'heatmap':
         return (
           <Suspense fallback={<LoadingPlaceholder />}>
@@ -182,12 +177,6 @@ function App() {
         return (
           <Suspense fallback={<LoadingPlaceholder />}>
             <LazyFundamentalsWidget symbol={activeSymbol} />
-          </Suspense>
-        );
-      case 'wrb':
-        return (
-          <Suspense fallback={<LoadingPlaceholder />}>
-            <LazyWRBWidget klineData={effectiveKlineData} />
           </Suspense>
         );
       default:
@@ -227,8 +216,8 @@ function App() {
                 symbol={activeSymbol}
                 data={effectiveKlineData}
                 indicators={activeIndicators}
-                showWRB={drawerTool === 'wrb'}
-                showVP={drawerTool === 'volume_profile'}
+                showWRB={false}
+                showVP={false}
               />
             </Suspense>
           </ErrorBoundary>
@@ -370,8 +359,8 @@ function App() {
                 symbol={activeSymbol}
                 data={effectiveKlineData}
                 indicators={activeIndicators}
-                showWRB={drawerTool === 'wrb'}
-                showVP={drawerTool === 'volume_profile'}
+                showWRB={false}
+                showVP={false}
               />
             </Suspense>
           </ErrorBoundary>

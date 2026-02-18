@@ -164,20 +164,20 @@ export const TOOL_CONFIG: Record<
   ToolType,
   { label: string; icon: string; description: string }
 > = {
-  volume_profile: { label: 'VP', icon: '📊', description: '筹码分布' },
+  // volume_profile: 已改为 KLineChart overlay 指标，不再作为独立 widget
   overlay: { label: 'Overlay', icon: '📈', description: '多资产叠加' },
   fundamentals: { label: '基本面', icon: '💰', description: '财务数据' },
   heatmap: { label: '热力图', icon: '🔥', description: '板块热力图' },
-  wrb: { label: 'WRB', icon: '🔍', description: 'WRB 信号' },
+  // wrb: 已改为 KLineChart overlay 指标，不再作为独立 widget
 };
 
 /** 工具按市场支持映射：哪些工具在哪些市场可用 */
 export const TOOL_MARKET_SUPPORT: Record<ToolType, MarketType[]> = {
-  volume_profile: ['crypto', 'us', 'cn', 'metal'],
+  // volume_profile: KLineChart overlay
   overlay: ['crypto', 'us', 'cn', 'metal'],
   fundamentals: ['us', 'cn'], // 加密和贵金属无基本面数据
   heatmap: ['crypto', 'us', 'cn', 'metal'],
-  wrb: ['crypto', 'us', 'cn', 'metal'],
+  // wrb: KLineChart overlay
 };
 
 /** CF Worker base URL（从 .env VITE_WORKER_URL 读取） */

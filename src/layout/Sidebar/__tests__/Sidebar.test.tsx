@@ -72,17 +72,17 @@ describe('AssetList', () => {
 });
 
 describe('ToolBar', () => {
-  it('renders all 5 tool buttons for us market', () => {
+  it('renders all 3 tool buttons for us market (VP/WRB moved to overlay)', () => {
     render(<ToolBar activeTool={null} market="us" onToolClick={vi.fn()} />);
     const buttons = screen.getAllByRole('button');
-    expect(buttons).toHaveLength(5);
+    expect(buttons).toHaveLength(3);
   });
 
   it('hides fundamentals for crypto market', () => {
     render(<ToolBar activeTool={null} market="crypto" onToolClick={vi.fn()} />);
     const buttons = screen.getAllByRole('button');
-    // crypto 不支持 fundamentals → 只有 4 个
-    expect(buttons).toHaveLength(4);
+    // crypto: overlay + heatmap = 2（fundamentals 不支持）
+    expect(buttons).toHaveLength(2);
   });
 
   it('highlights active tool', () => {
@@ -98,7 +98,7 @@ describe('ToolBar', () => {
     const buttons = screen.getAllByRole('button');
     const firstBtn = buttons[0];
     if (firstBtn) fireEvent.click(firstBtn);
-    expect(onToolClick).toHaveBeenCalledWith('volume_profile');
+    expect(onToolClick).toHaveBeenCalledWith('overlay');
   });
 });
 

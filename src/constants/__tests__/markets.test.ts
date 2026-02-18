@@ -31,8 +31,8 @@ describe('markets constants', () => {
     }
   });
 
-  it('has 5 tools configured', () => {
-    expect(Object.keys(TOOL_CONFIG)).toHaveLength(5);
+  it('has 3 tools configured (VP/WRB moved to KLineChart overlay)', () => {
+    expect(Object.keys(TOOL_CONFIG)).toHaveLength(3);
   });
 
   it('every tool has market support defined', () => {

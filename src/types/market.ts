@@ -14,11 +14,9 @@ export type TimeInterval =
 
 /** 工具类型 */
 export type ToolType =
-  | 'volume_profile'
   | 'overlay'
   | 'fundamentals'
-  | 'heatmap'
-  | 'wrb';
+  | 'heatmap';
 
 /** 资产信息 */
 export interface Asset {
