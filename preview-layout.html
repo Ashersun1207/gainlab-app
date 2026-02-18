@@ -44,6 +44,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 .sb-toggle{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border:0;background:0;color:var(--t2);cursor:pointer;border-radius:6px;transition:.12s;flex-shrink:0}
 .sb-toggle:hover{background:var(--bgH);color:var(--t1)}
 .sb-toggle svg{width:18px;height:18px}
+.sb-icon-collapse{display:none}
+.sidebar.open .sb-icon-menu{display:none}
+.sidebar.open .sb-icon-collapse{display:block}
 .sb-logo{font-size:14px;font-weight:700;background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;opacity:0;width:0;overflow:hidden;transition:opacity .15s,width .2s}
 .sidebar.open .sb-logo{opacity:1;width:auto}
 
@@ -303,7 +306,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
     <div class="sb-top">
       <span class="sb-logo">GainLab</span>
       <button class="sb-toggle" onclick="toggleSidebar()" id="sbToggle">
-        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="4.5" x2="15" y2="4.5"/><line x1="3" y1="9" x2="15" y2="9"/><line x1="3" y1="13.5" x2="15" y2="13.5"/></svg>
+        <svg class="sb-icon-menu" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="4.5" x2="15" y2="4.5"/><line x1="3" y1="9" x2="15" y2="9"/><line x1="3" y1="13.5" x2="15" y2="13.5"/></svg>
+        <svg class="sb-icon-collapse" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="8,3 3,9 8,15"/><line x1="4" y1="4.5" x2="15" y2="4.5"/><line x1="4" y1="9" x2="15" y2="9"/><line x1="4" y1="13.5" x2="15" y2="13.5"/></svg>
       </button>
     </div>
     <!-- Nav list -->
