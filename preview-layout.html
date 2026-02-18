@@ -111,10 +111,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 /* Separator */
 .vs{width:1px;height:16px;background:var(--brd);margin:0 3px;flex-shrink:0}
 
-/* Period buttons */
+/* Period: common shortcuts + dropdown */
+.pd-wrap{display:flex;align-items:center;gap:2px}
 .pb{padding:1px 5px;border-radius:3px;font-size:10px;font-weight:500;color:var(--t3);cursor:pointer;background:0;border:0;transition:.15s;flex-shrink:0}
 .pb:hover{color:var(--t1);background:var(--bgH)}
 .pb.on{color:#fff;background:var(--acc)}
+.pd-dd-wrap{position:relative}
+.pd-dd-btn{padding:1px 5px;border-radius:3px;font-size:10px;font-weight:500;color:var(--t2);cursor:pointer;background:0;border:0;transition:.15s;display:flex;align-items:center;gap:2px}
+.pd-dd-btn:hover{color:var(--t1);background:var(--bgH)}
+.pd-dd{display:none;position:absolute;top:calc(100% + 4px);right:0;background:var(--bg2);border:1px solid var(--brd2);border-radius:6px;padding:6px 4px;min-width:140px;box-shadow:0 8px 24px rgba(0,0,0,.5);z-index:300;max-height:280px;overflow-y:auto}
+.pd-dd.show{display:block}
+.pd-item{display:flex;align-items:center;justify-content:space-between;padding:3px 6px;border-radius:4px;font-size:10px;cursor:pointer;transition:.12s;gap:6px}
+.pd-item:hover{background:var(--bgH)}
+.pd-item .pd-name{flex:1;color:var(--t2);font-weight:500}
+.pd-item.active .pd-name{color:var(--acc);font-weight:600}
+.pd-star{width:14px;height:14px;border:0;background:0;cursor:pointer;color:var(--t3);padding:0;display:flex;align-items:center;justify-content:center;transition:.12s;flex-shrink:0}
+.pd-star:hover{color:var(--acc)}
+.pd-star.on{color:var(--acc)}
+.pd-dd-bg{position:fixed;inset:0;z-index:299;display:none}
+.pd-dd-bg.show{display:block}
 
 /* Indicator buttons */
 .ib{padding:1px 5px;border-radius:3px;font-size:9px;font-weight:600;color:var(--t3);cursor:pointer;background:0;border:0;transition:.15s;flex-shrink:0}
@@ -362,19 +377,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 
           <div class="vs"></div>
 
-          <!-- Period (in widget, like TV) -->
-          <button class="pb">1m</button>
-          <button class="pb">5m</button>
-          <button class="pb">15m</button>
-          <button class="pb">1H</button>
-          <button class="pb">4H</button>
-          <button class="pb on">1D</button>
-          <button class="pb">1W</button>
+          <!-- Period: common shortcuts + dropdown (like dash.gainlab) -->
+          <div class="pd-wrap" id="pdWrap">
+            <div id="pdCommons"></div>
+            <div class="pd-dd-wrap">
+              <button class="pd-dd-btn" onclick="togglePdDd()" id="pdDdBtn"></button>
+              <div class="pd-dd-bg" id="pdDdBg" onclick="closePdDd()"></div>
+              <div class="pd-dd" id="pdDd"></div>
+            </div>
+          </div>
 
           <div class="vs"></div>
 
-          <!-- Chart type (candle style) -->
-          <button class="dtb on" title="蜡烛图" style="font-size:10px;font-weight:700">K</button>
+          <!-- Chart type: icon button + dropdown (like dash.gainlab) -->
+          <div class="ct-wrap" style="position:relative">
+            <button class="ct-btn" onclick="toggleCtDd()" id="ctBtn" style="padding:2px 4px;border-radius:4px;border:0;background:0;cursor:pointer;color:var(--t2);transition:.15s;display:flex;align-items:center">
+              <svg id="ctIcon" viewBox="0 0 16 16" width="16" height="16" fill="currentColor"></svg>
+            </button>
+            <div class="pd-dd-bg" id="ctDdBg" onclick="closeCtDd()"></div>
+            <div class="pd-dd" id="ctDd" style="min-width:130px"></div>
+          </div>
 
           <div class="vs"></div>
 
@@ -643,12 +665,102 @@ function updateIndTags(){
 }
 updateIndTags();
 
-// === Period buttons ===
-document.querySelectorAll('.pb').forEach(btn=>btn.addEventListener('click',function(){
-  document.querySelectorAll('.pb').forEach(b=>b.classList.remove('on'));
-  this.classList.add('on');
-  genCandles();
-}));
+// === Period: common shortcuts + full dropdown (dash.gainlab style) ===
+const allPeriods=[
+  {name:'1m',common:false},{name:'5m',common:false},{name:'15m',common:false},{name:'30m',common:false},
+  {name:'1H',common:true},{name:'4H',common:true},{name:'1D',common:true},
+  {name:'1W',common:false},{name:'1M',common:false}
+];
+let activePeriod='1D';
+
+function renderPdCommons(){
+  const box=document.getElementById('pdCommons');
+  box.innerHTML=allPeriods.filter(p=>p.common).map(p=>
+    `<button class="pb${p.name===activePeriod?' on':''}" onclick="setPeriod('${p.name}')">${p.name}</button>`
+  ).join('');
+  // dropdown button shows current period if not in commons
+  const btn=document.getElementById('pdDdBtn');
+  const inCommons=allPeriods.some(p=>p.common&&p.name===activePeriod);
+  btn.innerHTML=`<span>${inCommons?'':activePeriod+' '}</span><svg viewBox="0 0 10 6" width="8" height="5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,1 5,5 9,1"/></svg>`;
+}
+function renderPdDropdown(){
+  const dd=document.getElementById('pdDd');
+  dd.innerHTML=allPeriods.map(p=>{
+    const starSvg=p.common
+      ?'<svg viewBox="0 0 12 12" width="12" height="12" fill="currentColor"><path d="M6 1l1.5 3.1 3.4.5-2.5 2.4.6 3.4L6 8.7 3 10.4l.6-3.4L1.1 4.6l3.4-.5z"/></svg>'
+      :'<svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1"><path d="M6 1l1.5 3.1 3.4.5-2.5 2.4.6 3.4L6 8.7 3 10.4l.6-3.4L1.1 4.6l3.4-.5z"/></svg>';
+    return `<div class="pd-item${p.name===activePeriod?' active':''}">
+      <span class="pd-name" onclick="setPeriod('${p.name}')">${p.name}</span>
+      <button class="pd-star${p.common?' on':''}" onclick="event.stopPropagation();toggleCommon('${p.name}')">${starSvg}</button>
+    </div>`;
+  }).join('');
+}
+function setPeriod(name){
+  activePeriod=name;
+  renderPdCommons();closePdDd();genCandles();
+}
+function toggleCommon(name){
+  const p=allPeriods.find(x=>x.name===name);
+  if(!p)return;
+  const commonCount=allPeriods.filter(x=>x.common).length;
+  if(p.common){p.common=false;}
+  else if(commonCount<5){p.common=true;}
+  renderPdCommons();renderPdDropdown();
+}
+function togglePdDd(){
+  const dd=document.getElementById('pdDd'),bg=document.getElementById('pdDdBg');
+  const show=!dd.classList.contains('show');
+  dd.classList.toggle('show',show);bg.classList.toggle('show',show);
+  if(show)renderPdDropdown();
+}
+function closePdDd(){
+  document.getElementById('pdDd').classList.remove('show');
+  document.getElementById('pdDdBg').classList.remove('show');
+}
+renderPdCommons();
+
+// === Chart type: icon + dropdown (dash.gainlab style) ===
+const chartTypes=[
+  {id:'candle_solid',nameKey:'ct_candle_solid',
+   icon:'<path d="M7 1h2v3h2v8H5V4h2V1zm0 14h2v-2H7v2z"/>'},
+  {id:'candle_stroke',nameKey:'ct_candle_hollow',
+   icon:'<rect x="5" y="4" width="6" height="8" rx=".5" fill="none" stroke="currentColor" stroke-width="1.2"/><line x1="8" y1="1" x2="8" y2="4" stroke="currentColor" stroke-width="1.2"/><line x1="8" y1="12" x2="8" y2="15" stroke="currentColor" stroke-width="1.2"/>'},
+  {id:'ohlc',nameKey:'ct_ohlc',
+   icon:'<line x1="4" y1="2" x2="4" y2="14" stroke="currentColor" stroke-width="1.3"/><line x1="1" y1="5" x2="4" y2="5" stroke="currentColor" stroke-width="1.3"/><line x1="4" y1="11" x2="7" y2="11" stroke="currentColor" stroke-width="1.3"/><line x1="11" y1="4" x2="11" y2="14" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="7" x2="11" y2="7" stroke="currentColor" stroke-width="1.3"/><line x1="11" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="1.3"/>'},
+  {id:'price_line',nameKey:'ct_line',
+   icon:'<polyline points="1,12 4,7 8,9 12,3 15,6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'},
+  {id:'area',nameKey:'ct_area',
+   icon:'<path d="M1,12 L4,7 L8,9 L12,3 L15,6 L15,14 L1,14 Z" opacity=".3"/><polyline points="1,12 4,7 8,9 12,3 15,6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'}
+];
+let curChartType='candle_solid';
+
+function renderCtIcon(){
+  const ct=chartTypes.find(c=>c.id===curChartType);
+  document.getElementById('ctIcon').innerHTML=ct.icon;
+}
+function renderCtDropdown(){
+  const dd=document.getElementById('ctDd');
+  dd.innerHTML=chartTypes.map(ct=>
+    `<div class="pd-item${ct.id===curChartType?' active':''}" onclick="setChartType('${ct.id}')">
+      <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" style="flex-shrink:0">${ct.icon}</svg>
+      <span class="pd-name">${t(ct.nameKey)}</span>
+    </div>`
+  ).join('');
+}
+function setChartType(id){
+  curChartType=id;renderCtIcon();closeCtDd();genCandles();
+}
+function toggleCtDd(){
+  const dd=document.getElementById('ctDd'),bg=document.getElementById('ctDdBg');
+  const show=!dd.classList.contains('show');
+  dd.classList.toggle('show',show);bg.classList.toggle('show',show);
+  if(show)renderCtDropdown();
+}
+function closeCtDd(){
+  document.getElementById('ctDd').classList.remove('show');
+  document.getElementById('ctDdBg').classList.remove('show');
+}
+renderCtIcon();
 
 genCandles();genVP();genHM();
 
@@ -728,6 +840,9 @@ const i18n={
     ind_vwap:'成交量加权均价', ind_vp:'筹码分布', ind_wrb:'宽幅K线信号',
     ind_rsi:'相对强弱', ind_macd:'指数平滑异同', ind_kdj:'随机指标', ind_atr:'真实波幅',
     // Drawing tools
+    // Chart type
+    ct_candle_solid:'实心蜡烛', ct_candle_hollow:'空心蜡烛', ct_ohlc:'OHLC', ct_line:'价格线', ct_area:'价格区域',
+    // Drawing tools
     dt_trend:'趋势线', dt_hline:'水平线', dt_rect:'矩形',
     dt_fib:'斐波那契', dt_note:'标注', dt_more:'更多画图',
     // Widget controls
@@ -767,6 +882,7 @@ const i18n={
     ind_ma:'Moving Average', ind_ema:'Exp. Moving Avg', ind_boll:'Bollinger Bands',
     ind_vwap:'Vol-Weighted Avg Price', ind_vp:'Volume Profile', ind_wrb:'Wide Range Bar',
     ind_rsi:'Relative Strength', ind_macd:'MACD', ind_kdj:'Stochastic', ind_atr:'Avg True Range',
+    ct_candle_solid:'Candlestick', ct_candle_hollow:'Hollow Candle', ct_ohlc:'OHLC', ct_line:'Price Line', ct_area:'Price Area',
     dt_trend:'Trend Line', dt_hline:'Horizontal Line', dt_rect:'Rectangle',
     dt_fib:'Fibonacci', dt_note:'Annotate', dt_more:'More Tools',
     wc_settings:'Settings', wc_screenshot:'Screenshot', wc_fullscreen:'Fullscreen',
@@ -831,8 +947,10 @@ function applyLang(){
   });
   // Lang button
   document.getElementById('langBtn').textContent=curLang==='zh'?'EN':'中';
-  // Re-render sidebar nav
+  // Re-render sidebar nav + period + chart type
   renderSidebar();
+  renderPdCommons();
+  renderCtIcon();
 }
 
 function toggleLang(){
