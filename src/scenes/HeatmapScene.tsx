@@ -32,10 +32,9 @@ const TOP_MOVERS_ITEMS = [
 
 interface HeatmapSceneProps {
   market: MarketType;
-  onDrillDown: (symbol: string, market?: string) => void;
 }
 
-export function HeatmapScene({ market, onDrillDown }: HeatmapSceneProps) {
+export function HeatmapScene({ market }: HeatmapSceneProps) {
   const fallback = (
     <div className="w-full h-full bg-[#0d0d20] flex items-center justify-center">
       <span className="text-[#5a5a8a] text-sm">Loading...</span>
@@ -47,10 +46,7 @@ export function HeatmapScene({ market, onDrillDown }: HeatmapSceneProps) {
       {/* Main: big heatmap */}
       <div className="hm-main">
         <Suspense fallback={fallback}>
-          <LazyHeatmapWidget
-            market={market}
-            onCellClick={(symbol) => onDrillDown(symbol)}
-          />
+          <LazyHeatmapWidget market={market} />
         </Suspense>
       </div>
 
@@ -60,7 +56,6 @@ export function HeatmapScene({ market, onDrillDown }: HeatmapSceneProps) {
           <LazyQuoteTableWidget
             title="Top Movers"
             items={TOP_MOVERS_ITEMS}
-            onRowClick={(symbol, mkt) => onDrillDown(symbol, mkt)}
           />
         </Suspense>
       </div>

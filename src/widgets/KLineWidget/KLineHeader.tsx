@@ -158,39 +158,38 @@ export function KLineHeader({
           <span className="sym-t">{symbolDisplay}</span>
           <span className="sym-m">{market}</span>
           <span className="sym-v">▾</span>
+          {ddOpen && <div className="dd-overlay show" onClick={closeDD} />}
+          {ddOpen && (
+            <div className="dd show" onClick={e => e.stopPropagation()}>
+              <input
+                placeholder="搜索标的..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                autoFocus
+              />
+              {groups.map(group => (
+                <Fragment key={group}>
+                  <div className="dd-section">{group}</div>
+                  {filtered
+                    .filter(s => s.market === group)
+                    .map(s => (
+                      <div
+                        key={s.symbol}
+                        className="ddi"
+                        onClick={() => { onSymbolChange(s.symbol, s.market); closeDD(); }}
+                      >
+                        <span>
+                          <span className="dn_">{s.display}</span>
+                          <span className="dm">{s.desc}</span>
+                        </span>
+                        <span className="dk">{s.market}</span>
+                      </div>
+                    ))}
+                </Fragment>
+              ))}
+            </div>
+          )}
         </div>
-
-        {ddOpen && <div className="dd-overlay show" onClick={closeDD} />}
-        {ddOpen && (
-          <div className="dd show">
-            <input
-              placeholder="搜索标的..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              autoFocus
-            />
-            {groups.map(group => (
-              <Fragment key={group}>
-                <div className="dd-section">{group}</div>
-                {filtered
-                  .filter(s => s.market === group)
-                  .map(s => (
-                    <div
-                      key={s.symbol}
-                      className="ddi"
-                      onClick={() => { onSymbolChange(s.symbol, s.market); closeDD(); }}
-                    >
-                      <span>
-                        <span className="dn_">{s.display}</span>
-                        <span className="dm">{s.desc}</span>
-                      </span>
-                      <span className="dk">{s.market}</span>
-                    </div>
-                  ))}
-              </Fragment>
-            ))}
-          </div>
-        )}
 
         {/* ── Price ── */}
         <span className={`prc ${(changePercent ?? 0) >= 0 ? 'up' : 'dn'}`}>

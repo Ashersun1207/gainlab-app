@@ -97,7 +97,7 @@ function App() {
   const { isMobile } = useResponsive();
 
   // ── Scene management (replaces old activeScene useState) ──
-  const { activeScene, sceneParams, switchScene, drillDown, isImplemented } =
+  const { activeScene, sceneParams, switchScene, isImplemented } =
     useScene();
 
   // ── Derive market/symbol/interval from sceneParams ──
@@ -174,7 +174,6 @@ function App() {
                   <LazyQuoteTableWidget
                     title="四市场报价"
                     items={NOW_QUOTE_ITEMS}
-                    onRowClick={(sym, mkt) => drillDown(sym, mkt)}
                   />
                 </Suspense>
               </ErrorBoundary>
@@ -189,9 +188,7 @@ function App() {
             <div className="scene-now-cell">
               <ErrorBoundary label="GlobalIndex">
                 <Suspense fallback={<LoadingPlaceholder />}>
-                  <LazyGlobalIndexWidget
-                    onRowClick={(sym, mkt) => drillDown(sym, mkt)}
-                  />
+                  <LazyGlobalIndexWidget />
                 </Suspense>
               </ErrorBoundary>
             </div>
@@ -200,7 +197,6 @@ function App() {
                 <Suspense fallback={<LoadingPlaceholder />}>
                   <LazyHeatmapWidget
                     market={activeMarket}
-                    onCellClick={(sym) => drillDown(sym)}
                   />
                 </Suspense>
               </ErrorBoundary>
@@ -208,9 +204,7 @@ function App() {
             <div className="scene-now-cell">
               <ErrorBoundary label="ForexCommodity">
                 <Suspense fallback={<LoadingPlaceholder />}>
-                  <LazyForexCommodityWidget
-                    onRowClick={(sym, mkt) => drillDown(sym, mkt)}
-                  />
+                  <LazyForexCommodityWidget />
                 </Suspense>
               </ErrorBoundary>
             </div>
@@ -235,7 +229,7 @@ function App() {
         return (
           <div className="flex-1 min-h-0">
             <ErrorBoundary label="HeatmapScene">
-              <HeatmapScene market={activeMarket} onDrillDown={drillDown} />
+              <HeatmapScene market={activeMarket} />
             </ErrorBoundary>
           </div>
         );
@@ -301,7 +295,6 @@ function App() {
                   <Suspense fallback={<LoadingPlaceholder />}>
                     <LazyHeatmapWidget
                       market={activeMarket}
-                      onCellClick={(sym) => drillDown(sym)}
                     />
                   </Suspense>
                 </ErrorBoundary>
@@ -321,7 +314,6 @@ function App() {
                     <LazyQuoteTableWidget
                       title=""
                       items={NOW_QUOTE_ITEMS}
-                      onRowClick={(sym, mkt) => drillDown(sym, mkt)}
                     />
                   </Suspense>
                 </ErrorBoundary>
@@ -340,7 +332,6 @@ function App() {
                   <Suspense fallback={<LoadingPlaceholder />}>
                     <LazyGlobalIndexWidget
                       headless
-                      onRowClick={(sym, mkt) => drillDown(sym, mkt)}
                     />
                   </Suspense>
                 </ErrorBoundary>
@@ -351,7 +342,6 @@ function App() {
                   <Suspense fallback={<LoadingPlaceholder />}>
                     <LazyForexCommodityWidget
                       headless
-                      onRowClick={(sym, mkt) => drillDown(sym, mkt)}
                     />
                   </Suspense>
                 </ErrorBoundary>
