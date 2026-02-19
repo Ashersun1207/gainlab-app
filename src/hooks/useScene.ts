@@ -14,46 +14,39 @@ import {
 } from '../layout/Sidebar/sceneConfig';
 import type { MarketType, TimeInterval, SceneParams } from '../types/market';
 
+/** Read URL params and return initial scene */
+function getInitialScene(): string {
+  const s = new URLSearchParams(window.location.search).get('s');
+  return s && SCENE_CONFIGS.some((sc) => sc.id === s) ? s : 'stock_analysis';
+}
+
+/** Read URL params and return initial scene params */
+function getInitialParams(): SceneParams {
+  const urlParams = new URLSearchParams(window.location.search);
+  const sym = urlParams.get('sym');
+  const m = urlParams.get('m') as MarketType | null;
+  const p = urlParams.get('p') as TimeInterval | null;
+
+  return {
+    symbol: sym || 'BTCUSDT',
+    market: m || (sym ? (SYMBOL_MARKET[sym] as MarketType) ?? 'crypto' : 'crypto'),
+    period: p || '1D',
+  };
+}
+
 export function useScene() {
-  const [activeScene, setActiveScene] = useState<string>('stock_analysis');
-  const [sceneParams, setSceneParams] = useState<SceneParams>({
-    symbol: 'BTCUSDT',
-    market: 'crypto',
-    period: '1D',
-  });
+  const [activeScene, setActiveScene] = useState<string>(getInitialScene);
+  const [sceneParams, setSceneParams] = useState<SceneParams>(getInitialParams);
   const isInitialized = useRef(false);
 
-  // ── URL → state (on mount) ──
+  // Record initial state for popstate (run once)
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const s = params.get('s');
-    const sym = params.get('sym');
-    const m = params.get('m') as MarketType | null;
-    const p = params.get('p') as TimeInterval | null;
-
-    let scene = 'stock_analysis';
-    if (s && SCENE_CONFIGS.some((sc) => sc.id === s)) {
-      scene = s;
-    }
-    setActiveScene(scene);
-
-    if (sym) {
-      setSceneParams((prev) => ({
-        ...prev,
-        symbol: sym,
-        market: m || (SYMBOL_MARKET[sym] as MarketType) || prev.market,
-        period: p || prev.period,
-      }));
-    } else if (p) {
-      setSceneParams((prev) => ({ ...prev, period: p }));
-    }
-
-    // Record initial state for popstate
     window.history.replaceState(
-      { scene, symbol: sym, market: m, period: p },
+      { scene: activeScene, ...sceneParams },
       '',
     );
     isInitialized.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only on mount
   }, []);
 
   // ── Push URL (internal helper) ──
@@ -106,7 +99,6 @@ export function useScene() {
           return next;
         });
       } else {
-        // Use functional form to get latest sceneParams for URL
         setSceneParams((prev) => {
           pushUrl(sceneId, prev);
           return prev;
