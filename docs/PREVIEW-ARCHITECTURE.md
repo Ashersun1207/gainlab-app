@@ -1,6 +1,6 @@
 # preview-layout.html — 结构文档
 
-_改 preview-layout 前必读。1300+ 行单文件，本文档是导航地图。_
+_改 preview-layout 前必读。1390 行单文件，本文档是导航地图。_
 
 ---
 
@@ -20,7 +20,7 @@ _改 preview-layout 前必读。1300+ 行单文件，本文档是导航地图。
 
 ---
 
-## 文件分区（~1303 行）
+## 文件分区（~1390 行）
 
 | 区域 | 行号 | 内容 |
 |---|---|---|
@@ -197,14 +197,54 @@ function t(key) { return i18n[curLang][key] || key; }
 
 ---
 
+## Widget State + Drill-down（T12 P0）
+
+### widgetState 对象
+```javascript
+let widgetState = { scene, symbol, market, period };
+```
+全局状态，记录当前视图。三条路径共用：
+- 用户点击 → `drillDown(symbol)` → `switchScene('stock_analysis', params)`
+- URL 参数 → `initFromUrl()` → `switchScene(scene, params)`
+- 浏览器后退 → `popstate` → `switchScene(state.scene, state)`
+
+### drill-down 交互
+所有 `gen*` 函数的数据行都有 `onclick="drillDown('SYMBOL')""`：
+- `genQuoteTable` — 报价表行
+- `genGlobalIdx` — 全球指数行
+- `genForexComm` — 外汇大宗行
+- `genHM` / `genBigHeatmap` — 热力图色块
+- `genTopMovers` — 涨跌幅排行行
+
+点击后：切到 CK 场景 + K线标题更新 + sidebar active 跟随 + URL 带参数。
+
+### URL 路由
+| 参数 | 含义 | 示例 |
+|---|---|---|
+| `s` | 场景 ID | `?s=snapshot` |
+| `sym` | 标的名 | `&sym=AAPL` |
+| `m` | 市场 | `&m=us` |
+| `p` | 周期 | `&p=1D` |
+
+- `pushState` 更新 URL（不刷新页面）
+- `popstate` 监听浏览器后退
+- `initFromUrl()` 页面加载时读 URL 参数
+
+### 辅助映射表
+- `SYMBOL_DISPLAY` — symbol → 显示名（如 `'BTC'→'BTC/USDT'`）
+- `SYMBOL_MARKET` — symbol → 市场（如 `'AAPL'→'us'`）
+
+---
+
 ## 已知约束
 
 1. **所有数据是硬编码 sample**，无 API 调用
-2. **单文件 1300+ 行**，无模块拆分
+2. **单文件 1400+ 行**，无模块拆分
 3. **只有 3 个 scene 有 DOM**，其他 11 个 sidebar 项 fallback 到 CK
 4. **GitHub Pages 不支持 path 路由**，只能用 query params
-5. **无状态持久化**（刷新回默认）
+5. **无状态持久化**（刷新回默认，但 URL 参数可恢复）
 6. **Sidebar active 状态必须走数据驱动**（L25 教训）
+7. **drill-down 后 K线数据不变**（sample data，只改标题显示）
 
 ---
 
