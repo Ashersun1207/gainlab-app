@@ -13,7 +13,8 @@ import { HeatmapScene } from './scenes/HeatmapScene';
 import { PlaceholderScene } from './scenes/PlaceholderScene';
 import { KLineHeader } from './widgets/KLineWidget/KLineHeader';
 import { getRenderTarget, mcpToKLine, mcpToEChartsOption } from './services/dataAdapter';
-import { t } from './i18n';
+import { t, getLang } from './i18n';
+import { Settings } from './layout/Settings';
 import type { KLineData } from './types/data';
 import type { EChartsOption } from 'echarts';
 import type { MarketType, TimeInterval } from './types/market';
@@ -95,6 +96,15 @@ function toMarketType(label: string): MarketType {
 
 function App() {
   const { isMobile } = useResponsive();
+
+  // ── Language state (key={lang} forces full re-render on switch) ──
+  const [lang, setLangState] = useState(getLang());
+  const handleLangChange = useCallback((newLang: 'zh' | 'en') => {
+    setLangState(newLang);
+  }, []);
+
+  // ── Settings panel ──
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // ── Scene management (replaces old activeScene useState) ──
   const { activeScene, sceneParams, switchScene, isImplemented } =
@@ -360,7 +370,7 @@ function App() {
   // ══════════════════════════════════════════════════════════
   if (isMobile) {
     return (
-      <div className="w-screen h-[100dvh] bg-[#0f0f1a] overflow-hidden flex flex-col">
+      <div key={lang} className="w-screen h-[100dvh] bg-[#0f0f1a] overflow-hidden flex flex-col">
         {/* Scene content — pb-14 compensates for fixed MobileTabBar */}
         <div className="flex-1 min-h-0 flex flex-col overflow-y-auto pb-14">
           {renderScene()}
@@ -386,6 +396,9 @@ function App() {
           onToggleChat={toggleChat}
           onCloseChat={() => setChatOpen(false)}
         />
+
+        {/* Settings overlay */}
+        <Settings open={settingsOpen} onClose={() => setSettingsOpen(false)} onLangChange={handleLangChange} />
       </div>
     );
   }
@@ -394,13 +407,14 @@ function App() {
   // Desktop layout: Sidebar + Main(HeaderBar + Scene) + Chat
   // ══════════════════════════════════════════════════════════
   return (
-    <div className="w-screen h-screen bg-[#0f0f1a] overflow-hidden flex">
+    <div key={lang} className="w-screen h-screen bg-[#0f0f1a] overflow-hidden flex">
       {/* Sidebar */}
       <ErrorBoundary label="Sidebar">
         <Sidebar
           activeScene={activeScene}
           onSceneSelect={switchScene}
           onToggleChat={toggleChat}
+          onOpenSettings={() => setSettingsOpen(true)}
         />
       </ErrorBoundary>
 
@@ -430,6 +444,9 @@ function App() {
       ) : (
         <ChatToggle onClick={() => setChatOpen(true)} />
       )}
+
+      {/* Settings overlay */}
+      <Settings open={settingsOpen} onClose={() => setSettingsOpen(false)} onLangChange={handleLangChange} />
     </div>
   );
 }

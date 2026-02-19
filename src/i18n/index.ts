@@ -114,6 +114,31 @@ const translations: Record<Lang, Record<string, string>> = {
     search_results: '搜索结果',
     // Chat
     btn_open_ai: '打开 AI 助手',
+    // Settings
+    settings_title: '设置',
+    settings_language: '语言',
+    settings_lang_zh: '中文',
+    settings_lang_en: 'English',
+    settings_agent: 'Agent 配置',
+    settings_agent_endpoint: 'API 端点',
+    settings_agent_toggle: 'Agent 开关',
+    settings_agent_on: '已启用',
+    settings_agent_off: '已禁用',
+    settings_data: '数据源 (BYOK)',
+    settings_data_us: '美股 API Key (FMP)',
+    settings_data_cn: 'A股 API Key (EODHD)',
+    settings_data_metal: '贵金属/外汇 API Key',
+    settings_data_crypto_free: 'Crypto 免费 (Bybit)',
+    settings_display: '显示偏好',
+    settings_default_market: '默认市场',
+    settings_default_period: '默认周期',
+    settings_theme: '主题',
+    settings_theme_dark: '暗色',
+    settings_about: '关于',
+    settings_version: '版本',
+    settings_github: 'GitHub',
+    settings_save: '保存',
+    settings_saved: '已保存',
   },
   en: {
     sec_dashboards: 'Dashboards',
@@ -218,20 +243,54 @@ const translations: Record<Lang, Record<string, string>> = {
     search_results: 'Search Results',
     // Chat
     btn_open_ai: 'Open AI Assistant',
+    // Settings
+    settings_title: 'Settings',
+    settings_language: 'Language',
+    settings_lang_zh: '中文',
+    settings_lang_en: 'English',
+    settings_agent: 'Agent Config',
+    settings_agent_endpoint: 'API Endpoint',
+    settings_agent_toggle: 'Agent Toggle',
+    settings_agent_on: 'Enabled',
+    settings_agent_off: 'Disabled',
+    settings_data: 'Data Sources (BYOK)',
+    settings_data_us: 'US Stocks API Key (FMP)',
+    settings_data_cn: 'A-Share API Key (EODHD)',
+    settings_data_metal: 'Metal/FX API Key',
+    settings_data_crypto_free: 'Crypto Free (Bybit)',
+    settings_display: 'Display',
+    settings_default_market: 'Default Market',
+    settings_default_period: 'Default Period',
+    settings_theme: 'Theme',
+    settings_theme_dark: 'Dark',
+    settings_about: 'About',
+    settings_version: 'Version',
+    settings_github: 'GitHub',
+    settings_save: 'Save',
+    settings_saved: 'Saved',
   },
 };
 
-// Default language — could be made reactive later
-let currentLang: Lang = 'zh';
+// Load saved lang from localStorage, default to 'zh'
+function loadLang(): Lang {
+  try {
+    const saved = localStorage.getItem('gainlab-lang');
+    if (saved === 'en' || saved === 'zh') return saved;
+  } catch { /* SSR or blocked */ }
+  return 'zh';
+}
+
+let currentLang: Lang = loadLang();
 
 /** Get current language */
 export function getLang(): Lang {
   return currentLang;
 }
 
-/** Set current language */
+/** Set current language (also persists to localStorage) */
 export function setLang(lang: Lang) {
   currentLang = lang;
+  try { localStorage.setItem('gainlab-lang', lang); } catch { /* ignore */ }
 }
 
 /** Translate key to current language string. Falls back to key itself. */
