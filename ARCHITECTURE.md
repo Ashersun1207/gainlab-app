@@ -42,6 +42,8 @@ gainlab-app/
 │   │   ├── WidgetPanel.tsx     # Widget 面板壳（标题栏 + 刷新/全屏/关闭按钮）
 │   │   ├── Toolbar.tsx         # (遗留) 顶部工具栏 — CK 场景已由 KLineHeader 替代
 │   │   ├── Drawer.tsx          # (遗留) 底部抽屉 — CK 场景已由 Widget 网格替代
+│   │   ├── Settings/
+│   │   │   └── index.tsx       # 设置面板（语言/Agent配置/BYOK数据源/显示偏好/关于）
 │   │   ├── MobileTabBar.tsx    # 移动端底部 Tab Bar（5 tab: 分析/快照/热力/AI/更多）
 │   │   ├── MosaicDashboard.tsx # react-mosaic 容器（P0 遗留，保留兼容）
 │   │   └── WidgetBase.tsx      # Widget 壳（深色主题）
@@ -91,7 +93,7 @@ gainlab-app/
 │   │   └── PlaceholderScene.tsx # 未实装场景 placeholder（Coming Soon）
 │   │
 │   ├── i18n/
-│   │   └── index.ts            # 最小 i18n（zh/en，场景名/tab名/widget名）
+│   │   └── index.ts            # 完整 i18n（zh/en，100+ keys：场景/tab/widget/指标/图表类型/设置/按钮）
 │   │
 │   ├── hooks/
 │   │   ├── useScene.ts         # 场景管理 + URL 路由 + drill-down（替代 App.tsx useState）
