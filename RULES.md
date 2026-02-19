@@ -36,7 +36,7 @@ PRD / TASK / 决策记录 统一放研究仓库：
 3. TASK              — 写任务分解（改动 > 1 个文件必须）
 4. 实现              — 写代码，复用优先
 5. 验证              — 本地跑通，截图/录屏存档
-6. 文档同步          — 更新 ARCHITECTURE.md + gainlab-research 相关文档
+6. 文档同步          — `bash scripts/doc-sync.sh --fix`（自动检查+提交三仓库）
 7. 提交              — commit + push，CI 自动部署
 ```
 
