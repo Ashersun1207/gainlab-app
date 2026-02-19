@@ -6,9 +6,10 @@ interface EChartsWidgetProps {
   option: EChartsOption;
   style?: CSSProperties;
   onReady?: (instance: unknown) => void;
+  onEvents?: Record<string, (params: Record<string, unknown>) => void>;
 }
 
-export function EChartsWidget({ option, style, onReady }: EChartsWidgetProps) {
+export function EChartsWidget({ option, style, onReady, onEvents }: EChartsWidgetProps) {
   return (
     <ReactECharts
       option={option}
@@ -22,6 +23,7 @@ export function EChartsWidget({ option, style, onReady }: EChartsWidgetProps) {
       notMerge
       lazyUpdate
       onChartReady={onReady}
+      onEvents={onEvents}
     />
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, Suspense, lazy } from 'react';
 import { buildHeatmapOption } from '../EChartsWidget/charts/HeatmapChart';
 import { sampleHeatmapData } from '../EChartsWidget/charts/sampleHeatmapData';
 import { fetchWorkerScreener } from '../../services/api';
@@ -11,9 +11,10 @@ const LazyECharts = lazy(() =>
 
 interface HeatmapWidgetProps {
   market: MarketType;
+  onCellClick?: (symbol: string) => void;
 }
 
-export function HeatmapWidget({ market }: HeatmapWidgetProps) {
+export function HeatmapWidget({ market, onCellClick }: HeatmapWidgetProps) {
   const [data, setData] = useState<HeatmapItem[]>(sampleHeatmapData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +50,20 @@ export function HeatmapWidget({ market }: HeatmapWidgetProps) {
 
   const option = buildHeatmapOption(data);
 
+  // ECharts click handler for treemap cells
+  const echartsEvents = useMemo(() => {
+    if (!onCellClick) return undefined;
+    return {
+      click: (params: Record<string, unknown>) => {
+        const name = params.name as string | undefined;
+        if (name) {
+          // treemap cell name is the symbol (e.g. "BTC", "ETH")
+          onCellClick(name);
+        }
+      },
+    };
+  }, [onCellClick]);
+
   return (
     <div className="w-full h-full relative">
       {loading && (
@@ -64,7 +79,7 @@ export function HeatmapWidget({ market }: HeatmapWidgetProps) {
       <Suspense
         fallback={<div className="w-full h-full bg-[#0d0d20]" />}
       >
-        <LazyECharts option={option} style={{ height: '100%' }} />
+        <LazyECharts option={option} style={{ height: '100%' }} onEvents={echartsEvents} />
       </Suspense>
     </div>
   );
