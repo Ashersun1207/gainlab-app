@@ -167,48 +167,51 @@ function App() {
     switch (activeScene) {
       case 'snapshot':
         return (
-          <div className="scene-now-grid">
-            <div className="scene-now-cell">
+          <div className="ck-grid">
+            <WidgetPanel title="QUOTES" subtitle={t('w_four_markets')}>
               <ErrorBoundary label="QuoteTable">
                 <Suspense fallback={<LoadingPlaceholder />}>
                   <LazyQuoteTableWidget
-                    title="四市场报价"
+                    title=""
                     items={NOW_QUOTE_ITEMS}
                   />
                 </Suspense>
               </ErrorBoundary>
-            </div>
-            <div className="scene-now-cell">
+            </WidgetPanel>
+
+            <WidgetPanel title="SENTIMENT" subtitle={t('w_market_mood')}>
               <ErrorBoundary label="Sentiment">
                 <Suspense fallback={<LoadingPlaceholder />}>
-                  <LazySentimentWidget />
+                  <LazySentimentWidget headless />
                 </Suspense>
               </ErrorBoundary>
-            </div>
-            <div className="scene-now-cell">
+            </WidgetPanel>
+
+            <WidgetPanel title="GLOBAL INDEX" subtitle={t('w_world_indices')}>
               <ErrorBoundary label="GlobalIndex">
                 <Suspense fallback={<LoadingPlaceholder />}>
-                  <LazyGlobalIndexWidget />
+                  <LazyGlobalIndexWidget headless />
                 </Suspense>
               </ErrorBoundary>
-            </div>
-            <div className="scene-now-cell">
+            </WidgetPanel>
+
+            <WidgetPanel title="HEATMAP" subtitle={`${activeMarket.charAt(0).toUpperCase() + activeMarket.slice(1)} ▾`}>
               <ErrorBoundary label="Heatmap">
                 <Suspense fallback={<LoadingPlaceholder />}>
-                  <LazyHeatmapWidget
-                    market={activeMarket}
-                  />
+                  <LazyHeatmapWidget market={activeMarket} />
                 </Suspense>
               </ErrorBoundary>
-            </div>
-            <div className="scene-now-cell">
+            </WidgetPanel>
+
+            <WidgetPanel title="FX & COMM" subtitle={t('w_forex_comm')}>
               <ErrorBoundary label="ForexCommodity">
                 <Suspense fallback={<LoadingPlaceholder />}>
-                  <LazyForexCommodityWidget />
+                  <LazyForexCommodityWidget headless />
                 </Suspense>
               </ErrorBoundary>
-            </div>
-            <div className="scene-now-cell">
+            </WidgetPanel>
+
+            <WidgetPanel title="CHART" subtitle={formatSymbolDisplay(activeSymbol)}>
               <ErrorBoundary label="KLine">
                 <Suspense fallback={<LoadingPlaceholder />}>
                   <LazyKLineWidget
@@ -221,7 +224,7 @@ function App() {
                   />
                 </Suspense>
               </ErrorBoundary>
-            </div>
+            </WidgetPanel>
           </div>
         );
 

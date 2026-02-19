@@ -4,6 +4,7 @@
  */
 
 import { Suspense, lazy } from 'react';
+import { WidgetPanel } from '../layout/WidgetPanel';
 import type { MarketType } from '../types/market';
 
 // Lazy load widgets for code splitting (G7)
@@ -45,19 +46,23 @@ export function HeatmapScene({ market }: HeatmapSceneProps) {
     <div className="hm-scene">
       {/* Main: big heatmap */}
       <div className="hm-main">
-        <Suspense fallback={fallback}>
-          <LazyHeatmapWidget market={market} />
-        </Suspense>
+        <WidgetPanel title="HEATMAP" subtitle={`${market.charAt(0).toUpperCase() + market.slice(1)} ▾`}>
+          <Suspense fallback={fallback}>
+            <LazyHeatmapWidget market={market} />
+          </Suspense>
+        </WidgetPanel>
       </div>
 
       {/* Side: top movers + quote table */}
       <div className="hm-side">
-        <Suspense fallback={fallback}>
-          <LazyQuoteTableWidget
-            title="Top Movers"
-            items={TOP_MOVERS_ITEMS}
-          />
-        </Suspense>
+        <WidgetPanel title="TOP MOVERS" subtitle="Crypto">
+          <Suspense fallback={fallback}>
+            <LazyQuoteTableWidget
+              title=""
+              items={TOP_MOVERS_ITEMS}
+            />
+          </Suspense>
+        </WidgetPanel>
       </div>
     </div>
   );
