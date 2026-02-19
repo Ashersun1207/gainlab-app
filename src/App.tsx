@@ -38,6 +38,20 @@ const LazyFundamentalsWidget = lazy(() =>
 );
 // WRBWidget removed — now rendered as KLineChart overlay
 
+// --- NOW page widgets (T11) ---
+const LazyQuoteTableWidget = lazy(() =>
+  import('./widgets/QuoteTableWidget').then((m) => ({ default: m.QuoteTableWidget })),
+);
+const LazySentimentWidget = lazy(() =>
+  import('./widgets/SentimentWidget').then((m) => ({ default: m.SentimentWidget })),
+);
+const LazyGlobalIndexWidget = lazy(() =>
+  import('./widgets/GlobalIndexWidget').then((m) => ({ default: m.GlobalIndexWidget })),
+);
+const LazyForexCommodityWidget = lazy(() =>
+  import('./widgets/ForexCommodityWidget').then((m) => ({ default: m.ForexCommodityWidget })),
+);
+
 // --- Loading placeholder (dark themed) ---
 function LoadingPlaceholder() {
   return (
@@ -46,6 +60,20 @@ function LoadingPlaceholder() {
     </div>
   );
 }
+
+// --- NOW scene: 四市场报价表 items ---
+const NOW_QUOTE_ITEMS = [
+  { symbol: 'BTCUSDT', displayName: 'Bitcoin', market: 'crypto' as MarketType },
+  { symbol: 'ETHUSDT', displayName: 'Ethereum', market: 'crypto' as MarketType },
+  { symbol: 'SOLUSDT', displayName: 'Solana', market: 'crypto' as MarketType },
+  { symbol: 'BNBUSDT', displayName: 'BNB', market: 'crypto' as MarketType },
+  { symbol: 'XRPUSDT', displayName: 'XRP', market: 'crypto' as MarketType },
+  { symbol: 'AAPL', displayName: 'Apple', market: 'us' as MarketType },
+  { symbol: 'MSFT', displayName: 'Microsoft', market: 'us' as MarketType },
+  { symbol: 'NVDA', displayName: 'NVIDIA', market: 'us' as MarketType },
+  { symbol: 'TSLA', displayName: 'Tesla', market: 'us' as MarketType },
+  { symbol: 'XAUUSD.FOREX', displayName: 'Gold', market: 'metal' as MarketType },
+];
 
 /** 获取资产显示名（如 "BTC / USDT"） */
 function formatSymbolDisplay(symbol: string): string {
@@ -78,6 +106,9 @@ function App() {
   // ── 移动端 tab + overlay ──
   const [mobileTab, setMobileTab] = useState<MobileTab>('market');
   const [mobileOverlay, setMobileOverlay] = useState<MobileTab | null>(null);
+
+  // ── 场景 ──
+  const [activeScene, setActiveScene] = useState<'default' | 'now'>('default');
 
   // ── 报价缓存（给 Sidebar 显示用）──
   const [quotes] = useState<Map<string, Quote>>(new Map());
@@ -332,49 +363,117 @@ function App() {
 
       {/* 中间主区 */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Toolbar */}
-        <Toolbar
-          symbolDisplay={formatSymbolDisplay(activeSymbol)}
-          price={quote?.price}
-          changePercent={quote?.changePercent}
-          interval={activeInterval}
-          activeIndicators={activeIndicators}
-          onIntervalChange={setActiveInterval}
-          onIndicatorToggle={handleIndicatorToggle}
-        />
-
-        {/* K线主图 */}
-        <div className={`min-h-0 ${drawerTool ? 'h-[60%]' : 'flex-1'}`}>
-          <ErrorBoundary label="KLine">
-            <Suspense fallback={<LoadingPlaceholder />}>
-              <LazyKLineWidget
-                key={activeSymbol}
-                symbol={activeSymbol}
-                data={effectiveKlineData}
-                indicators={activeIndicators}
-                showWRB={false}
-                showVP={false}
-              />
-            </Suspense>
-          </ErrorBoundary>
+        {/* Toolbar — 含 NOW 场景切换 */}
+        <div className="flex items-center bg-[#0d0d20] border-b border-[#1e1e3a] flex-shrink-0">
+          {/* Scene toggle */}
+          <div className="flex items-center gap-0.5 px-2 flex-shrink-0">
+            <button
+              onClick={() => setActiveScene('now')}
+              className={`px-2 py-1 text-[11px] rounded transition-colors ${activeScene === 'now' ? 'bg-[#4f46e5] text-white' : 'text-[#5a5a8a] hover:text-[#a0a0cc]'}`}
+            >
+              NOW
+            </button>
+            <button
+              onClick={() => setActiveScene('default')}
+              className={`px-2 py-1 text-[11px] rounded transition-colors ${activeScene === 'default' ? 'bg-[#4f46e5] text-white' : 'text-[#5a5a8a] hover:text-[#a0a0cc]'}`}
+            >
+              CK
+            </button>
+          </div>
+          <div className="flex-1 min-w-0">
+            <Toolbar
+              symbolDisplay={formatSymbolDisplay(activeSymbol)}
+              price={quote?.price}
+              changePercent={quote?.changePercent}
+              interval={activeInterval}
+              activeIndicators={activeIndicators}
+              onIntervalChange={setActiveInterval}
+              onIndicatorToggle={handleIndicatorToggle}
+            />
+          </div>
         </div>
 
-        {/* 抽屉 */}
-        <Drawer open={!!drawerTool} activeTool={drawerTool} onClose={() => setDrawerTool(null)}>
-          <ErrorBoundary label="Drawer Widget">
-            {renderDrawerContent()}
-          </ErrorBoundary>
-        </Drawer>
-
-        {/* ECharts 区域（Chat 推送时或无抽屉时显示） */}
-        {echartsOption && !drawerTool && (
-          <div className="h-[40%] border-t border-[#1e1e3a]">
-            <ErrorBoundary label="ECharts">
+        {/* === NOW 场景 === */}
+        {activeScene === 'now' ? (
+          <div className="flex-1 min-h-0 overflow-y-auto p-2 gap-2 grid grid-cols-2 grid-rows-[1fr_1fr_1fr] auto-rows-fr">
+            {/* Row 1: 四市场报价 + 市场情绪 */}
+            <ErrorBoundary label="QuoteTable">
               <Suspense fallback={<LoadingPlaceholder />}>
-                <LazyEChartsWidget option={echartsOption} style={{ height: '100%' }} />
+                <LazyQuoteTableWidget title="四市场报价" items={NOW_QUOTE_ITEMS} />
+              </Suspense>
+            </ErrorBoundary>
+            <ErrorBoundary label="Sentiment">
+              <Suspense fallback={<LoadingPlaceholder />}>
+                <LazySentimentWidget />
+              </Suspense>
+            </ErrorBoundary>
+            {/* Row 2: 全球指数 + 热力图 */}
+            <ErrorBoundary label="GlobalIndex">
+              <Suspense fallback={<LoadingPlaceholder />}>
+                <LazyGlobalIndexWidget />
+              </Suspense>
+            </ErrorBoundary>
+            <ErrorBoundary label="Heatmap">
+              <Suspense fallback={<LoadingPlaceholder />}>
+                <LazyHeatmapWidget market={activeMarket} />
+              </Suspense>
+            </ErrorBoundary>
+            {/* Row 3: 外汇大宗 + K线走势 */}
+            <ErrorBoundary label="ForexCommodity">
+              <Suspense fallback={<LoadingPlaceholder />}>
+                <LazyForexCommodityWidget />
+              </Suspense>
+            </ErrorBoundary>
+            <ErrorBoundary label="KLine">
+              <Suspense fallback={<LoadingPlaceholder />}>
+                <LazyKLineWidget
+                  key={activeSymbol}
+                  symbol={activeSymbol}
+                  data={effectiveKlineData}
+                  indicators={activeIndicators}
+                  showWRB={false}
+                  showVP={false}
+                />
               </Suspense>
             </ErrorBoundary>
           </div>
+        ) : (
+          <>
+            {/* === 默认 K线场景 === */}
+            {/* K线主图 */}
+            <div className={`min-h-0 ${drawerTool ? 'h-[60%]' : 'flex-1'}`}>
+              <ErrorBoundary label="KLine">
+                <Suspense fallback={<LoadingPlaceholder />}>
+                  <LazyKLineWidget
+                    key={activeSymbol}
+                    symbol={activeSymbol}
+                    data={effectiveKlineData}
+                    indicators={activeIndicators}
+                    showWRB={false}
+                    showVP={false}
+                  />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+
+            {/* 抽屉 */}
+            <Drawer open={!!drawerTool} activeTool={drawerTool} onClose={() => setDrawerTool(null)}>
+              <ErrorBoundary label="Drawer Widget">
+                {renderDrawerContent()}
+              </ErrorBoundary>
+            </Drawer>
+
+            {/* ECharts 区域（Chat 推送时或无抽屉时显示） */}
+            {echartsOption && !drawerTool && (
+              <div className="h-[40%] border-t border-[#1e1e3a]">
+                <ErrorBoundary label="ECharts">
+                  <Suspense fallback={<LoadingPlaceholder />}>
+                    <LazyEChartsWidget option={echartsOption} style={{ height: '100%' }} />
+                  </Suspense>
+                </ErrorBoundary>
+              </div>
+            )}
+          </>
         )}
       </div>
 
