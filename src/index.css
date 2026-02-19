@@ -107,11 +107,15 @@ body {
 /* 移动端全屏 overlay（市场/工具/聊天） */
 .mobile-overlay {
   position: fixed;
-  inset: 0;
-  z-index: 60;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+  z-index: 45;
   background: #0d0d20;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* 移动端 overlay 头部 */
