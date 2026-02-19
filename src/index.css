@@ -407,6 +407,24 @@ body {
   border-top: 1px solid #1e1e3a;
 }
 
+/* ── Snapshot scene: 3×2 grid (matches preview-layout) ── */
+
+.scene-now-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 1px;
+  background: #2a2a4a;
+  min-height: 0;
+  overflow: hidden;
+}
+.scene-now-cell {
+  background: #12122a;
+  overflow: hidden;
+  min-height: 0;
+}
+
 /* ── HeatmapScene layout ──────────────────────────────── */
 
 .hm-scene {
@@ -432,7 +450,11 @@ body {
 @media (max-width: 768px) {
   .hm-scene {
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr auto;
+    grid-template-rows: 1fr 1fr;
+  }
+  .scene-now-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
   }
 }
 
@@ -514,44 +536,52 @@ body {
   cursor: pointer;
   padding: 4px;
 }
-.mobile-more-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-.mobile-more-item {
+.mobile-more-list {
   display: flex;
   flex-direction: column;
+}
+/* More panel items — matches preview-layout btab-more */
+.btab-more-item {
+  display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 10px 4px;
-  border: none;
-  background: #1a1a3e;
-  border-radius: 8px;
-  color: #a0a0cc;
+  gap: 10px;
+  padding: 10px 8px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.12s;
-  font-size: 10px;
+  transition: background 0.1s;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #e0e0f0;
+  font-size: 13px;
+  text-align: left;
 }
-.mobile-more-item:hover:not(.mobile-more-disabled) {
-  background: #252550;
+.btab-more-item:hover,
+.btab-more-item:active {
+  background: #1e1e3a;
 }
-.mobile-more-disabled {
-  opacity: 0.35;
+.btab-more-item svg {
+  width: 18px;
+  height: 18px;
+  fill: #8888aa;
+  flex-shrink: 0;
+}
+.btab-more-disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
-.mobile-more-icon {
+.btab-more-icon {
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.mobile-more-icon svg {
-  width: 20px;
-  height: 20px;
+.btab-more-name {
+  flex: 1;
 }
-.mobile-more-name {
-  font-weight: 600;
-  font-size: 10px;
+.btab-more-badge {
+  font-size: 9px;
+  color: #5a5a8a;
+  margin-left: auto;
 }
 
 /* ── Placeholder Scene ────────────────────────────────── */

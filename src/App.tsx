@@ -180,55 +180,67 @@ function App() {
     switch (activeScene) {
       case 'snapshot':
         return (
-          <div className="flex-1 min-h-0 overflow-y-auto p-2 gap-2 grid grid-cols-2 grid-rows-[1fr_1fr_1fr] auto-rows-fr">
-            <ErrorBoundary label="QuoteTable">
-              <Suspense fallback={<LoadingPlaceholder />}>
-                <LazyQuoteTableWidget
-                  title="四市场报价"
-                  items={NOW_QUOTE_ITEMS}
-                  onRowClick={(sym, mkt) => drillDown(sym, mkt)}
-                />
-              </Suspense>
-            </ErrorBoundary>
-            <ErrorBoundary label="Sentiment">
-              <Suspense fallback={<LoadingPlaceholder />}>
-                <LazySentimentWidget />
-              </Suspense>
-            </ErrorBoundary>
-            <ErrorBoundary label="GlobalIndex">
-              <Suspense fallback={<LoadingPlaceholder />}>
-                <LazyGlobalIndexWidget
-                  onRowClick={(sym, mkt) => drillDown(sym, mkt)}
-                />
-              </Suspense>
-            </ErrorBoundary>
-            <ErrorBoundary label="Heatmap">
-              <Suspense fallback={<LoadingPlaceholder />}>
-                <LazyHeatmapWidget
-                  market={activeMarket}
-                  onCellClick={(sym) => drillDown(sym)}
-                />
-              </Suspense>
-            </ErrorBoundary>
-            <ErrorBoundary label="ForexCommodity">
-              <Suspense fallback={<LoadingPlaceholder />}>
-                <LazyForexCommodityWidget
-                  onRowClick={(sym, mkt) => drillDown(sym, mkt)}
-                />
-              </Suspense>
-            </ErrorBoundary>
-            <ErrorBoundary label="KLine">
-              <Suspense fallback={<LoadingPlaceholder />}>
-                <LazyKLineWidget
-                  key={activeSymbol}
-                  symbol={activeSymbol}
-                  data={effectiveKlineData}
-                  indicators={activeIndicators}
-                  showWRB={false}
-                  showVP={false}
-                />
-              </Suspense>
-            </ErrorBoundary>
+          <div className="scene-now-grid">
+            <div className="scene-now-cell">
+              <ErrorBoundary label="QuoteTable">
+                <Suspense fallback={<LoadingPlaceholder />}>
+                  <LazyQuoteTableWidget
+                    title="四市场报价"
+                    items={NOW_QUOTE_ITEMS}
+                    onRowClick={(sym, mkt) => drillDown(sym, mkt)}
+                  />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+            <div className="scene-now-cell">
+              <ErrorBoundary label="Sentiment">
+                <Suspense fallback={<LoadingPlaceholder />}>
+                  <LazySentimentWidget />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+            <div className="scene-now-cell">
+              <ErrorBoundary label="GlobalIndex">
+                <Suspense fallback={<LoadingPlaceholder />}>
+                  <LazyGlobalIndexWidget
+                    onRowClick={(sym, mkt) => drillDown(sym, mkt)}
+                  />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+            <div className="scene-now-cell">
+              <ErrorBoundary label="Heatmap">
+                <Suspense fallback={<LoadingPlaceholder />}>
+                  <LazyHeatmapWidget
+                    market={activeMarket}
+                    onCellClick={(sym) => drillDown(sym)}
+                  />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+            <div className="scene-now-cell">
+              <ErrorBoundary label="ForexCommodity">
+                <Suspense fallback={<LoadingPlaceholder />}>
+                  <LazyForexCommodityWidget
+                    onRowClick={(sym, mkt) => drillDown(sym, mkt)}
+                  />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+            <div className="scene-now-cell">
+              <ErrorBoundary label="KLine">
+                <Suspense fallback={<LoadingPlaceholder />}>
+                  <LazyKLineWidget
+                    key={activeSymbol}
+                    symbol={activeSymbol}
+                    data={effectiveKlineData}
+                    indicators={activeIndicators}
+                    showWRB={false}
+                    showVP={false}
+                  />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
           </div>
         );
 
