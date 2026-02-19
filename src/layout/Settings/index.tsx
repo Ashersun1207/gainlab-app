@@ -32,14 +32,25 @@ function saveByok(keys: Record<string, string>) {
 interface AgentConfig {
   endpoint: string;
   enabled: boolean;
+  model: string;
+  style: string;
+  autoAnalysis: boolean;
 }
+
+const AGENT_DEFAULTS: AgentConfig = {
+  endpoint: 'https://gainlab-api.asher-sun.workers.dev/api/chat',
+  enabled: true,
+  model: 'auto',
+  style: 'concise',
+  autoAnalysis: false,
+};
 
 function loadAgentConfig(): AgentConfig {
   try {
     const raw = localStorage.getItem('gainlab-agent');
-    if (raw) return JSON.parse(raw) as AgentConfig;
+    if (raw) return { ...AGENT_DEFAULTS, ...JSON.parse(raw) as Partial<AgentConfig> };
   } catch { /* ignore */ }
-  return { endpoint: 'https://gainlab-api.asher-sun.workers.dev/api/chat', enabled: true };
+  return { ...AGENT_DEFAULTS };
 }
 
 function saveAgentConfig(cfg: AgentConfig) {
@@ -130,13 +141,8 @@ function SettingsInner({ onClose, onLangChange }: Omit<SettingsProps, 'open'>): 
           {/* ── 2. Agent Config ── */}
           <div className="settings-section">
             <div className="settings-section-title">🤖 {t('settings_agent')}</div>
-            <label className="settings-label">{t('settings_agent_endpoint')}</label>
-            <input
-              className="settings-input"
-              value={agent.endpoint}
-              onChange={(e) => setAgent({ ...agent, endpoint: e.target.value })}
-              placeholder="https://..."
-            />
+
+            {/* Agent on/off */}
             <div className="settings-row">
               <span className="settings-label">{t('settings_agent_toggle')}</span>
               <button
@@ -147,6 +153,57 @@ function SettingsInner({ onClose, onLangChange }: Omit<SettingsProps, 'open'>): 
               </button>
               <span className="settings-toggle-label">
                 {agent.enabled ? t('settings_agent_on') : t('settings_agent_off')}
+              </span>
+            </div>
+
+            {/* API Endpoint */}
+            <label className="settings-label">{t('settings_agent_endpoint')}</label>
+            <input
+              className="settings-input"
+              value={agent.endpoint}
+              onChange={(e) => setAgent({ ...agent, endpoint: e.target.value })}
+              placeholder="https://..."
+            />
+
+            {/* Model preference */}
+            <label className="settings-label">{t('settings_agent_model')}</label>
+            <div className="settings-pill-group">
+              {['auto', 'gpt-4o', 'claude', 'deepseek'].map((m) => (
+                <button
+                  key={m}
+                  className={`settings-pill ${agent.model === m ? 'active' : ''}`}
+                  onClick={() => setAgent({ ...agent, model: m })}
+                >
+                  {m === 'auto' ? 'Auto' : m === 'gpt-4o' ? 'GPT-4o' : m === 'claude' ? 'Claude' : 'DeepSeek'}
+                </button>
+              ))}
+            </div>
+
+            {/* Analysis style */}
+            <label className="settings-label">{t('settings_agent_style')}</label>
+            <div className="settings-pill-group">
+              {(['concise', 'detailed', 'technical', 'fundamental'] as const).map((s) => (
+                <button
+                  key={s}
+                  className={`settings-pill ${agent.style === s ? 'active' : ''}`}
+                  onClick={() => setAgent({ ...agent, style: s })}
+                >
+                  {t(`settings_style_${s}`)}
+                </button>
+              ))}
+            </div>
+
+            {/* Auto-analysis on symbol switch */}
+            <div className="settings-row">
+              <span className="settings-label">{t('settings_agent_auto')}</span>
+              <button
+                className={`settings-toggle ${agent.autoAnalysis ? 'on' : ''}`}
+                onClick={() => setAgent({ ...agent, autoAnalysis: !agent.autoAnalysis })}
+              >
+                <span className="settings-toggle-knob" />
+              </button>
+              <span className="settings-toggle-label">
+                {agent.autoAnalysis ? t('settings_agent_on') : t('settings_agent_off')}
               </span>
             </div>
           </div>
