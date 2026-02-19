@@ -308,7 +308,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:768px){
-  .cp{display:none} /* 手机隐藏聊天面板 */
+  .cp{display:none} /* 平板及手机隐藏聊天面板，手机可通过 AI tab 打开 */
   .sidebar{width:36px}
   .sidebar.open{width:220px}
   .sb-ico svg{width:14px;height:14px}
@@ -332,7 +332,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
   .sidebar{display:none}
   .hdr{padding:0 6px;gap:6px}
   .pill{font-size:9px;padding:2px 5px}
+  .mn{padding-bottom:52px}
+  .btab{display:flex}
 }
+/* ═══ BOTTOM TAB BAR (mobile) ═══ */
+.btab{display:none;position:fixed;bottom:0;left:0;right:0;height:52px;background:var(--bg1);border-top:1px solid var(--brd);z-index:500;align-items:center;justify-content:space-around;padding:0 4px;padding-bottom:env(safe-area-inset-bottom,0)}
+.btab-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;flex:1;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .15s}
+.btab-item svg{width:20px;height:20px;fill:var(--t3);transition:fill .15s}
+.btab-item span{font-size:9px;color:var(--t3);transition:color .15s;white-space:nowrap}
+.btab-item.on svg{fill:var(--acc)}
+.btab-item.on span{color:var(--acc);font-weight:600}
+/* More overlay */
+.btab-more-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:52px;background:rgba(0,0,0,.6);z-index:490}
+.btab-more-overlay.show{display:block}
+.btab-more-panel{display:none;position:fixed;bottom:52px;left:0;right:0;background:var(--bg2);border-top:1px solid var(--brd);border-radius:12px 12px 0 0;z-index:495;padding:16px 12px;padding-bottom:calc(8px + env(safe-area-inset-bottom,0));max-height:60vh;overflow-y:auto}
+.btab-more-panel.show{display:block}
+.btab-more-title{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding:0 4px}
+.btab-more-item{display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:6px;cursor:pointer;transition:background .1s}
+.btab-more-item:hover,.btab-more-item:active{background:var(--bgH)}
+.btab-more-item svg{width:18px;height:18px;fill:var(--t2);flex-shrink:0}
+.btab-more-item span{font-size:13px;color:var(--t1)}
+.btab-more-item .btab-more-badge{font-size:9px;color:var(--t3);margin-left:auto}
 </style>
 </head>
 <body>
@@ -683,6 +703,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
     </div>
   </div>
 </div>
+
+<!-- ═══ BOTTOM TAB BAR (mobile only) ═══ -->
+<div class="btab" id="btab">
+  <div class="btab-item on" data-tab="stock_analysis" onclick="tabSwitch('stock_analysis')">
+    <svg viewBox="0 0 16 16"><rect x="1" y="9" width="3" height="6" rx=".5"/><rect x="5.5" y="5" width="3" height="10" rx=".5"/><rect x="10" y="1" width="3" height="14" rx=".5"/></svg>
+    <span data-i18n="tab_ck">分析</span>
+  </div>
+  <div class="btab-item" data-tab="snapshot" onclick="tabSwitch('snapshot')">
+    <svg viewBox="0 0 16 16"><path d="M4 2l2.5 4H1.5L4 2z" opacity=".8"/><path d="M12 14l-2.5-4h5L12 14z" opacity=".5"/><rect x="7" y="6" width="2" height="4" rx=".5" opacity=".4"/></svg>
+    <span data-i18n="tab_now">快照</span>
+  </div>
+  <div class="btab-item" data-tab="market_heat" onclick="tabSwitch('market_heat')">
+    <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6.5" height="6.5" rx="1"/><rect x="8.5" y="1" width="6.5" height="6.5" rx="1" opacity=".5"/><rect x="1" y="8.5" width="6.5" height="6.5" rx="1" opacity=".5"/><rect x="8.5" y="8.5" width="6.5" height="6.5" rx="1" opacity=".3"/></svg>
+    <span data-i18n="tab_hm">热力</span>
+  </div>
+  <div class="btab-item" data-tab="ai" onclick="tabSwitch('ai')">
+    <svg viewBox="0 0 16 16"><path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-3 3V3a1 1 0 011-1z"/></svg>
+    <span data-i18n="tab_ai">AI</span>
+  </div>
+  <div class="btab-item" data-tab="more" onclick="toggleBtabMore()">
+    <svg viewBox="0 0 16 16"><circle cx="3" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="13" cy="8" r="1.5"/></svg>
+    <span data-i18n="tab_more">更多</span>
+  </div>
+</div>
+<div class="btab-more-overlay" id="btabMoreOverlay" onclick="closeBtabMore()"></div>
+<div class="btab-more-panel" id="btabMorePanel"></div>
 
 <script>
 function genCandles(candlesId,volId){
@@ -1268,6 +1314,8 @@ const i18n={
     w_report_gen:'生成报告', w_summary:'AI 摘要',
     w_screener:'筛选器', w_filter_builder:'条件构建',
     w_four_markets:'四市场', w_market_mood:'市场情绪', w_forex_comm:'外汇大宗',
+    // Bottom tab bar
+    tab_ck:'分析', tab_now:'快照', tab_hm:'热力', tab_ai:'AI', tab_more:'更多',
   },
   en:{
     pill_ashare:'A-Share', pill_metal:'Metals',
@@ -1319,6 +1367,8 @@ const i18n={
     w_report_gen:'Generate Report', w_summary:'AI Summary',
     w_screener:'Screener', w_filter_builder:'Filter Builder',
     w_four_markets:'4-Markets', w_market_mood:'Sentiment', w_forex_comm:'FX & Comm',
+    // Bottom tab bar
+    tab_ck:'Analysis', tab_now:'Snapshot', tab_hm:'Heatmap', tab_ai:'AI', tab_more:'More',
   }
 };
 let curLang='zh';
@@ -1342,6 +1392,82 @@ renderSidebar();
     }
   }
   history.replaceState({...widgetState},'');
+})();
+
+// ═══ BOTTOM TAB BAR (mobile) ═══
+function tabSwitch(sceneId){
+  closeBtabMore();
+  // AI tab: toggle chat panel on mobile
+  if(sceneId==='ai'){
+    const cp=document.querySelector('.cp');
+    if(cp){
+      const vis=cp.style.display==='flex';
+      cp.style.display=vis?'none':'flex';
+      cp.style.cssText=vis?'':'display:flex;position:fixed;top:0;left:0;right:0;bottom:52px;z-index:400;width:100%;max-width:100%';
+    }
+    updateBtab('ai');
+    return;
+  }
+  // Hide chat panel if open
+  const cp=document.querySelector('.cp');
+  if(cp)cp.style.display='';
+  // Switch scene via existing logic
+  switchScene(sceneId);
+  sidebarItems.forEach(i=>{if(i.id)i.on=(i.id===sceneId);});
+  expandedScene=null;
+  renderSidebar();
+  updateBtab(sceneId);
+}
+function updateBtab(activeId){
+  document.querySelectorAll('.btab-item').forEach(el=>{
+    el.classList.toggle('on',el.dataset.tab===activeId);
+  });
+}
+// "More" panel — render remaining scenes
+const btabMoreScenes=['watchlist','fundamentals','multi_compare','global_idx','macro','my_portfolio','risk','ai_analysis','ai_report','ai_screen'];
+function renderBtabMore(){
+  const panel=document.getElementById('btabMorePanel');
+  panel.innerHTML='<div class="btab-more-title">'+t('tab_more')+'</div>'+
+    btabMoreScenes.map(id=>{
+      const item=sidebarItems.find(i=>i.id===id);
+      if(!item)return'';
+      return '<div class="btab-more-item" onclick="tabSwitch(\''+id+'\')">'+
+        (item.svg||'')+
+        '<span>'+t(item.nameKey)+'</span>'+
+        '<span class="btab-more-badge">'+( item.badge||'')+'</span></div>';
+    }).join('');
+}
+function toggleBtabMore(){
+  const panel=document.getElementById('btabMorePanel');
+  const overlay=document.getElementById('btabMoreOverlay');
+  const show=!panel.classList.contains('show');
+  if(show)renderBtabMore();
+  panel.classList.toggle('show',show);
+  overlay.classList.toggle('show',show);
+  // Highlight "more" tab when open
+  document.querySelectorAll('.btab-item').forEach(el=>{
+    if(el.dataset.tab==='more')el.classList.toggle('on',show);
+  });
+}
+function closeBtabMore(){
+  document.getElementById('btabMorePanel').classList.remove('show');
+  document.getElementById('btabMoreOverlay').classList.remove('show');
+}
+// Sync bottom tab when drillDown or switchScene is called on desktop (no-op if hidden)
+const _origSwitchScene=switchScene;
+// Keep btab in sync — after any scene switch, update active tab
+(function(){
+  const observer=new MutationObserver(function(){
+    const scenes={'stock_analysis':'sceneCK','snapshot':'sceneNOW','market_heat':'sceneHM'};
+    for(const[id,domId] of Object.entries(scenes)){
+      const el=document.getElementById(domId);
+      if(el&&el.style.display!=='none'){updateBtab(id);return;}
+    }
+  });
+  ['sceneCK','sceneNOW','sceneHM'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)observer.observe(el,{attributes:true,attributeFilter:['style']});
+  });
 })();
 
 // ═══ DRAWING TOOLS OVERLAY ═══
