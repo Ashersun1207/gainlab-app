@@ -111,6 +111,9 @@ function App() {
   // ── Chart type ──
   const [chartType, setChartType] = useState('candle_solid');
 
+  // ── Drawing tools ──
+  const [drawingToolOpen, setDrawingToolOpen] = useState(false);
+
   // ── Resize ──
   const { handleResizeStart } = useResizable('.ck-grid', 150, 500);
 
@@ -270,6 +273,8 @@ function App() {
                 onChartTypeChange={setChartType}
                 activeIndicators={activeIndicators}
                 onIndicatorToggle={handleIndicatorToggle}
+                drawingToolOpen={drawingToolOpen}
+                onDrawingToolToggle={() => setDrawingToolOpen(v => !v)}
               />
               <ErrorBoundary label="KLine">
                 <Suspense fallback={<LoadingPlaceholder />}>
@@ -280,6 +285,7 @@ function App() {
                     indicators={activeIndicators}
                     showWRB={false}
                     showVP={false}
+                    drawingToolOpen={drawingToolOpen}
                   />
                 </Suspense>
               </ErrorBoundary>

@@ -50,6 +50,23 @@ interface KLineWidgetProps {
   indicators?: string[];
   showWRB?: boolean;
   showVP?: boolean;
+  drawingToolOpen?: boolean;
+}
+
+/* Drawing tools overlay — floats on chart left edge (matches preview .dt-overlay) */
+function DrawingToolsOverlay({ open }: { open: boolean }) {
+  if (!open) return null;
+  const s = { viewBox: '0 0 14 14', fill: 'none', stroke: 'currentColor', strokeWidth: 1.5, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const };
+  return (
+    <div className="dt-overlay-panel">
+      <button className="dtb" title="趋势线"><svg {...s}><line x1="2" y1="12" x2="12" y2="2" /></svg></button>
+      <button className="dtb" title="水平线"><svg {...s}><line x1="1" y1="7" x2="13" y2="7" /></svg></button>
+      <button className="dtb" title="矩形"><svg {...s} strokeLinejoin="round"><rect x="2" y="3" width="10" height="8" rx="1" /></svg></button>
+      <button className="dtb" title="斐波那契"><svg {...s} strokeWidth={1.2}><line x1="1" y1="2" x2="13" y2="2" /><line x1="1" y1="5.5" x2="13" y2="5.5" strokeDasharray="2 1.5" /><line x1="1" y1="9" x2="13" y2="9" strokeDasharray="2 1.5" /><line x1="1" y1="12" x2="13" y2="12" /></svg></button>
+      <button className="dtb" title="标注"><svg {...s} strokeWidth={1.4}><line x1="7" y1="2" x2="7" y2="12" /><line x1="2" y1="7" x2="12" y2="7" /></svg></button>
+      <button className="dtb" title="更多"><svg viewBox="0 0 14 14" fill="currentColor"><circle cx="3" cy="7" r="1.2" /><circle cx="7" cy="7" r="1.2" /><circle cx="11" cy="7" r="1.2" /></svg></button>
+    </div>
+  );
 }
 
 async function fetchBinanceKline(symbol: string): Promise<KLineData[] | null> {
@@ -80,6 +97,7 @@ export function KLineWidget({
   indicators = ['RSI'],
   showWRB = false,
   showVP = false,
+  drawingToolOpen = false,
 }: KLineWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Chart | null>(null);
@@ -237,6 +255,7 @@ export function KLineWidget({
           {error}
         </div>
       )}
+      <DrawingToolsOverlay open={drawingToolOpen} />
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
     </div>
   );

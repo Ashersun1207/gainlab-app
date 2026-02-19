@@ -82,6 +82,8 @@ export interface KLineHeaderProps {
   onChartTypeChange?: (type: string) => void;
   activeIndicators?: string[];
   onIndicatorToggle?: (ind: string) => void;
+  drawingToolOpen?: boolean;
+  onDrawingToolToggle?: () => void;
 }
 
 /* ── Component ────────────────────────────────────────── */
@@ -98,6 +100,8 @@ export function KLineHeader({
   onChartTypeChange,
   activeIndicators = [],
   onIndicatorToggle,
+  drawingToolOpen = false,
+  onDrawingToolToggle,
 }: KLineHeaderProps) {
   /* ── state ── */
   const [ddOpen, setDdOpen] = useState(false);
@@ -312,11 +316,11 @@ export function KLineHeader({
           )}
         </div>
 
-        {/* ── T9: Drawing tool trigger ── */}
+        {/* ── Drawing tool trigger ── */}
         <button
-          className="dt-trigger"
+          className={`dt-trigger${drawingToolOpen ? ' on' : ''}`}
           title="画图工具"
-          onClick={() => { /* P2 */ }}
+          onClick={onDrawingToolToggle}
         >
           <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5">
             <line x1="2" y1="14" x2="14" y2="2" />

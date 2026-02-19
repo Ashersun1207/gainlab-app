@@ -65,11 +65,11 @@ export async function fetchWorkerQuote(
   const url = `${base}/api/quote?symbol=${encodeURIComponent(symbol)}&market=${market}`;
   const res = await fetchWithTimeout(url);
   if (!res.ok) throw new Error(`Worker quote ${res.status}`);
-  const data = (await res.json()) as Record<string, number>;
+  const data = (await res.json()) as Record<string, unknown>;
   return {
-    price: data['price'] ?? 0,
-    change: data['change'] ?? 0,
-    changePercent: data['changePercent'] ?? 0,
+    price: Number(data['price']) || 0,
+    change: Number(data['change']) || 0,
+    changePercent: Number(data['changePercent']) || 0,
   };
 }
 

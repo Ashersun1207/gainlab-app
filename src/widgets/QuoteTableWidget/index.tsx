@@ -24,23 +24,33 @@ interface QuoteState {
   changePercent: number | null;
 }
 
-function formatPrice(price: number): string {
-  if (price >= 10000) return price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-  if (price >= 100) return price.toFixed(2);
-  if (price >= 1) return price.toFixed(2);
-  return price.toFixed(4);
+function toNum(v: unknown): number {
+  if (typeof v === 'number' && !Number.isNaN(v)) return v;
+  if (typeof v === 'string') { const n = Number(v); if (!Number.isNaN(n)) return n; }
+  return 0;
 }
 
-function formatPercent(pct: number): string {
-  const sign = pct >= 0 ? '+' : '';
-  return `${sign}${pct.toFixed(2)}%`;
+function formatPrice(price: unknown): string {
+  const p = toNum(price);
+  if (p >= 10000) return p.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  if (p >= 100) return p.toFixed(2);
+  if (p >= 1) return p.toFixed(2);
+  return p.toFixed(4);
 }
 
-function formatChange(change: number, price: number): string {
-  const sign = change >= 0 ? '+' : '';
-  if (price >= 100) return `${sign}${change.toFixed(2)}`;
-  if (price >= 1) return `${sign}${change.toFixed(2)}`;
-  return `${sign}${change.toFixed(4)}`;
+function formatPercent(pct: unknown): string {
+  const v = toNum(pct);
+  const sign = v >= 0 ? '+' : '';
+  return `${sign}${v.toFixed(2)}%`;
+}
+
+function formatChange(change: unknown, price: unknown): string {
+  const c = toNum(change);
+  const p = toNum(price);
+  const sign = c >= 0 ? '+' : '';
+  if (p >= 100) return `${sign}${c.toFixed(2)}`;
+  if (p >= 1) return `${sign}${c.toFixed(2)}`;
+  return `${sign}${c.toFixed(4)}`;
 }
 
 export function QuoteTableWidget({ title, items, onRowClick, refreshInterval = 30000 }: QuoteTableWidgetProps) {
