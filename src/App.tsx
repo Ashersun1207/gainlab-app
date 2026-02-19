@@ -167,7 +167,7 @@ function App() {
     switch (activeScene) {
       case 'snapshot':
         return (
-          <div className="ck-grid">
+          <div className="scene-grid">
             <WidgetPanel title="QUOTES" subtitle={t('w_four_markets')}>
               <ErrorBoundary label="QuoteTable">
                 <Suspense fallback={<LoadingPlaceholder />}>

@@ -442,7 +442,10 @@ body {
 .hm-main {
   min-height: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
+.hm-main > .wp { flex: 1; min-height: 0; }
 .hm-side {
   display: flex;
   flex-direction: column;
@@ -450,6 +453,7 @@ body {
   min-height: 0;
   overflow-y: auto;
 }
+.hm-side > .wp { flex: 1; min-height: 0; }
 
 @media (max-width: 768px) {
   .hm-scene {
@@ -657,6 +661,18 @@ body {
   height: 40vh;
 }
 
+/* === Full-screen widget grid (for scenes without KLine header, e.g. snapshot) === */
+.scene-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 1px;
+  background: #2a2a4a;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 /* === Chat panel (from preview-layout L250) === */
 .cp-panel { width: 300px; border-left: 1px solid #2a2a4a; flex-shrink: 0; display: flex; flex-direction: column; background: #0d0d20; }
 
@@ -774,6 +790,13 @@ body {
     overflow-y: visible;
   }
   .ck-grid > .wp { min-height: 150px; }
+  .scene-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    flex: none;
+    overflow-y: visible;
+  }
+  .scene-grid > .wp { min-height: 150px; }
   /* KLineHeader responsive */
   .kwh { min-height: 28px; }
   .kwh-row { flex-wrap: wrap; gap: 2px; }
