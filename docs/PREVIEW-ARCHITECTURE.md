@@ -18,6 +18,11 @@ _改 preview-layout 前必读。1516 行单文件，本文档是导航地图。_
 
 两者共用 Widget State Schema（JSON 结构一致），但渲染层各自实现。
 
+> **✅ 2026-02-20: React App 已对齐 preview-layout 全部功能**
+> M1-M9 迁移完成：14 场景 Sidebar、useScene hook（URL 路由 + drill-down + popstate）、
+> HeatmapScene、MobileTabBar 5 tab、PlaceholderScene、i18n（zh/en）。
+> 157 tests，G4 四步全绿。后续新功能优先在 React App 实现。
+
 ---
 
 ## 文件分区（~1516 行）
