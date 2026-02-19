@@ -762,4 +762,14 @@ body {
     max-height: none;
     overflow-y: auto;
   }
+  /* KLineHeader responsive */
+  .kwh-row { flex-wrap: wrap; gap: 2px; }
+  .sym-t { font-size: 11px; }
+  .sym-m { display: none; }
+  .prc { font-size: 11px; }
+  .chg { font-size: 9px; }
+  .dt-trigger { display: none; }
+  .ind-tags { display: none; }
+  .dd { width: calc(100vw - 60px); left: -6px; }
+  .ind-panel { width: calc(100vw - 60px); }
 }

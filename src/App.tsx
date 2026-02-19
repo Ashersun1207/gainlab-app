@@ -4,7 +4,6 @@ import { useMarketData } from './hooks/useMarketData';
 import { useScene } from './hooks/useScene';
 import { useResizable } from './hooks/useResizable';
 import { Sidebar } from './layout/Sidebar';
-import { Toolbar } from './layout/Toolbar';
 import { HeaderBar } from './layout/HeaderBar';
 import { WidgetPanel } from './layout/WidgetPanel';
 import { ChatToggle } from './chat/ChatToggle';
@@ -12,11 +11,12 @@ import { MobileTabBar } from './layout/MobileTabBar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { HeatmapScene } from './scenes/HeatmapScene';
 import { PlaceholderScene } from './scenes/PlaceholderScene';
+import { KLineHeader } from './widgets/KLineWidget/KLineHeader';
 import { getRenderTarget, mcpToKLine, mcpToEChartsOption } from './services/dataAdapter';
 import { t } from './i18n';
 import type { KLineData } from './types/data';
 import type { EChartsOption } from 'echarts';
-import type { MarketType } from './types/market';
+import type { MarketType, TimeInterval } from './types/market';
 
 // --- Code-split heavy widgets (G7) ---
 const LazyChatPanel = lazy(() =>
@@ -82,6 +82,17 @@ function formatSymbolDisplay(symbol: string): string {
   return symbol;
 }
 
+/** Map KLineHeader market labels to MarketType */
+const MARKET_LABEL_MAP: Record<string, MarketType> = {
+  crypto: 'crypto',
+  us: 'us',
+  'a股': 'cn',
+  metal: 'metal',
+};
+function toMarketType(label: string): MarketType {
+  return MARKET_LABEL_MAP[label.toLowerCase()] ?? 'crypto';
+}
+
 function App() {
   const { isMobile } = useResponsive();
 
@@ -96,6 +107,9 @@ function App() {
 
   // ── Indicators ──
   const [activeIndicators, setActiveIndicators] = useState<string[]>(['MA']);
+
+  // ── Chart type ──
+  const [chartType, setChartType] = useState('candle_solid');
 
   // ── Resize ──
   const { handleResizeStart } = useResizable('.ck-grid', 150, 500);
@@ -243,6 +257,20 @@ function App() {
           <>
             {/* KLine area */}
             <div className="ck-kline">
+              <KLineHeader
+                symbol={activeSymbol}
+                symbolDisplay={formatSymbolDisplay(activeSymbol)}
+                market={activeMarket}
+                price={quote?.price}
+                changePercent={quote?.changePercent}
+                period={activeInterval}
+                onSymbolChange={(sym, mkt) => switchScene('stock_analysis', { symbol: sym, market: toMarketType(mkt) })}
+                onPeriodChange={(p) => switchScene(activeScene, { period: p as TimeInterval })}
+                chartType={chartType}
+                onChartTypeChange={setChartType}
+                activeIndicators={activeIndicators}
+                onIndicatorToggle={handleIndicatorToggle}
+              />
               <ErrorBoundary label="KLine">
                 <Suspense fallback={<LoadingPlaceholder />}>
                   <LazyKLineWidget
@@ -334,19 +362,6 @@ function App() {
   if (isMobile) {
     return (
       <div className="w-screen h-[100dvh] bg-[#0f0f1a] overflow-hidden flex flex-col">
-        {/* Toolbar */}
-        <Toolbar
-          symbolDisplay={formatSymbolDisplay(activeSymbol)}
-          price={quote?.price}
-          changePercent={quote?.changePercent}
-          interval={activeInterval}
-          activeIndicators={activeIndicators}
-          onIntervalChange={(interval) =>
-            switchScene(activeScene, { period: interval })
-          }
-          onIndicatorToggle={handleIndicatorToggle}
-        />
-
         {/* Scene content */}
         <div className="flex-1 min-h-0 flex flex-col">
           {renderScene()}
@@ -375,7 +390,7 @@ function App() {
   }
 
   // ══════════════════════════════════════════════════════════
-  // Desktop layout: Sidebar + Main(Toolbar + Scene) + Chat
+  // Desktop layout: Sidebar + Main(HeaderBar + Scene) + Chat
   // ══════════════════════════════════════════════════════════
   return (
     <div className="w-screen h-screen bg-[#0f0f1a] overflow-hidden flex">
@@ -392,19 +407,6 @@ function App() {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* HeaderBar */}
         <HeaderBar />
-
-        {/* Toolbar */}
-        <Toolbar
-          symbolDisplay={formatSymbolDisplay(activeSymbol)}
-          price={quote?.price}
-          changePercent={quote?.changePercent}
-          interval={activeInterval}
-          activeIndicators={activeIndicators}
-          onIntervalChange={(interval) =>
-            switchScene(activeScene, { period: interval })
-          }
-          onIndicatorToggle={handleIndicatorToggle}
-        />
 
         {/* Scene content — independent flex container */}
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
