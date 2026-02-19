@@ -13,7 +13,7 @@ import { HeatmapScene } from './scenes/HeatmapScene';
 import { PlaceholderScene } from './scenes/PlaceholderScene';
 import { KLineHeader } from './widgets/KLineWidget/KLineHeader';
 import { getRenderTarget, mcpToKLine, mcpToEChartsOption } from './services/dataAdapter';
-import { t, getLang } from './i18n';
+import { t } from './i18n';
 import { Settings } from './layout/Settings';
 import type { KLineData } from './types/data';
 import type { EChartsOption } from 'echarts';
@@ -97,10 +97,10 @@ function toMarketType(label: string): MarketType {
 function App() {
   const { isMobile } = useResponsive();
 
-  // ── Language state (key={lang} forces full re-render on switch) ──
-  const [lang, setLangState] = useState(getLang());
-  const handleLangChange = useCallback((newLang: 'zh' | 'en') => {
-    setLangState(newLang);
+  // ── Language state (counter forces full re-render without remounting) ──
+  const [, setLangVersion] = useState(0);
+  const handleLangChange = useCallback((_newLang: 'zh' | 'en') => {
+    setLangVersion((v) => v + 1);
   }, []);
 
   // ── Settings panel ──
@@ -370,7 +370,7 @@ function App() {
   // ══════════════════════════════════════════════════════════
   if (isMobile) {
     return (
-      <div key={lang} className="w-screen h-[100dvh] bg-[#0f0f1a] overflow-hidden flex flex-col">
+      <div className="w-screen h-[100dvh] bg-[#0f0f1a] overflow-hidden flex flex-col">
         {/* Scene content — pb-14 compensates for fixed MobileTabBar */}
         <div className="flex-1 min-h-0 flex flex-col overflow-y-auto pb-14">
           {renderScene()}
@@ -407,7 +407,7 @@ function App() {
   // Desktop layout: Sidebar + Main(HeaderBar + Scene) + Chat
   // ══════════════════════════════════════════════════════════
   return (
-    <div key={lang} className="w-screen h-screen bg-[#0f0f1a] overflow-hidden flex">
+    <div className="w-screen h-screen bg-[#0f0f1a] overflow-hidden flex">
       {/* Sidebar */}
       <ErrorBoundary label="Sidebar">
         <Sidebar
