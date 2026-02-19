@@ -241,11 +241,6 @@ interface WidgetDef {
 - **展开态（250px）**：图标 + 场景名 + badge，点击展开子 Widget 列表
 - **Toggle**：hamburger 按钮，展开时在右侧带 ← 箭头，折叠时 → 箭头
 
-### Toolbar 新增组件
-
-- **周期选择器**：常用快捷按钮 + ▾ 下拉全部 + ★ 星标设为常用（max 5）
-- **图表类型**：5 种（实心蜡烛/空心蜡烛/OHLC/价格线/价格区域），图标+下拉
-
 ---
 
 ## App.tsx 状态管理
@@ -262,9 +257,6 @@ const activeInterval = sceneParams.period ?? '1D';
 
 // ── 指标 ──
 const [activeIndicators, setActiveIndicators] = useState<string[]>(['MA']);
-
-// ── 抽屉 ──
-const [drawerTool, setDrawerTool] = useState<ToolType | null>(null);
 
 // ── Chat ──
 const [chatOpen, setChatOpen] = useState(false);
@@ -293,7 +285,7 @@ switchScene(sceneId, params?)      ← useScene hook
         │
         ▼
 App.tsx renderScene()
-  → CK: KLineWidget + Drawer
+  → CK: KLineHeader + KLineWidget + resize + 3×2 Widget Grid + ChatPanel
   → NOW: QuoteTable + Sentiment + GlobalIndex + Heatmap + Forex + KLine
   → HM: HeatmapScene (7:3 layout)
   → 未实装: PlaceholderScene
@@ -337,25 +329,6 @@ handleToolResult(toolName, result)
                          → EChartsWidget 显示图表
 ```
 
-### 3. 抽屉工具模式
-
-```
-用户点击 Sidebar 工具按钮
-        │
-        ▼
-handleToolClick(tool)
-  → setDrawerTool(tool)
-        │
-        ▼
-Drawer 展开 → renderDrawerContent()
-  switch(tool):
-    volume_profile → VolumeProfileWidget(klineData)
-    heatmap        → HeatmapWidget(market)
-    overlay        → OverlayWidget(symbol, market)
-    fundamentals   → FundamentalsWidget(symbol)
-    wrb            → WRBWidget(klineData)
-```
-
 ---
 
 ## 混合渲染策略
@@ -378,7 +351,7 @@ Drawer 展开 → renderDrawerContent()
 
 - **断点**: 768px（`useResponsive` hook, matchMedia 监听）
 - **桌面端**: Sidebar(200px) + 主区(flex-1) + Chat(320px 可收起)
-- **移动端**: Toolbar + Scene + MobileTabBar(5 tab) + Chat overlay
+- **移动端**: KLineHeader(compact) + Scene + MobileTabBar(5 tab) + Chat overlay
 - **高度计算**: `calc(100dvh - toolbar - tabbar)`，不硬编码
 - **iOS 安全区**: `env(safe-area-inset-bottom)` padding
 
@@ -420,7 +393,7 @@ CF Worker: gainlab-api.asher-sun.workers.dev
 
 | 工具 | 用途 |
 |---|---|
-| Vitest + RTL | 测试（157 tests, G1 只增不减） |
+| Vitest + RTL | 测试（185 tests, G1 只增不减） |
 | ESLint flat config | Lint（0 error 才能 commit） |
 | tsc + typecheck.sh | 类型检查（过滤 KLineChart 45K fork 错误） |
 | Vite | 构建 + Dev server |
@@ -433,21 +406,4 @@ pnpm lint && pnpm typecheck && pnpm test && pnpm build
 
 ---
 
-## P1 完成组件清单
-
-| 任务 | 组件 | 状态 |
-|---|---|---|
-| T01 | types/market.ts, types/data.ts | ✅ |
-| T02 | constants/markets.ts | ✅ |
-| T03 | Sidebar/ (index + MarketTabs + SearchBox + AssetList + ToolBar) | ✅ |
-| T04 | Toolbar.tsx | ✅ |
-| T05 | Drawer.tsx | ✅ |
-| T06 | services/api.ts, services/marketData.ts, hooks/useMarketData.ts | ✅ |
-| T07 | ChatPanel.tsx (重构), ChatToggle.tsx | ✅ |
-| T08 | HeatmapWidget, VolumeProfileWidget, OverlayWidget, FundamentalsWidget, WRBWidget | ✅ |
-| T09 | hooks/useResponsive.ts, layout/MobileTabBar.tsx, mobile CSS | ✅ |
-| T10 | App.tsx 集成, ARCHITECTURE.md 更新 | ✅ |
-
----
-
-_创建于 2026-02-17 | P1 产品阶段 | 最后更新于 2026-02-20（M1-M9 迁移完成：useScene + Sidebar 场景模型 + HeatmapScene + MobileTabBar 5tab + i18n）_
+_创建于 2026-02-17 | 最后更新于 2026-02-19（CK 对齐 + 全站 i18n + Settings + 185 tests）_
