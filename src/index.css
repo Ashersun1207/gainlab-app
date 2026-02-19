@@ -759,20 +759,26 @@ body {
     display: flex !important;
   }
   .cp-panel { display: none; }
+  /* CK scene mobile: KLine fixed height + grid scrollable single column */
+  .ck-kline { flex: none; height: 50vh; min-height: 180px; }
+  .ck-resize { display: none; }
   .ck-grid {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
     height: auto;
     max-height: none;
-    overflow-y: auto;
+    overflow-y: visible;
   }
+  .ck-grid > .wp { min-height: 150px; }
   /* KLineHeader responsive */
+  .kwh { min-height: 28px; }
   .kwh-row { flex-wrap: wrap; gap: 2px; }
   .sym-t { font-size: 11px; }
   .sym-m { display: none; }
   .prc { font-size: 11px; }
   .chg { font-size: 9px; }
   .dt-trigger { display: none; }
+  .dt-overlay-panel { display: none; }
   .ind-tags { display: none; }
   .dd { width: calc(100vw - 60px); left: -6px; }
   .ind-panel { width: calc(100vw - 60px); }

@@ -117,8 +117,8 @@ function App() {
   // ── Resize ──
   const { handleResizeStart } = useResizable('.ck-grid', 150, 500);
 
-  // ── Chat ──
-  const [chatOpen, setChatOpen] = useState(true);
+  // ── Chat (desktop default open, mobile default closed) ──
+  const [chatOpen, setChatOpen] = useState(!isMobile);
 
   // ── Data ──
   const { klineData, quote } = useMarketData(activeSymbol, activeMarket, activeInterval);
@@ -368,8 +368,8 @@ function App() {
   if (isMobile) {
     return (
       <div className="w-screen h-[100dvh] bg-[#0f0f1a] overflow-hidden flex flex-col">
-        {/* Scene content */}
-        <div className="flex-1 min-h-0 flex flex-col">
+        {/* Scene content — pb-14 compensates for fixed MobileTabBar */}
+        <div className="flex-1 min-h-0 flex flex-col overflow-y-auto pb-14">
           {renderScene()}
         </div>
 
