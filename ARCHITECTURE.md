@@ -40,7 +40,7 @@ gainlab-app/
 │   │   │   └── SidebarToggle.tsx # Hamburger 切换按钮（展开时右侧，带箭头指示）
 │   │   ├── Toolbar.tsx         # 顶部工具栏（资产名 + 价格 + 周期选择器 + 图表类型 + 指标）
 │   │   ├── Drawer.tsx          # 底部抽屉（工具面板容器）
-│   │   ├── MobileTabBar.tsx    # 移动端底部 Tab Bar（📊市场/🔧工具/💬聊天）
+│   │   ├── MobileTabBar.tsx    # 移动端底部 Tab Bar（5 tab: 分析/快照/热力/AI/更多）
 │   │   ├── MosaicDashboard.tsx # react-mosaic 容器（P0 遗留，保留兼容）
 │   │   └── WidgetBase.tsx      # Widget 壳（深色主题）
 │   │
@@ -83,7 +83,15 @@ gainlab-app/
 │   │   ├── MessageList.tsx     # 消息渲染（user/assistant 气泡 + 自动滚底）
 │   │   └── ToolCallBadge.tsx   # tool call 标签（紫色，可折叠 args）
 │   │
+│   ├── scenes/
+│   │   ├── HeatmapScene.tsx    # 市场热力场景（7:3 layout: 大热力图 + 侧栏）
+│   │   └── PlaceholderScene.tsx # 未实装场景 placeholder（Coming Soon）
+│   │
+│   ├── i18n/
+│   │   └── index.ts            # 最小 i18n（zh/en，场景名/tab名/widget名）
+│   │
 │   ├── hooks/
+│   │   ├── useScene.ts         # 场景管理 + URL 路由 + drill-down（替代 App.tsx useState）
 │   │   ├── useMarketData.ts    # 市场数据 hook（kline + quote，走 CF Worker）
 │   │   ├── useResponsive.ts    # 响应式断点 hook（768px，matchMedia 监听）
 │   │   └── useMcpStream.ts     # SSE 流式响应 hook + Widget 回调
@@ -154,16 +162,18 @@ gainlab-app/
 │ Toolbar (48px)            │
 │ BTC/USDT ▾ │ 1D ▾        │
 ├──────────────────────────┤
-│ KLineWidget              │
+│ Scene Content             │
+│ (CK/NOW/HM/Placeholder)  │
 │ (flex-1, 自适应高度)      │
 ├──────────────────────────┤
 │ Drawer (40dvh, 可选)      │
 │ 工具内容                  │
 ├──────────────────────────┤
 │ MobileTabBar (56px)       │
-│ 📊市场 │ 🔧工具 │ 💬聊天  │
+│ 分析 │ 快照 │ 热力 │ AI │ 更多 │
 └──────────────────────────┘
-+ 全屏 Overlay (市场/工具/聊天)
++ AI tab → 全屏 Chat overlay
++ 更多 tab → 底部面板列出 10+ 场景
 ```
 
 ---
@@ -233,10 +243,16 @@ interface WidgetDef {
 ## App.tsx 状态管理
 
 ```typescript
-// ── 资产上下文 ──
-const [activeMarket, setActiveMarket] = useState<MarketType>('crypto');
-const [activeSymbol, setActiveSymbol] = useState('BTCUSDT');
-const [activeInterval, setActiveInterval] = useState<TimeInterval>('1D');
+// ── 场景管理（useScene hook，替代散落的 useState）──
+const { activeScene, sceneParams, switchScene, drillDown, isImplemented } = useScene();
+// sceneParams: { symbol, market, period } — 从 URL 初始化，pushState 同步
+
+// ── 派生状态 ──
+const activeSymbol = sceneParams.symbol ?? 'BTCUSDT';
+const activeMarket = sceneParams.market ?? 'crypto';
+const activeInterval = sceneParams.period ?? '1D';
+
+// ── 指标 ──
 const [activeIndicators, setActiveIndicators] = useState<string[]>(['MA']);
 
 // ── 抽屉 ──
@@ -245,41 +261,50 @@ const [drawerTool, setDrawerTool] = useState<ToolType | null>(null);
 // ── Chat ──
 const [chatOpen, setChatOpen] = useState(false);
 
-// ── 移动端 ──
-const [mobileTab, setMobileTab] = useState<MobileTab>('market');
-const [mobileOverlay, setMobileOverlay] = useState<MobileTab | null>(null);
-
 // ── P0 兼容：Chat 推送数据 ──
 const [echartsOption, setEchartsOption] = useState<EChartsOption | null>(null);
 const [chatKlineData, setChatKlineData] = useState<KLineData[] | null>(null);
 ```
 
-**无外部状态管理库**（G3 约束），纯 `useState` + props drilling。
+**核心变更（M8 迁移）**：`useScene` 替代了散落的 useState，成为场景 + URL 路由的唯一来源。
+**无外部状态管理库**，纯 `useState` + `useScene` + props drilling。
 
 ---
 
 ## 数据流
 
-### 1. 仪表盘模式（Sidebar 驱动）
+### 1. 场景模式（Sidebar / TabBar 驱动）
 
 ```
-用户点击 Sidebar 资产
+用户点击 Sidebar 场景 / TabBar tab
         │
         ▼
-handleAssetSelect(asset)
-  → setActiveSymbol / setActiveMarket
+switchScene(sceneId, params?)      ← useScene hook
+  → setActiveScene / setSceneParams
+  → pushState URL(?s=&sym=&m=&p=)
         │
         ▼
-useMarketData(symbol, market, interval)
+App.tsx renderScene()
+  → CK: KLineWidget + Drawer
+  → NOW: QuoteTable + Sentiment + GlobalIndex + Heatmap + Forex + KLine
+  → HM: HeatmapScene (7:3 layout)
+  → 未实装: PlaceholderScene
+
+useMarketData(symbol, market, interval)  ← 从 sceneParams 派生
   → fetchWorkerKline() + fetchWorkerQuote()
   → 走 CF Worker 代理
+```
+
+### 1b. drill-down（Widget → CK 场景）
+
+```
+Widget 数据行 onClick
         │
         ▼
-klineData / quote 更新
-        │
-        ├── Toolbar 显示价格 / 涨跌
-        ├── KLineWidget.setDataList(klineData)
-        └── Drawer 工具使用 klineData（VP / WRB）
+drillDown(symbol, market?)          ← useScene hook
+  → switchScene('stock_analysis', { symbol, market })
+  → URL pushState
+  → useMarketData 拉真实数据
 ```
 
 ### 2. Chat 模式（AI 驱动）
@@ -345,7 +370,7 @@ Drawer 展开 → renderDrawerContent()
 
 - **断点**: 768px（`useResponsive` hook, matchMedia 监听）
 - **桌面端**: Sidebar(200px) + 主区(flex-1) + Chat(320px 可收起)
-- **移动端**: Toolbar + KLine + Drawer + MobileTabBar + 全屏 Overlay
+- **移动端**: Toolbar + Scene + MobileTabBar(5 tab) + Chat overlay
 - **高度计算**: `calc(100dvh - toolbar - tabbar)`，不硬编码
 - **iOS 安全区**: `env(safe-area-inset-bottom)` padding
 
@@ -387,7 +412,7 @@ CF Worker: gainlab-api.asher-sun.workers.dev
 
 | 工具 | 用途 |
 |---|---|
-| Vitest + RTL | 测试（89 tests, G1 只增不减） |
+| Vitest + RTL | 测试（157 tests, G1 只增不减） |
 | ESLint flat config | Lint（0 error 才能 commit） |
 | tsc + typecheck.sh | 类型检查（过滤 KLineChart 45K fork 错误） |
 | Vite | 构建 + Dev server |
@@ -417,4 +442,4 @@ pnpm lint && pnpm typecheck && pnpm test && pnpm build
 
 ---
 
-_创建于 2026-02-17 | P1 产品阶段 | 最后更新于 2026-02-17（T10 集成完成）_
+_创建于 2026-02-17 | P1 产品阶段 | 最后更新于 2026-02-20（M1-M9 迁移完成：useScene + Sidebar 场景模型 + HeatmapScene + MobileTabBar 5tab + i18n）_
