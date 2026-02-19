@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import type { SceneConfig } from './sceneConfig';
 import { SECTION_HEADERS } from './sceneConfig';
+import { t } from '../../i18n';
 
 interface SceneListProps {
   scenes: SceneConfig[];
@@ -51,7 +52,7 @@ export function SceneList({
             {/* Section header (skip for 'top') */}
             {headerKey && expanded && (
               <div className="sb-section-header" data-testid={`section-${section}`}>
-                {headerKey}
+                {t(headerKey)}
               </div>
             )}
             {headerKey && !expanded && (
@@ -88,7 +89,7 @@ export function SceneList({
                     {/* Label + badge (expanded only) */}
                     {expanded && (
                       <>
-                        <span className="sb-item-label">{scene.nameKey}</span>
+                        <span className="sb-item-label">{t(scene.nameKey)}</span>
                         <span className="sb-item-badge">{scene.badge}</span>
                       </>
                     )}
@@ -100,7 +101,7 @@ export function SceneList({
                       {scene.children.map((child) => (
                         <div key={child.id} className="sb-child-item">
                           <span className="sb-child-dot">·</span>
-                          <span className="sb-child-label">{child.nameKey}</span>
+                          <span className="sb-child-label">{t(child.nameKey)}</span>
                         </div>
                       ))}
                     </div>
