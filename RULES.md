@@ -44,6 +44,12 @@ PRD / TASK / 决策记录 统一放研究仓库：
 **新增 Widget**：必须走完全流程，并在 ARCHITECTURE.md 登记。  
 **图表相关改动**：必须遵守下方「图表渲染规范」。
 
+### 任务文件前置检查 🔴（L27 教训）
+**任何新功能（commit message 含 `feat`）必须先有对应任务文件：**
+- 文件位置：`gainlab-research/docs/plans/p1-tasks/T{N}-*.md`
+- 写完任务文件 → commit 到 research → 再开始写代码
+- 事后补写 ≠ 合规，下次不允许
+
 ## 代码规范
 
 ### 技术栈
