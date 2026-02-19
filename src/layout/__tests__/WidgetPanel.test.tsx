@@ -32,8 +32,13 @@ describe('WidgetPanel', () => {
     expect(onFullscreen).toHaveBeenCalledTimes(1);
   });
 
-  it('hides buttons when callbacks not provided', () => {
+  it('shows action buttons by default even without callbacks', () => {
     const { container } = render(<WidgetPanel title="T">content</WidgetPanel>);
+    expect(container.querySelectorAll('.wph-btn')).toHaveLength(3);
+  });
+
+  it('hides buttons when hideActions is true', () => {
+    const { container } = render(<WidgetPanel title="T" hideActions>content</WidgetPanel>);
     expect(container.querySelectorAll('.wph-btn')).toHaveLength(0);
   });
 

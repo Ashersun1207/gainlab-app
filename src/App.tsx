@@ -296,7 +296,7 @@ function App() {
 
             {/* 3×2 Widget grid */}
             <div className="ck-grid">
-              <WidgetPanel title="HEATMAP" subtitle={`${activeMarket} ▾`}>
+              <WidgetPanel title="HEATMAP" subtitle={`${activeMarket.charAt(0).toUpperCase() + activeMarket.slice(1)} ▾`}>
                 <ErrorBoundary label="Heatmap">
                   <Suspense fallback={<LoadingPlaceholder />}>
                     <LazyHeatmapWidget
