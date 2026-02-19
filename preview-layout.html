@@ -1114,11 +1114,13 @@ function renderSidebar(){
   nav.querySelectorAll('.sb-item').forEach(el=>el.addEventListener('click',function(){
     const id=this.dataset.id;
     const item=sidebarItems.find(i=>i.id===id);
-    nav.querySelectorAll('.sb-item').forEach(e=>e.classList.remove('on'));
-    this.classList.add('on');
+    // Sync data: clear all on flags, set current
+    sidebarItems.forEach(i=>{if(i.id)i.on=false;});
+    if(item)item.on=true;
     switchScene(id);
-    if(item&&item.children){expandedScene=expandedScene===id?null:id;renderSidebar();}
-    else{expandedScene=null;renderSidebar();}
+    if(item&&item.children){expandedScene=expandedScene===id?null:id;}
+    else{expandedScene=null;}
+    renderSidebar();
   }));
 }
 
