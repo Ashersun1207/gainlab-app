@@ -41,8 +41,33 @@ else
 fi
 echo ""
 
-# ── 任务进度 ──
-echo "📋 任务进度（TASK）"
+# ── 迁移进度（git 驱动） ──
+echo "📋 迁移进度（Preview → App）"
+cd "$APP"
+MIGRATION_COMMITS=$(git log --oneline --grep="feat(m\|wip(m\|refactor(m\|test+docs" 2>/dev/null | head -15)
+if [ -n "$MIGRATION_COMMITS" ]; then
+  echo "$MIGRATION_COMMITS" | sed 's/^/  /'
+  echo ""
+  # 最后一条 commit 详情（含 body）
+  echo "  📌 最后一条 commit:"
+  git log -1 --grep="feat(m\|wip(m\|refactor(m" --format="    %s" 2>/dev/null
+  BODY=$(git log -1 --grep="feat(m\|wip(m\|refactor(m" --format="%b" 2>/dev/null | head -5)
+  [ -n "$BODY" ] && echo "$BODY" | sed 's/^/    /'
+else
+  echo "  ⬜ 迁移尚未开始（M1-M10 全部待执行）"
+fi
+echo ""
+
+# 未提交变更警告
+DIRTY=$(git diff --stat HEAD 2>/dev/null)
+if [ -n "$DIRTY" ]; then
+  echo "  ⚠️ 未提交变更（可能是 WIP）:"
+  echo "$DIRTY" | sed 's/^/    /'
+  echo ""
+fi
+
+# ── 原 P1 任务进度 ──
+echo "📋 原 P1 任务进度（T01-T10）"
 TASK_FILE="$RESEARCH/docs/plans/2026-02-17-gainlab-app-task.md"
 if [ -f "$TASK_FILE" ]; then
   grep -E '^\| \*\*T[0-9]' "$TASK_FILE" | while IFS= read -r line; do
@@ -54,8 +79,8 @@ fi
 echo ""
 
 # ── Git 状态 ──
-echo "📝 最近 5 次 commit"
-cd "$APP" && git log --oneline -5 2>/dev/null | sed 's/^/  /'
+echo "📝 最近 10 次 commit"
+cd "$APP" && git log --oneline -10 2>/dev/null | sed 's/^/  /'
 echo ""
 
 echo "📦 Git 状态"
@@ -102,12 +127,14 @@ echo ""
 
 # ── 必读文件清单 ──
 echo "📖 必读文件（按顺序）"
-echo "  1. RULES.md        → $APP/RULES.md"
-echo "  2. ARCHITECTURE.md → $APP/ARCHITECTURE.md"
-echo "  3. PRD             → $RESEARCH/docs/plans/2026-02-17-gainlab-app-prd.md"
-echo "  4. TASK            → $RESEARCH/docs/plans/2026-02-17-gainlab-app-task.md"
-echo "  5. lessons.md      → $RESEARCH/lessons.md"
-echo "  6. decisions.md    → $RESEARCH/decisions.md"
+echo "  1. RULES.md            → $APP/RULES.md"
+echo "  2. ARCHITECTURE.md     → $APP/ARCHITECTURE.md"
+echo "  3. PREVIEW-ARCH        → $APP/docs/PREVIEW-ARCHITECTURE.md"
+echo "  4. 迁移 PRD            → $RESEARCH/docs/plans/2026-02-20-preview-to-app-migration-prd.md"
+echo "  5. 迁移 TASK           → $RESEARCH/docs/plans/2026-02-20-preview-to-app-migration-task.md"
+echo "  6. 原 PRD (P0+P1)     → $RESEARCH/docs/plans/2026-02-17-gainlab-app-prd.md"
+echo "  7. lessons.md          → $RESEARCH/lessons.md"
+echo "  8. decisions.md        → $RESEARCH/decisions.md"
 echo ""
 
 # ── 关键约束提醒 ──
