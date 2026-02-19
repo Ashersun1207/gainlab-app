@@ -113,4 +113,18 @@ describe('useScene', () => {
     const lastCall = pushStateSpy.mock.calls.at(-1);
     expect(lastCall?.[0]).toHaveProperty('scene', 'snapshot');
   });
+
+  it('switchScene to same scene without params does not push history', () => {
+    const { result } = renderHook(() => useScene());
+    // Switch to snapshot first
+    act(() => {
+      result.current.switchScene('snapshot');
+    });
+    const callsAfterFirst = pushStateSpy.mock.calls.length;
+    // Switch to snapshot again without params — should be a no-op
+    act(() => {
+      result.current.switchScene('snapshot');
+    });
+    expect(pushStateSpy.mock.calls.length).toBe(callsAfterFirst);
+  });
 });

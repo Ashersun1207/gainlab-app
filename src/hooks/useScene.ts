@@ -38,6 +38,8 @@ export function useScene() {
   const [activeScene, setActiveScene] = useState<string>(getInitialScene);
   const [sceneParams, setSceneParams] = useState<SceneParams>(getInitialParams);
   const isInitialized = useRef(false);
+  const activeSceneRef = useRef(activeScene);
+  activeSceneRef.current = activeScene;
 
   // Record initial state for popstate (run once)
   useEffect(() => {
@@ -89,6 +91,9 @@ export function useScene() {
     (sceneId: string, params?: Partial<SceneParams>) => {
       const config = SCENE_CONFIGS.find((sc) => sc.id === sceneId);
       if (!config) return;
+
+      // Skip if same scene and no param changes
+      if (sceneId === activeSceneRef.current && !params) return;
 
       setActiveScene(sceneId);
 

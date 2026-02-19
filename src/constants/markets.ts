@@ -13,6 +13,12 @@ export const MARKET_CONFIG: Record<
   crypto: { label: '加密', icon: '₿' },
   us: { label: '美股', icon: '🇺🇸' },
   cn: { label: 'A股', icon: '🇨🇳' },
+  hk: { label: '港股', icon: '🇭🇰' },
+  eu: { label: '欧股', icon: '🇪🇺' },
+  uk: { label: '英股', icon: '🇬🇧' },
+  jp: { label: '日股', icon: '🇯🇵' },
+  fx: { label: '外汇', icon: '💱' },
+  comm: { label: '大宗商品', icon: '🛢️' },
   metal: { label: '贵金属', icon: '🥇' },
 };
 
@@ -118,6 +124,26 @@ export const HOT_ASSETS: Record<MarketType, Asset[]> = {
       market: 'cn',
       displaySymbol: '招行',
     },
+  ],
+  hk: [
+    { symbol: 'HSI', name: '恒生指数', market: 'hk', displaySymbol: '恒生' },
+  ],
+  eu: [
+    { symbol: 'DAX', name: 'DAX', market: 'eu', displaySymbol: 'DAX' },
+  ],
+  uk: [
+    { symbol: 'FTSE 100', name: 'FTSE 100', market: 'uk', displaySymbol: 'FTSE' },
+  ],
+  jp: [
+    { symbol: 'Nikkei', name: 'Nikkei 225', market: 'jp', displaySymbol: 'Nikkei' },
+  ],
+  fx: [
+    { symbol: 'EUR/USD', name: 'EUR/USD', market: 'fx', displaySymbol: 'EUR/USD' },
+    { symbol: 'GBP/USD', name: 'GBP/USD', market: 'fx', displaySymbol: 'GBP/USD' },
+    { symbol: 'USD/JPY', name: 'USD/JPY', market: 'fx', displaySymbol: 'USD/JPY' },
+  ],
+  comm: [
+    { symbol: 'WTI', name: 'WTI Crude Oil', market: 'comm', displaySymbol: 'WTI' },
   ],
   metal: [
     {

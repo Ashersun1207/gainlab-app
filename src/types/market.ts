@@ -1,5 +1,5 @@
 /** 市场类型 */
-export type MarketType = 'crypto' | 'us' | 'cn' | 'metal';
+export type MarketType = 'crypto' | 'us' | 'cn' | 'hk' | 'eu' | 'uk' | 'jp' | 'fx' | 'comm' | 'metal';
 
 /** K线时间周期 */
 export type TimeInterval =

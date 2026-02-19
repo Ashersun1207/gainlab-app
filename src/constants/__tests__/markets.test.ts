@@ -9,8 +9,8 @@ import {
 } from '../markets';
 
 describe('markets constants', () => {
-  it('has 4 markets configured', () => {
-    expect(Object.keys(MARKET_CONFIG)).toHaveLength(4);
+  it('has 10 markets configured', () => {
+    expect(Object.keys(MARKET_CONFIG)).toHaveLength(10);
   });
 
   it('every market has hot assets', () => {
