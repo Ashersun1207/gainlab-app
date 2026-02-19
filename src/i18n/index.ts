@@ -74,6 +74,7 @@ const translations: Record<Lang, Record<string, string>> = {
     placeholder_coming_soon: '即将上线',
     w_four_markets: '四市场',
     w_market_mood: '市场情绪',
+    btn_agent: 'Agent',
   },
   en: {
     sec_dashboards: 'Dashboards',
@@ -138,6 +139,7 @@ const translations: Record<Lang, Record<string, string>> = {
     placeholder_coming_soon: 'Coming Soon',
     w_four_markets: 'Multi-Market',
     w_market_mood: 'Market Mood',
+    btn_agent: 'Agent',
   },
 };
 

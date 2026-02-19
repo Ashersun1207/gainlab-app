@@ -1,6 +1,11 @@
 import type { ReactElement } from 'react';
+import { t } from '../i18n';
 
-export function HeaderBar(): ReactElement {
+interface HeaderBarProps {
+  onToggleChat?: () => void;
+}
+
+export function HeaderBar({ onToggleChat }: HeaderBarProps): ReactElement {
   // Read BYOK config from localStorage to determine data source status
   let byokKeys: Record<string, string> = {};
   try {
@@ -116,21 +121,21 @@ export function HeaderBar(): ReactElement {
 
         {/* Agent button (highlighted by default) */}
         <button
-          onClick={() => {
-            /* placeholder */
-          }}
+          onClick={onToggleChat}
           aria-label="Agent"
           style={{
-            padding: '3px 8px',
+            padding: '3px 10px',
             borderRadius: 5,
             fontSize: 11,
+            fontWeight: 600,
             border: '1px solid #2563eb',
             color: '#fff',
             background: '#2563eb',
             cursor: 'pointer',
+            letterSpacing: 0.3,
           }}
         >
-          🤖
+          {t('btn_agent')}
         </button>
       </div>
     </div>
