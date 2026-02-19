@@ -69,16 +69,24 @@ else
   echo "  ⚠ sync.sh not found"
 fi
 
-# ── 4. check-all ──
-section "4/5 check-all.sh"
+# ── 4. doc-sync ──
+section "4/6 doc-sync"
+if [ -f "$APP/scripts/doc-sync.sh" ]; then
+  bash "$APP/scripts/doc-sync.sh" --fix 2>&1
+else
+  echo "  ⚠ doc-sync.sh not found"
+fi
+
+# ── 5. check-all ──
+section "5/6 check-all.sh"
 if [ -f "$MCP/scripts/check-all.sh" ]; then
   bash "$MCP/scripts/check-all.sh" 2>&1 | tail -15
 else
   echo "  ⚠ check-all.sh not found"
 fi
 
-# ── 5. CI 监控提示 ──
-section "5/5 CI 状态"
+# ── 6. CI 监控提示 ──
+section "6/6 CI 状态"
 cd "$APP"
 echo "  等 30 秒后运行:"
 echo "  gh run list --limit 2"
@@ -87,5 +95,5 @@ gh run list --limit 2 2>&1 || true
 
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "✅ 第 ${BATCH} 批收尾完成"
+echo "✅ 第 ${BATCH} 批收尾完成（含文档同步）"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
