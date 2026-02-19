@@ -211,7 +211,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 
 /* ═══ HEATMAP ═══ */
 .hmg{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:2px;height:100%}
-.hmc{border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.hmc{border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:opacity .15s}
+.hmc:hover{opacity:.8}
 .hmc .s{font-size:8px;opacity:.9}.hmc .p{font-size:10px;font-weight:700}
 
 /* ═══ FUNDAMENTALS ═══ */
@@ -222,7 +223,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 /* ═══ QUOTE TABLE ═══ */
 .qt{display:flex;flex-direction:column;height:100%;overflow-y:auto}
 .qt-row{display:grid;grid-template-columns:1fr auto auto auto;gap:6px;padding:2px 6px;align-items:center;transition:.12s}
-.qt-row:hover{background:var(--bgH)}
+.qt-row:not(.qt-hdr){cursor:pointer}
+.qt-row:not(.qt-hdr):hover{background:var(--bgH)}
 .qt-hdr{font-size:8px;color:var(--t3);text-transform:uppercase;letter-spacing:.3px;border-bottom:1px solid var(--brd);padding:3px 6px}
 .qt-name{font-size:10px;color:var(--t1);font-weight:500}
 .qt-price{font-size:10px;font-family:monospace;text-align:right;min-width:54px}
@@ -710,7 +712,7 @@ function genHM(targetId){
   const d=[{s:'BTC',p:2.3},{s:'ETH',p:1.8},{s:'SOL',p:5.2},{s:'BNB',p:-.4},{s:'XRP',p:-1.2},{s:'ADA',p:3.1},{s:'DOGE',p:8.4},{s:'AVAX',p:-2.1},{s:'DOT',p:.8},{s:'LINK',p:4.2},{s:'UNI',p:-.3},{s:'MATIC',p:1.5}];
   document.getElementById(targetId||'hm').innerHTML=d.map(x=>{
     const g=x.p>=0,i=Math.min(Math.abs(x.p)/8,1),bg=g?`rgba(38,166,154,${.15+i*.4})`:`rgba(239,83,80,${.15+i*.4})`,tc=g?'var(--grn)':'var(--red)';
-    return`<div class="hmc" style="background:${bg}"><span class="s" style="color:${tc}">${x.s}</span><span class="p" style="color:${tc}">${x.p>0?'+':''}${x.p}%</span></div>`;
+    return`<div class="hmc" onclick="drillDown('${x.s}')" style="background:${bg}"><span class="s" style="color:${tc}">${x.s}</span><span class="p" style="color:${tc}">${x.p>0?'+':''}${x.p}%</span></div>`;
   }).join('');
 }
 function genQuoteTable(targetId){
@@ -727,7 +729,7 @@ function genQuoteTable(targetId){
     items.map(i=>{
       const cls=i.chg>=0?'up':'dn';
       const sign=i.chg>=0?'+':'';
-      return `<div class="qt-row"><span class="qt-name">${i.name}</span><span class="qt-price ${cls}">${i.price>=1000?i.price.toLocaleString():i.price.toFixed(1)}</span><span class="qt-chg ${cls}">${sign}${Math.abs(i.chg)>=100?i.chg.toFixed(0):i.chg.toFixed(1)}</span><span class="qt-pct ${cls}">${sign}${i.pct.toFixed(2)}%</span></div>`;
+      return `<div class="qt-row" onclick="drillDown('${i.name}')"><span class="qt-name">${i.name}</span><span class="qt-price ${cls}">${i.price>=1000?i.price.toLocaleString():i.price.toFixed(1)}</span><span class="qt-chg ${cls}">${sign}${Math.abs(i.chg)>=100?i.chg.toFixed(0):i.chg.toFixed(1)}</span><span class="qt-pct ${cls}">${sign}${i.pct.toFixed(2)}%</span></div>`;
     }).join('');
 }
 function genSentiment(vixArcId,vixValId,fgArcId,fgValId){
@@ -760,7 +762,8 @@ function genGlobalIdx(targetId){
     items.map(i=>{
       const cls=i.chg>=0?'up':'dn';
       const sign=i.chg>=0?'+':'';
-      return `<div class="qt-row"><span class="qt-name">${i.name}</span><span class="qt-price ${cls}">${i.price>=10000?i.price.toLocaleString():i.price.toFixed(0)}</span><span class="qt-chg ${cls}">${sign}${Math.abs(i.chg)}</span><span class="qt-pct ${cls}">${sign}${i.pct.toFixed(2)}%</span></div>`;
+      const safeName=i.name.replace(/'/g,"\\'");
+      return `<div class="qt-row" onclick="drillDown('${safeName}')"><span class="qt-name">${i.name}</span><span class="qt-price ${cls}">${i.price>=10000?i.price.toLocaleString():i.price.toFixed(0)}</span><span class="qt-chg ${cls}">${sign}${Math.abs(i.chg)}</span><span class="qt-pct ${cls}">${sign}${i.pct.toFixed(2)}%</span></div>`;
     }).join('');
 }
 function genForexComm(targetId){
@@ -779,7 +782,7 @@ function genForexComm(targetId){
       const sign=i.chg>=0?'+':'';
       const priceStr=i.price>=100?i.price.toFixed(2):i.price>=10?i.price.toFixed(2):i.price.toFixed(4);
       const chgStr=Math.abs(i.chg)>=1?i.chg.toFixed(2):i.chg.toFixed(4);
-      return `<div class="qt-row"><span class="qt-name">${i.name}</span><span class="qt-price ${cls}">${priceStr}</span><span class="qt-chg ${cls}">${sign}${chgStr}</span><span class="qt-pct ${cls}">${sign}${i.pct.toFixed(2)}%</span></div>`;
+      return `<div class="qt-row" onclick="drillDown('${i.name}')"><span class="qt-name">${i.name}</span><span class="qt-price ${cls}">${priceStr}</span><span class="qt-chg ${cls}">${sign}${chgStr}</span><span class="qt-pct ${cls}">${sign}${i.pct.toFixed(2)}%</span></div>`;
     }).join('');
 }
 function toggleDD(){
@@ -958,18 +961,86 @@ renderCtIcon();
 
 genCandles();genVP();genHM();genQuoteTable();genSentiment();genGlobalIdx();genForexComm();
 
+// ═══ WIDGET STATE (T12 P0) ═══
+let widgetState={scene:'stock_analysis',symbol:'BTCUSDT',market:'crypto',period:'1D'};
+const SYMBOL_DISPLAY={
+  'BTC':'BTC/USDT','ETH':'ETH/USDT','SOL':'SOL/USDT','BNB':'BNB/USDT',
+  'XRP':'XRP/USDT','ADA':'ADA/USDT','DOGE':'DOGE/USDT','AVAX':'AVAX/USDT',
+  'DOT':'DOT/USDT','LINK':'LINK/USDT','UNI':'UNI/USDT','MATIC':'MATIC/USDT',
+  'ATOM':'ATOM/USDT','APT':'APT/USDT','ARB':'ARB/USDT','OP':'OP/USDT',
+  'NEAR':'NEAR/USDT','FIL':'FIL/USDT','ICP':'ICP/USDT','AAVE':'AAVE/USDT',
+  'AAPL':'AAPL','NVDA':'NVDA','XAU':'XAU/USD',
+  'S&P 500':'S&P 500','Dow Jones':'Dow Jones','NASDAQ':'NASDAQ',
+  'FTSE 100':'FTSE 100','DAX':'DAX','Nikkei':'Nikkei',
+  '恒生':'恒生指数','上证':'上证指数',
+  'XAU/USD':'XAU/USD','XAG/USD':'XAG/USD',
+  'EUR/USD':'EUR/USD','GBP/USD':'GBP/USD','USD/JPY':'USD/JPY','WTI':'WTI',
+};
+const SYMBOL_MARKET={
+  'BTC':'crypto','ETH':'crypto','SOL':'crypto','BNB':'crypto','XRP':'crypto',
+  'ADA':'crypto','DOGE':'crypto','AVAX':'crypto','DOT':'crypto','LINK':'crypto',
+  'UNI':'crypto','MATIC':'crypto','ATOM':'crypto','APT':'crypto','ARB':'crypto',
+  'OP':'crypto','NEAR':'crypto','FIL':'crypto','ICP':'crypto','AAVE':'crypto',
+  'AAPL':'us','NVDA':'us','XAU':'metal',
+  'S&P 500':'us','Dow Jones':'us','NASDAQ':'us',
+  'FTSE 100':'uk','DAX':'eu','Nikkei':'jp','恒生':'hk','上证':'cn',
+  'XAU/USD':'metal','XAG/USD':'metal',
+  'EUR/USD':'fx','GBP/USD':'fx','USD/JPY':'fx','WTI':'comm',
+};
+
 // ═══ SCENE SWITCHING ═══
 let activeScene='stock_analysis';
-function switchScene(sceneId){
+function switchScene(sceneId,params){
   const sceneMap={'stock_analysis':'sceneCK','snapshot':'sceneNOW','market_heat':'sceneHM'};
   document.querySelectorAll('.scene').forEach(s=>s.style.display='none');
   const targetId=sceneMap[sceneId]||'sceneCK';
   const targetEl=document.getElementById(targetId);
   if(targetEl){targetEl.style.display='';}else{document.getElementById('sceneCK').style.display='';}
   activeScene=sceneId;
+  // Update widget state + K-line header if params provided
+  if(params&&params.symbol){
+    widgetState.symbol=params.symbol;
+    widgetState.market=params.market||widgetState.market;
+    widgetState.period=params.period||widgetState.period;
+    const symEl=document.querySelector('.sym-t');
+    const mktEl=document.querySelector('.sym-m');
+    if(symEl)symEl.textContent=SYMBOL_DISPLAY[params.symbol]||params.symbol;
+    if(mktEl)mktEl.textContent=(params.market||'').toUpperCase();
+  }
+  widgetState.scene=sceneId;
   if(sceneId==='snapshot')populateNowScene();
   if(sceneId==='market_heat')populateHmScene();
 }
+
+// ═══ DRILL-DOWN + URL ROUTING (T12 P0) ═══
+function drillDown(symbol,market){
+  if(!market)market=SYMBOL_MARKET[symbol]||'';
+  const params={symbol:symbol,market:market,period:'1D'};
+  switchScene('stock_analysis',params);
+  // Sync sidebar active state
+  sidebarItems.forEach(i=>{if(i.id)i.on=(i.id==='stock_analysis');});
+  expandedScene=null;
+  renderSidebar();
+  // Update URL without reload
+  const url=new URL(window.location);
+  url.searchParams.set('s','stock_analysis');
+  url.searchParams.set('sym',symbol);
+  url.searchParams.set('m',market);
+  history.pushState({...widgetState},'',url);
+}
+window.addEventListener('popstate',function(e){
+  if(e.state&&e.state.scene){
+    switchScene(e.state.scene,e.state);
+    sidebarItems.forEach(i=>{if(i.id)i.on=(i.id===e.state.scene);});
+    expandedScene=null;
+    renderSidebar();
+  }else{
+    switchScene('stock_analysis');
+    sidebarItems.forEach(i=>{if(i.id)i.on=(i.id==='stock_analysis');});
+    expandedScene=null;
+    renderSidebar();
+  }
+});
 function populateNowScene(){
   genQuoteTable('nowQuoteTable');
   genHM('nowHm');
@@ -1008,7 +1079,7 @@ function genBigHeatmap(targetId){
   ];
   document.getElementById(targetId).innerHTML=d.map(x=>{
     const g=x.p>=0,i=Math.min(Math.abs(x.p)/8,1),bg=g?`rgba(38,166,154,${.15+i*.4})`:`rgba(239,83,80,${.15+i*.4})`,tc=g?'var(--grn)':'var(--red)';
-    return`<div class="hmc" style="background:${bg}"><span class="s" style="color:${tc}">${x.s}</span><span class="p" style="color:${tc}">${x.p>0?'+':''}${x.p}%</span></div>`;
+    return`<div class="hmc" onclick="drillDown('${x.s}')" style="background:${bg}"><span class="s" style="color:${tc}">${x.s}</span><span class="p" style="color:${tc}">${x.p>0?'+':''}${x.p}%</span></div>`;
   }).join('');
 }
 function genTopMovers(targetId){
@@ -1025,7 +1096,7 @@ function genTopMovers(targetId){
     items.map(i=>{
       const cls=i.pct>=0?'up':'dn';
       const sign=i.pct>=0?'+':'';
-      return `<div class="qt-row" style="grid-template-columns:1fr auto auto"><span class="qt-name">${i.name}</span><span class="qt-price ${cls}">${i.price>=1?i.price.toFixed(2):i.price.toFixed(3)}</span><span class="qt-pct ${cls}">${sign}${i.pct.toFixed(2)}%</span></div>`;
+      return `<div class="qt-row" style="grid-template-columns:1fr auto auto" onclick="drillDown('${i.name}')"><span class="qt-name">${i.name}</span><span class="qt-price ${cls}">${i.price>=1?i.price.toFixed(2):i.price.toFixed(3)}</span><span class="qt-pct ${cls}">${sign}${i.pct.toFixed(2)}%</span></div>`;
     }).join('');
 }
 
@@ -1256,6 +1327,22 @@ function t(key){return i18n[curLang][key]||key;}
 
 // Now safe to render sidebar (depends on t())
 renderSidebar();
+
+// ═══ URL INIT (T12 P0) ═══
+(function initFromUrl(){
+  const p=new URLSearchParams(location.search);
+  const scene=p.get('s'),symbol=p.get('sym'),market=p.get('m'),period=p.get('p');
+  if(scene){
+    const item=sidebarItems.find(i=>i.id===scene);
+    if(item){
+      sidebarItems.forEach(i=>{if(i.id)i.on=false;});
+      item.on=true;
+      switchScene(scene,{symbol:symbol,market:market,period:period});
+      renderSidebar();
+    }
+  }
+  history.replaceState({...widgetState},'');
+})();
 
 // ═══ DRAWING TOOLS OVERLAY ═══
 let dtOpen=false;
