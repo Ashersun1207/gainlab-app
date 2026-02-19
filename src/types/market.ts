@@ -26,6 +26,13 @@ export interface Asset {
   displaySymbol?: string; // 简短显示名 e.g. 'BTC', 'AAPL'
 }
 
+/** 场景参数（drill-down / URL 路由用） */
+export interface SceneParams {
+  symbol?: string;
+  market?: MarketType;
+  period?: TimeInterval;
+}
+
 /** 报价信息 */
 export interface Quote {
   symbol: string;
