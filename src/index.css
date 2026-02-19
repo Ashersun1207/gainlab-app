@@ -625,6 +625,37 @@ body {
   margin: 0;
 }
 
+/* === Widget Panel (from preview-layout L200-210) === */
+.wp { background: #12122a; display: flex; flex-direction: column; overflow: hidden; }
+.wph { height: 26px; background: #1a1a3e; border-bottom: 1px solid #2a2a4a; display: flex; align-items: center; padding: 0 6px; gap: 4px; flex-shrink: 0; }
+.wph-title { font-size: 9px; font-weight: 600; color: #8888aa; text-transform: uppercase; letter-spacing: .3px; }
+.wph-sym { font-size: 9px; font-weight: 500; color: #e0e0f0; cursor: pointer; padding: 1px 4px; border-radius: 2px; transition: .15s; }
+.wph-sym:hover { background: #1e1e3a; }
+.wph-spc { flex: 1; }
+.wph-btn { width: 16px; height: 16px; border-radius: 3px; border: 0; background: transparent; color: #5a5a8a; font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.wph-btn:hover { background: #1e1e3a; color: #e0e0f0; }
+.wpb { flex: 1; overflow: hidden; padding: 5px; min-height: 0; }
+
+/* === CK scene layout (from preview-layout L99, L192-196) === */
+.ck-kline { flex: 1; min-height: 200px; overflow: hidden; display: flex; flex-direction: column; }
+.ck-resize { height: 4px; background: #2a2a4a; cursor: row-resize; flex-shrink: 0; transition: .15s; }
+.ck-resize:hover { background: #2563eb; }
+.ck-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 1px;
+  background: #2a2a4a;
+  flex-shrink: 0;
+  overflow: hidden;
+  min-height: 200px;
+  max-height: 420px;
+  height: 40vh;
+}
+
+/* === Chat panel (from preview-layout L250) === */
+.cp-panel { width: 300px; border-left: 1px solid #2a2a4a; flex-shrink: 0; display: flex; flex-direction: column; background: #0d0d20; }
+
 /* ── Media queries ────────────────────────────────────── */
 
 /* Hide sidebar on mobile (≤768px) */
@@ -634,5 +665,13 @@ body {
   }
   .mobile-tab-bar {
     display: flex !important;
+  }
+  .cp-panel { display: none; }
+  .ck-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    height: auto;
+    max-height: none;
+    overflow-y: auto;
   }
 }

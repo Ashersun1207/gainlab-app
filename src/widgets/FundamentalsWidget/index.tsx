@@ -8,31 +8,35 @@ const LazyECharts = lazy(() =>
 
 interface FundamentalsWidgetProps {
   symbol: string;
+  headless?: boolean;
 }
 
 /** 构建基本面柱状图 option */
 function buildFundamentalsOption(
   symbol: string,
   metrics: Record<string, number>,
+  headless?: boolean,
 ): EChartsOption {
   const keys = Object.keys(metrics).slice(0, 10);
   const values = keys.map((k) => metrics[k]);
 
   return {
     backgroundColor: '#0d0d20',
-    title: {
-      text: `${symbol} 基本面`,
-      textStyle: { color: '#ccc', fontSize: 12 },
-      left: 10,
-      top: 8,
-    },
+    ...(headless ? {} : {
+      title: {
+        text: `${symbol} 基本面`,
+        textStyle: { color: '#ccc', fontSize: 12 },
+        left: 10,
+        top: 8,
+      },
+    }),
     tooltip: {
       trigger: 'axis',
       backgroundColor: '#1a1a2e',
       borderColor: '#2a2a4a',
       textStyle: { color: '#e0e0e0', fontSize: 11 },
     },
-    grid: { left: 60, right: 20, top: 45, bottom: 40 },
+    grid: { left: 60, right: 20, top: headless ? 10 : 45, bottom: 40 },
     xAxis: {
       type: 'category',
       data: keys,
@@ -97,7 +101,7 @@ function extractMetrics(
   return result;
 }
 
-export function FundamentalsWidget({ symbol }: FundamentalsWidgetProps) {
+export function FundamentalsWidget({ symbol, headless }: FundamentalsWidgetProps) {
   const [rawData, setRawData] = useState<Record<string, unknown> | null>(
     null,
   );
@@ -140,9 +144,9 @@ export function FundamentalsWidget({ symbol }: FundamentalsWidgetProps) {
   const option = useMemo(
     () =>
       metrics && Object.keys(metrics).length > 0
-        ? buildFundamentalsOption(symbol, metrics)
+        ? buildFundamentalsOption(symbol, metrics, headless)
         : null,
-    [symbol, metrics],
+    [symbol, metrics, headless],
   );
 
   if (error) {

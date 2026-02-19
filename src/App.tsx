@@ -2,16 +2,18 @@ import { useState, useCallback, Suspense, lazy } from 'react';
 import { useResponsive } from './hooks/useResponsive';
 import { useMarketData } from './hooks/useMarketData';
 import { useScene } from './hooks/useScene';
+import { useResizable } from './hooks/useResizable';
 import { Sidebar } from './layout/Sidebar';
 import { Toolbar } from './layout/Toolbar';
-import { Drawer } from './layout/Drawer';
+import { HeaderBar } from './layout/HeaderBar';
+import { WidgetPanel } from './layout/WidgetPanel';
 import { ChatToggle } from './chat/ChatToggle';
 import { MobileTabBar } from './layout/MobileTabBar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { HeatmapScene } from './scenes/HeatmapScene';
 import { PlaceholderScene } from './scenes/PlaceholderScene';
 import { getRenderTarget, mcpToKLine, mcpToEChartsOption } from './services/dataAdapter';
-import type { ToolType } from './types/market';
+import { t } from './i18n';
 import type { KLineData } from './types/data';
 import type { EChartsOption } from 'echarts';
 import type { MarketType } from './types/market';
@@ -23,14 +25,8 @@ const LazyChatPanel = lazy(() =>
 const LazyKLineWidget = lazy(() =>
   import('./widgets/KLineWidget').then((m) => ({ default: m.KLineWidget })),
 );
-const LazyEChartsWidget = lazy(() =>
-  import('./widgets/EChartsWidget').then((m) => ({ default: m.EChartsWidget })),
-);
 const LazyHeatmapWidget = lazy(() =>
   import('./widgets/HeatmapWidget').then((m) => ({ default: m.HeatmapWidget })),
-);
-const LazyOverlayWidget = lazy(() =>
-  import('./widgets/OverlayWidget').then((m) => ({ default: m.OverlayWidget })),
 );
 const LazyFundamentalsWidget = lazy(() =>
   import('./widgets/FundamentalsWidget').then((m) => ({
@@ -101,17 +97,17 @@ function App() {
   // ── Indicators ──
   const [activeIndicators, setActiveIndicators] = useState<string[]>(['MA']);
 
-  // ── Drawer (tool panels) ──
-  const [drawerTool, setDrawerTool] = useState<ToolType | null>(null);
+  // ── Resize ──
+  const { handleResizeStart } = useResizable('.ck-grid', 150, 500);
 
   // ── Chat ──
-  const [chatOpen, setChatOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(true);
 
   // ── Data ──
   const { klineData, quote } = useMarketData(activeSymbol, activeMarket, activeInterval);
 
   // ── P0 compat: Chat onToolResult → update ECharts / KLine ──
-  const [echartsOption, setEchartsOption] = useState<EChartsOption | null>(null);
+  const [_echartsOption, setEchartsOption] = useState<EChartsOption | null>(null);
   const [chatKlineData, setChatKlineData] = useState<KLineData[] | null>(null);
 
   // ── Indicator toggle ──
@@ -139,32 +135,6 @@ function App() {
   const toggleChat = useCallback(() => {
     setChatOpen((prev) => !prev);
   }, []);
-
-  // ── Drawer content ──
-  const renderDrawerContent = useCallback(() => {
-    switch (drawerTool) {
-      case 'heatmap':
-        return (
-          <Suspense fallback={<LoadingPlaceholder />}>
-            <LazyHeatmapWidget market={activeMarket} />
-          </Suspense>
-        );
-      case 'overlay':
-        return (
-          <Suspense fallback={<LoadingPlaceholder />}>
-            <LazyOverlayWidget symbol={activeSymbol} market={activeMarket} />
-          </Suspense>
-        );
-      case 'fundamentals':
-        return (
-          <Suspense fallback={<LoadingPlaceholder />}>
-            <LazyFundamentalsWidget symbol={activeSymbol} />
-          </Suspense>
-        );
-      default:
-        return null;
-    }
-  }, [drawerTool, activeMarket, activeSymbol]);
 
   // Effective kline data: Chat-pushed data takes priority
   const effectiveKlineData =
@@ -271,7 +241,8 @@ function App() {
       default:
         return (
           <>
-            <div className={`min-h-0 ${drawerTool ? 'h-[60%]' : 'flex-1'}`}>
+            {/* KLine area */}
+            <div className="ck-kline">
               <ErrorBoundary label="KLine">
                 <Suspense fallback={<LoadingPlaceholder />}>
                   <LazyKLineWidget
@@ -285,27 +256,73 @@ function App() {
                 </Suspense>
               </ErrorBoundary>
             </div>
-            <Drawer
-              open={!!drawerTool}
-              activeTool={drawerTool}
-              onClose={() => setDrawerTool(null)}
-            >
-              <ErrorBoundary label="Drawer Widget">
-                {renderDrawerContent()}
-              </ErrorBoundary>
-            </Drawer>
-            {echartsOption && !drawerTool && (
-              <div className="h-[40%] border-t border-[#1e1e3a]">
-                <ErrorBoundary label="ECharts">
+
+            {/* Resize handle */}
+            <div className="ck-resize" onMouseDown={handleResizeStart} />
+
+            {/* 3×2 Widget grid */}
+            <div className="ck-grid">
+              <WidgetPanel title="HEATMAP" subtitle={`${activeMarket} ▾`}>
+                <ErrorBoundary label="Heatmap">
                   <Suspense fallback={<LoadingPlaceholder />}>
-                    <LazyEChartsWidget
-                      option={echartsOption}
-                      style={{ height: '100%' }}
+                    <LazyHeatmapWidget
+                      market={activeMarket}
+                      onCellClick={(sym) => drillDown(sym)}
                     />
                   </Suspense>
                 </ErrorBoundary>
-              </div>
-            )}
+              </WidgetPanel>
+
+              <WidgetPanel title="FUNDAMENTALS" subtitle={`${activeSymbol} ▾`}>
+                <ErrorBoundary label="Fundamentals">
+                  <Suspense fallback={<LoadingPlaceholder />}>
+                    <LazyFundamentalsWidget symbol={activeSymbol} headless />
+                  </Suspense>
+                </ErrorBoundary>
+              </WidgetPanel>
+
+              <WidgetPanel title="QUOTES" subtitle={t('w_four_markets')}>
+                <ErrorBoundary label="QuoteTable">
+                  <Suspense fallback={<LoadingPlaceholder />}>
+                    <LazyQuoteTableWidget
+                      title=""
+                      items={NOW_QUOTE_ITEMS}
+                      onRowClick={(sym, mkt) => drillDown(sym, mkt)}
+                    />
+                  </Suspense>
+                </ErrorBoundary>
+              </WidgetPanel>
+
+              <WidgetPanel title="SENTIMENT" subtitle={t('w_market_mood')}>
+                <ErrorBoundary label="Sentiment">
+                  <Suspense fallback={<LoadingPlaceholder />}>
+                    <LazySentimentWidget headless />
+                  </Suspense>
+                </ErrorBoundary>
+              </WidgetPanel>
+
+              <WidgetPanel title="GLOBAL INDEX" subtitle={t('w_world_indices')}>
+                <ErrorBoundary label="GlobalIndex">
+                  <Suspense fallback={<LoadingPlaceholder />}>
+                    <LazyGlobalIndexWidget
+                      headless
+                      onRowClick={(sym, mkt) => drillDown(sym, mkt)}
+                    />
+                  </Suspense>
+                </ErrorBoundary>
+              </WidgetPanel>
+
+              <WidgetPanel title="FX & COMM" subtitle={t('w_forex_comm')}>
+                <ErrorBoundary label="ForexCommodity">
+                  <Suspense fallback={<LoadingPlaceholder />}>
+                    <LazyForexCommodityWidget
+                      headless
+                      onRowClick={(sym, mkt) => drillDown(sym, mkt)}
+                    />
+                  </Suspense>
+                </ErrorBoundary>
+              </WidgetPanel>
+            </div>
           </>
         );
     }
@@ -373,6 +390,9 @@ function App() {
 
       {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* HeaderBar */}
+        <HeaderBar />
+
         {/* Toolbar */}
         <Toolbar
           symbolDisplay={formatSymbolDisplay(activeSymbol)}
@@ -386,13 +406,15 @@ function App() {
           onIndicatorToggle={handleIndicatorToggle}
         />
 
-        {/* Scene content */}
-        {renderScene()}
+        {/* Scene content — independent flex container */}
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+          {renderScene()}
+        </div>
       </div>
 
-      {/* Chat panel (desktop) */}
+      {/* Chat panel — default open */}
       {chatOpen ? (
-        <div className="w-[320px] flex-shrink-0 overflow-hidden">
+        <div className="cp-panel">
           <ErrorBoundary label="Chat">
             <Suspense fallback={<LoadingPlaceholder />}>
               <LazyChatPanel

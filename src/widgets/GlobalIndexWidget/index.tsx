@@ -19,13 +19,14 @@ const GLOBAL_INDICES = [
 ];
 
 interface GlobalIndexWidgetProps {
+  headless?: boolean;
   onRowClick?: (symbol: string, market: MarketType) => void;
 }
 
-export function GlobalIndexWidget({ onRowClick }: GlobalIndexWidgetProps) {
+export function GlobalIndexWidget({ headless, onRowClick }: GlobalIndexWidgetProps) {
   return (
     <QuoteTableWidget
-      title="全球指数"
+      title={headless ? '' : '全球指数'}
       items={GLOBAL_INDICES}
       onRowClick={onRowClick}
       refreshInterval={60000}

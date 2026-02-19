@@ -16,13 +16,14 @@ const FOREX_COMMODITY_ITEMS = [
 ];
 
 interface ForexCommodityWidgetProps {
+  headless?: boolean;
   onRowClick?: (symbol: string, market: MarketType) => void;
 }
 
-export function ForexCommodityWidget({ onRowClick }: ForexCommodityWidgetProps) {
+export function ForexCommodityWidget({ headless, onRowClick }: ForexCommodityWidgetProps) {
   return (
     <QuoteTableWidget
-      title="外汇 / 大宗商品"
+      title={headless ? '' : '外汇 / 大宗商品'}
       items={FOREX_COMMODITY_ITEMS}
       onRowClick={onRowClick}
       refreshInterval={60000}

@@ -96,7 +96,11 @@ function buildGaugeOption(title: string, value: number, getColor: (v: number) =>
   };
 }
 
-export function SentimentWidget() {
+interface SentimentWidgetProps {
+  headless?: boolean;
+}
+
+export function SentimentWidget({ headless }: SentimentWidgetProps = {}) {
   const [data, setData] = useState(SAMPLE_SENTIMENT);
   const [loading, setLoading] = useState(false);
   const cancelledRef = useRef(false);
@@ -137,11 +141,12 @@ export function SentimentWidget() {
 
   return (
     <div className="w-full h-full flex flex-col bg-[#0d0d20] overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-[#1e1e3a] flex-shrink-0">
-        <span className="text-[13px] font-semibold text-[#a0a0cc]">市场情绪</span>
-        {loading && <span className="text-[10px] text-[#5a5a8a]">更新中...</span>}
-      </div>
+      {!headless && (
+        <div className="flex items-center justify-between px-3 py-2 border-b border-[#1e1e3a] flex-shrink-0">
+          <span className="text-[13px] font-semibold text-[#a0a0cc]">市场情绪</span>
+          {loading && <span className="text-[10px] text-[#5a5a8a]">更新中...</span>}
+        </div>
+      )}
       {/* Gauges */}
       <div className="flex-1 flex gap-1 p-1 min-h-0">
         <div className="flex-1 min-w-0">
