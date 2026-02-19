@@ -294,6 +294,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 /* ═══ LAYOUT LABELS ═══ */
 .t-label{position:absolute;font-size:9px;font-weight:700;color:#60a5fa;background:rgba(37,99,235,.12);padding:2px 8px;border-radius:3px;pointer-events:none;z-index:500;white-space:nowrap;letter-spacing:.5px;border:1px solid rgba(37,99,235,.25)}
 
+/* ═══ SCENES ═══ */
+.scene{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+.scene[style*="display:none"]{display:none !important}
+/* NOW scene: full grid */
+.scene-now-grid{flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:1px;background:var(--brd);min-height:0;overflow:hidden}
+/* HM scene: side-by-side */
+.scene-hm-layout{flex:1;display:flex;gap:1px;background:var(--brd);min-height:0;overflow:hidden}
+.scene-hm-main{flex:7;min-width:0;overflow:hidden}
+.scene-hm-side{flex:3;display:flex;flex-direction:column;gap:1px;min-width:0;overflow:hidden}
+
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:768px){
   .cp{display:none} /* 手机隐藏聊天面板 */
@@ -311,6 +321,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
   .ind-tags{display:none} /* 手机隐藏 tag */
   .dd{width:calc(100vw - 60px);left:-6px}
   .ind-panel{width:calc(100vw - 60px)}
+  .scene-now-grid{grid-template-columns:1fr;grid-template-rows:auto}
+  .scene-hm-layout{flex-direction:column}
+  .scene-hm-main{flex:none;height:50%}
+  .scene-hm-side{flex:none;height:50%;flex-direction:column}
 }
 @media(max-width:480px){
   .sidebar{display:none}
@@ -367,6 +381,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 
   <!-- Content -->
   <div class="ct">
+
+    <!-- Scene: CK (default — 个股分析) -->
+    <div class="scene scene-ck" id="sceneCK">
 
     <!-- ═══ K-LINE WIDGET (fully self-contained, TV-style) ═══ -->
     <div class="kw" style="position:relative">
@@ -603,6 +620,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
         <div class="wpb"><div class="qt" id="forexComm"></div></div>
       </div>
     </div>
+    </div><!-- /scene-ck -->
+
+    <!-- Scene: NOW (行情快照) -->
+    <div class="scene scene-now" id="sceneNOW" style="display:none">
+      <div class="scene-now-grid">
+        <div class="wp"><div class="wph"><div class="wph-title">QUOTES</div><div class="wph-sym">四市场</div><div class="wph-spc"></div><button class="wph-btn">⛶</button></div><div class="wpb"><div class="qt" id="nowQuoteTable"></div></div></div>
+        <div class="wp"><div class="wph"><div class="wph-title">HEATMAP</div><div class="wph-sym">Crypto</div><div class="wph-spc"></div><button class="wph-btn">⛶</button></div><div class="wpb"><div class="hmg" id="nowHm"></div></div></div>
+        <div class="wp"><div class="wph"><div class="wph-title">SENTIMENT</div><div class="wph-sym">市场情绪</div><div class="wph-spc"></div><button class="wph-btn">⛶</button></div><div class="wpb"><div class="snt" id="nowSentiment"><div class="snt-gauge"><div class="snt-label">VIX</div><div class="snt-arc" id="nowVixArc"></div><div class="snt-val" id="nowVixVal">18.5</div><div class="snt-sub" style="color:var(--grn)">低波动</div></div><div class="snt-gauge"><div class="snt-label">Fear &amp; Greed</div><div class="snt-arc" id="nowFgArc"></div><div class="snt-val" id="nowFgVal">62</div><div class="snt-sub" style="color:var(--grn)">贪婪</div></div></div></div></div>
+        <div class="wp"><div class="wph"><div class="wph-title">GLOBAL INDEX</div><div class="wph-sym">全球指数</div><div class="wph-spc"></div><button class="wph-btn">⛶</button></div><div class="wpb"><div class="qt" id="nowGlobalIdx"></div></div></div>
+        <div class="wp"><div class="wph"><div class="wph-title">FX &amp; COMM</div><div class="wph-sym">外汇大宗</div><div class="wph-spc"></div><button class="wph-btn">⛶</button></div><div class="wpb"><div class="qt" id="nowForexComm"></div></div></div>
+        <div class="wp"><div class="wph"><div class="wph-title">BTC/USDT</div><div class="wph-sym">1D</div><div class="wph-spc"></div><button class="wph-btn">⛶</button></div><div class="wpb"><div class="kbody" style="position:relative;height:100%"><div class="candles" id="nowCandles" style="padding:10px 20px 15px 15px"></div><div class="va" id="nowVol" style="left:15px;right:20px"></div></div></div></div>
+      </div>
+    </div>
+
+    <!-- Scene: HM (市场热力) -->
+    <div class="scene scene-hm" id="sceneHM" style="display:none">
+      <div class="scene-hm-layout">
+        <div class="scene-hm-main"><div class="wp" style="height:100%"><div class="wph"><div class="wph-title">SECTOR HEATMAP</div><div class="wph-sym">Crypto ▾</div><div class="wph-spc"></div><button class="wph-btn">⟲</button><button class="wph-btn">⛶</button></div><div class="wpb"><div class="hmg" id="hmBigHeatmap" style="grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(4,1fr)"></div></div></div></div>
+        <div class="scene-hm-side">
+          <div class="wp" style="flex:1"><div class="wph"><div class="wph-title">TOP MOVERS</div><div class="wph-spc"></div></div><div class="wpb"><div class="qt" id="hmMovers"></div></div></div>
+          <div class="wp" style="flex:1"><div class="wph"><div class="wph-title">QUOTES</div><div class="wph-spc"></div></div><div class="wpb"><div class="qt" id="hmQuotes"></div></div></div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ═══ CHAT PANEL ═══ -->
@@ -641,8 +683,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro','Inter',system-ui,san
 </div>
 
 <script>
-function genCandles(){
-  const el=document.getElementById('candles'),vol=document.getElementById('vol');
+function genCandles(candlesId,volId){
+  const el=document.getElementById(candlesId||'candles'),vol=document.getElementById(volId||'vol');
   let p=67000,h='',v='';
   for(let i=0;i<75;i++){
     p=Math.max(63500,Math.min(72000,p+(Math.random()-.48)*750));
@@ -664,14 +706,14 @@ function genVP(){
   });
   el.innerHTML=h;
 }
-function genHM(){
+function genHM(targetId){
   const d=[{s:'BTC',p:2.3},{s:'ETH',p:1.8},{s:'SOL',p:5.2},{s:'BNB',p:-.4},{s:'XRP',p:-1.2},{s:'ADA',p:3.1},{s:'DOGE',p:8.4},{s:'AVAX',p:-2.1},{s:'DOT',p:.8},{s:'LINK',p:4.2},{s:'UNI',p:-.3},{s:'MATIC',p:1.5}];
-  document.getElementById('hm').innerHTML=d.map(x=>{
+  document.getElementById(targetId||'hm').innerHTML=d.map(x=>{
     const g=x.p>=0,i=Math.min(Math.abs(x.p)/8,1),bg=g?`rgba(38,166,154,${.15+i*.4})`:`rgba(239,83,80,${.15+i*.4})`,tc=g?'var(--grn)':'var(--red)';
     return`<div class="hmc" style="background:${bg}"><span class="s" style="color:${tc}">${x.s}</span><span class="p" style="color:${tc}">${x.p>0?'+':''}${x.p}%</span></div>`;
   }).join('');
 }
-function genQuoteTable(){
+function genQuoteTable(targetId){
   const items=[
     {name:'BTC',price:96144,chg:1234,pct:1.30},
     {name:'ETH',price:3215,chg:-48,pct:-1.47},
@@ -680,7 +722,7 @@ function genQuoteTable(){
     {name:'NVDA',price:138.2,chg:-3.4,pct:-2.40},
     {name:'XAU',price:2648,chg:18,pct:0.68},
   ];
-  const el=document.getElementById('quoteTable');
+  const el=document.getElementById(targetId||'quoteTable');
   el.innerHTML='<div class="qt-row qt-hdr"><span>名称</span><span style="text-align:right">价格</span><span style="text-align:right">涨跌</span><span style="text-align:right">涨跌%</span></div>'+
     items.map(i=>{
       const cls=i.chg>=0?'up':'dn';
@@ -688,21 +730,21 @@ function genQuoteTable(){
       return `<div class="qt-row"><span class="qt-name">${i.name}</span><span class="qt-price ${cls}">${i.price>=1000?i.price.toLocaleString():i.price.toFixed(1)}</span><span class="qt-chg ${cls}">${sign}${Math.abs(i.chg)>=100?i.chg.toFixed(0):i.chg.toFixed(1)}</span><span class="qt-pct ${cls}">${sign}${i.pct.toFixed(2)}%</span></div>`;
     }).join('');
 }
-function genSentiment(){
+function genSentiment(vixArcId,vixValId,fgArcId,fgValId){
   const vixPct=18.5/80;
-  document.getElementById('vixArc').innerHTML=`<svg viewBox="0 0 80 44" style="width:100%;height:100%">
+  document.getElementById(vixArcId||'vixArc').innerHTML=`<svg viewBox="0 0 80 44" style="width:100%;height:100%">
     <path d="M4,42 A36,36 0 0,1 76,42" fill="none" stroke="var(--bg3)" stroke-width="6" stroke-linecap="round"/>
     <path d="M4,42 A36,36 0 0,1 76,42" fill="none" stroke="var(--grn)" stroke-width="6" stroke-linecap="round" stroke-dasharray="${vixPct*113} 113"/>
   </svg>`;
-  document.getElementById('vixVal').style.color='var(--grn)';
+  document.getElementById(vixValId||'vixVal').style.color='var(--grn)';
   const fgPct=62/100;
-  document.getElementById('fgArc').innerHTML=`<svg viewBox="0 0 80 44" style="width:100%;height:100%">
+  document.getElementById(fgArcId||'fgArc').innerHTML=`<svg viewBox="0 0 80 44" style="width:100%;height:100%">
     <path d="M4,42 A36,36 0 0,1 76,42" fill="none" stroke="var(--bg3)" stroke-width="6" stroke-linecap="round"/>
     <path d="M4,42 A36,36 0 0,1 76,42" fill="none" stroke="var(--grn)" stroke-width="6" stroke-linecap="round" stroke-dasharray="${fgPct*113} 113"/>
   </svg>`;
-  document.getElementById('fgVal').style.color='var(--grn)';
+  document.getElementById(fgValId||'fgVal').style.color='var(--grn)';
 }
-function genGlobalIdx(){
+function genGlobalIdx(targetId){
   const items=[
     {name:'S&P 500',price:5892,chg:32,pct:0.55},
     {name:'Dow Jones',price:43250,chg:-120,pct:-0.28},
@@ -713,7 +755,7 @@ function genGlobalIdx(){
     {name:'恒生',price:22150,chg:180,pct:0.82},
     {name:'上证',price:3285,chg:12,pct:0.37},
   ];
-  const el=document.getElementById('globalIdx');
+  const el=document.getElementById(targetId||'globalIdx');
   el.innerHTML='<div class="qt-row qt-hdr"><span>指数</span><span style="text-align:right">点位</span><span style="text-align:right">涨跌</span><span style="text-align:right">涨跌%</span></div>'+
     items.map(i=>{
       const cls=i.chg>=0?'up':'dn';
@@ -721,7 +763,7 @@ function genGlobalIdx(){
       return `<div class="qt-row"><span class="qt-name">${i.name}</span><span class="qt-price ${cls}">${i.price>=10000?i.price.toLocaleString():i.price.toFixed(0)}</span><span class="qt-chg ${cls}">${sign}${Math.abs(i.chg)}</span><span class="qt-pct ${cls}">${sign}${i.pct.toFixed(2)}%</span></div>`;
     }).join('');
 }
-function genForexComm(){
+function genForexComm(targetId){
   const items=[
     {name:'XAU/USD',price:2648.5,chg:18.2,pct:0.69},
     {name:'XAG/USD',price:30.85,chg:-0.42,pct:-1.34},
@@ -730,7 +772,7 @@ function genForexComm(){
     {name:'USD/JPY',price:149.52,chg:0.85,pct:0.57},
     {name:'WTI',price:72.45,chg:-1.15,pct:-1.56},
   ];
-  const el=document.getElementById('forexComm');
+  const el=document.getElementById(targetId||'forexComm');
   el.innerHTML='<div class="qt-row qt-hdr"><span>品种</span><span style="text-align:right">价格</span><span style="text-align:right">涨跌</span><span style="text-align:right">涨跌%</span></div>'+
     items.map(i=>{
       const cls=i.chg>=0?'up':'dn';
@@ -916,6 +958,77 @@ renderCtIcon();
 
 genCandles();genVP();genHM();genQuoteTable();genSentiment();genGlobalIdx();genForexComm();
 
+// ═══ SCENE SWITCHING ═══
+let activeScene='stock_analysis';
+function switchScene(sceneId){
+  const sceneMap={'stock_analysis':'sceneCK','snapshot':'sceneNOW','market_heat':'sceneHM'};
+  document.querySelectorAll('.scene').forEach(s=>s.style.display='none');
+  const targetId=sceneMap[sceneId]||'sceneCK';
+  const targetEl=document.getElementById(targetId);
+  if(targetEl){targetEl.style.display='';}else{document.getElementById('sceneCK').style.display='';}
+  activeScene=sceneId;
+  if(sceneId==='snapshot')populateNowScene();
+  if(sceneId==='market_heat')populateHmScene();
+}
+function populateNowScene(){
+  genQuoteTable('nowQuoteTable');
+  genHM('nowHm');
+  genSentiment('nowVixArc','nowVixVal','nowFgArc','nowFgVal');
+  genGlobalIdx('nowGlobalIdx');
+  genForexComm('nowForexComm');
+  genCandlesTo('nowCandles','nowVol');
+}
+function populateHmScene(){
+  genBigHeatmap('hmBigHeatmap');
+  genTopMovers('hmMovers');
+  genQuoteTable('hmQuotes');
+}
+function genCandlesTo(candlesId,volId){
+  const el=document.getElementById(candlesId),vol=document.getElementById(volId);
+  if(!el||!vol)return;
+  let p=67000,h='',v='';
+  for(let i=0;i<40;i++){
+    p=Math.max(63500,Math.min(72000,p+(Math.random()-.48)*750));
+    const o=p-400+Math.random()*800,c=p,hi=Math.max(o,c)+Math.random()*350,lo=Math.min(o,c)-Math.random()*350;
+    const bull=c>=o,col=bull?'var(--grn)':'var(--red)';
+    const t=((72000-hi)/8500)*100,b=((72000-lo)/8500)*100;
+    const bt=((72000-Math.max(o,c))/8500)*100,bb=((72000-Math.min(o,c))/8500)*100;
+    h+=`<div class="c"><div class="cw" style="top:${t}%;height:${b-t}%;background:${col}"></div><div class="cb" style="top:${bt}%;height:${Math.max(bb-bt,.5)}%;background:${col}"></div></div>`;
+    v+=`<div class="vb" style="height:${Math.random()*32+4}px;background:${col}"></div>`;
+  }
+  el.innerHTML=h;vol.innerHTML=v;
+}
+function genBigHeatmap(targetId){
+  const d=[
+    {s:'BTC',p:2.3},{s:'ETH',p:1.8},{s:'SOL',p:5.2},{s:'BNB',p:-.4},
+    {s:'XRP',p:-1.2},{s:'ADA',p:3.1},{s:'DOGE',p:8.4},{s:'AVAX',p:-2.1},
+    {s:'DOT',p:.8},{s:'LINK',p:4.2},{s:'UNI',p:-.3},{s:'MATIC',p:1.5},
+    {s:'ATOM',p:2.7},{s:'APT',p:-0.9},{s:'ARB',p:3.5},{s:'OP',p:1.1},
+    {s:'NEAR',p:-1.8},{s:'FIL',p:0.4},{s:'ICP',p:6.2},{s:'AAVE',p:-0.6}
+  ];
+  document.getElementById(targetId).innerHTML=d.map(x=>{
+    const g=x.p>=0,i=Math.min(Math.abs(x.p)/8,1),bg=g?`rgba(38,166,154,${.15+i*.4})`:`rgba(239,83,80,${.15+i*.4})`,tc=g?'var(--grn)':'var(--red)';
+    return`<div class="hmc" style="background:${bg}"><span class="s" style="color:${tc}">${x.s}</span><span class="p" style="color:${tc}">${x.p>0?'+':''}${x.p}%</span></div>`;
+  }).join('');
+}
+function genTopMovers(targetId){
+  const items=[
+    {name:'DOGE',price:0.182,chg:8.4,pct:8.40},
+    {name:'ICP',price:12.5,chg:0.73,pct:6.20},
+    {name:'SOL',price:187.4,chg:5.2,pct:2.85},
+    {name:'AVAX',price:38.2,chg:-0.82,pct:-2.10},
+    {name:'XRP',price:0.625,chg:-0.008,pct:-1.20},
+    {name:'NEAR',price:5.43,chg:-0.10,pct:-1.80},
+  ];
+  const el=document.getElementById(targetId);
+  el.innerHTML='<div class="qt-row qt-hdr"><span>Mover</span><span style="text-align:right">Price</span><span style="text-align:right">Chg%</span></div>'+
+    items.map(i=>{
+      const cls=i.pct>=0?'up':'dn';
+      const sign=i.pct>=0?'+':'';
+      return `<div class="qt-row" style="grid-template-columns:1fr auto auto"><span class="qt-name">${i.name}</span><span class="qt-price ${cls}">${i.price>=1?i.price.toFixed(2):i.price.toFixed(3)}</span><span class="qt-pct ${cls}">${sign}${i.pct.toFixed(2)}%</span></div>`;
+    }).join('');
+}
+
 // ═══ SIDEBAR (single panel, Koyfin style) ═══
 const sidebarItems=[
   // Top: high-freq entries (no section header, like Koyfin top)
@@ -997,12 +1110,13 @@ function renderSidebar(){
       <span class="sb-tip">${t(item.nameKey)}</span>
     </div>${childHtml}`;
   }).join('');
-  // Click: select scene + toggle expand
+  // Click: select scene + toggle expand + switch scene
   nav.querySelectorAll('.sb-item').forEach(el=>el.addEventListener('click',function(){
     const id=this.dataset.id;
     const item=sidebarItems.find(i=>i.id===id);
     nav.querySelectorAll('.sb-item').forEach(e=>e.classList.remove('on'));
     this.classList.add('on');
+    switchScene(id);
     if(item&&item.children){expandedScene=expandedScene===id?null:id;renderSidebar();}
     else{expandedScene=null;renderSidebar();}
   }));
