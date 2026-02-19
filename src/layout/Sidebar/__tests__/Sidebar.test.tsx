@@ -9,10 +9,9 @@ describe('Sidebar (scene catalog model)', () => {
     onSceneSelect: vi.fn(),
   };
 
-  it('renders the GL logo', () => {
+  it('renders the GainLab logo text', () => {
     render(<Sidebar {...defaultProps} />);
-    expect(screen.getByTestId('sidebar-logo')).toBeInTheDocument();
-    expect(screen.getByTestId('sidebar-logo')).toHaveTextContent('GL');
+    expect(screen.getByText('GainLab')).toBeInTheDocument();
   });
 
   it('renders sidebar toggle button', () => {

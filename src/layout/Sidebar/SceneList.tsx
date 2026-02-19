@@ -1,7 +1,10 @@
 /**
  * SceneList — Renders scene items grouped by section.
- * Supports expanded/collapsed display, active highlighting,
- * child widget expansion, and unimplemented scene graying.
+ * Matches preview-layout.html sidebar behavior:
+ * - Active scene icon gets accent background
+ * - Collapsed: hover shows tooltip
+ * - Expanded: shows name + badge + arrow (› / ▾)
+ * - Click: select scene + toggle child expansion
  */
 
 import { useState } from 'react';
@@ -36,12 +39,16 @@ export function SceneList({
     if (!scene.implemented) return;
     onSceneSelect(scene.id);
     // Toggle child expansion
-    setExpandedChild((prev) => (prev === scene.id ? null : scene.id));
+    if (scene.children.length > 0) {
+      setExpandedChild((prev) => (prev === scene.id ? null : scene.id));
+    } else {
+      setExpandedChild(null);
+    }
   };
 
   return (
     <div className="sb-scene-list" data-testid="scene-list">
-      {SECTION_ORDER.map((section) => {
+      {SECTION_ORDER.map((section, sIdx) => {
         const sectionScenes = scenes.filter((s) => s.section === section);
         if (sectionScenes.length === 0) return null;
 
@@ -49,6 +56,11 @@ export function SceneList({
 
         return (
           <div key={section} className="sb-section">
+            {/* Separator before portfolio and ai sections */}
+            {sIdx > 0 && (section === 'portfolio' || section === 'ai') && (
+              <div className="sb-sep" />
+            )}
+
             {/* Section header (skip for 'top') */}
             {headerKey && expanded && (
               <div className="sb-section-header" data-testid={`section-${section}`}>
@@ -62,8 +74,9 @@ export function SceneList({
             {sectionScenes.map((scene) => {
               const isActive = scene.id === activeScene;
               const isDisabled = !scene.implemented;
+              const isChildExpanded = expandedChild === scene.id;
               const showChildren =
-                expanded && expandedChild === scene.id && scene.children.length > 0;
+                expanded && isChildExpanded && scene.children.length > 0;
 
               return (
                 <div key={scene.id}>
@@ -72,26 +85,34 @@ export function SceneList({
                       'sb-item',
                       isActive ? 'sb-item-active' : '',
                       isDisabled ? 'sb-item-disabled' : '',
+                      isChildExpanded ? 'sb-item-expanded' : '',
                     ]
                       .filter(Boolean)
                       .join(' ')}
                     onClick={() => handleClick(scene)}
-                    title={expanded ? undefined : scene.badge}
                     data-testid={`scene-${scene.id}`}
                     disabled={isDisabled}
                   >
-                    {/* Icon */}
+                    {/* Icon wrapper — active gets accent background */}
                     <span
-                      className="sb-item-icon"
+                      className={`sb-ico ${isActive ? 'sb-ico-active' : ''}`}
                       dangerouslySetInnerHTML={{ __html: scene.svg }}
                     />
 
-                    {/* Label + badge (expanded only) */}
+                    {/* Label + arrow + badge (expanded only) */}
                     {expanded && (
                       <>
                         <span className="sb-item-label">{t(scene.nameKey)}</span>
+                        {scene.children.length > 0 && (
+                          <span className="sb-arrow">{isChildExpanded ? '▾' : '›'}</span>
+                        )}
                         <span className="sb-item-badge">{scene.badge}</span>
                       </>
+                    )}
+
+                    {/* Tooltip (collapsed only) */}
+                    {!expanded && (
+                      <span className="sb-tip">{t(scene.nameKey)}</span>
                     )}
                   </button>
 
@@ -99,9 +120,8 @@ export function SceneList({
                   {showChildren && (
                     <div className="sb-children">
                       {scene.children.map((child) => (
-                        <div key={child.id} className="sb-child-item">
-                          <span className="sb-child-dot">·</span>
-                          <span className="sb-child-label">{t(child.nameKey)}</span>
+                        <div key={child.id} className="sb-child">
+                          {t(child.nameKey)}
                         </div>
                       ))}
                     </div>
