@@ -1,6 +1,6 @@
 # preview-layout.html — 结构文档
 
-_改 preview-layout 前必读。1390 行单文件，本文档是导航地图。_
+_改 preview-layout 前必读。1516 行单文件，本文档是导航地图。_
 
 ---
 
@@ -20,7 +20,7 @@ _改 preview-layout 前必读。1390 行单文件，本文档是导航地图。_
 
 ---
 
-## 文件分区（~1390 行）
+## 文件分区（~1516 行）
 
 | 区域 | 行号 | 内容 |
 |---|---|---|
@@ -233,6 +233,24 @@ let widgetState = { scene, symbol, market, period };
 ### 辅助映射表
 - `SYMBOL_DISPLAY` — symbol → 显示名（如 `'BTC'→'BTC/USDT'`）
 - `SYMBOL_MARKET` — symbol → 市场（如 `'AAPL'→'us'`）
+
+---
+
+## 手机端底部 Tab Bar（≤480px）
+
+```
+┌─────────────────────────────────────────────┐
+│  分析  │  快照  │  热力  │  AI  │  更多  │
+└─────────────────────────────────────────────┘
+```
+
+- **触发条件**：`@media(max-width:480px)` 显示 `.btab`，同时 `.sidebar{display:none}`
+- **5 个 Tab**：stock_analysis / snapshot / market_heat / ai / more
+- **AI Tab**：切换全屏聊天面板覆盖（`position:fixed`），不走 scene 切换
+- **更多 Tab**：底部弹出面板，列出剩余 10 个场景（watchlist/fundamentals/...）
+- **状态同步**：MutationObserver 监听 scene DOM display 变化，自动更新 active tab
+- **安全区**：`env(safe-area-inset-bottom)` 适配刘海屏
+- **i18n**：`tab_ck`/`tab_now`/`tab_hm`/`tab_ai`/`tab_more` 中英文
 
 ---
 
