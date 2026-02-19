@@ -12,8 +12,10 @@ export type MobileTab = 'stock_analysis' | 'snapshot' | 'market_heat' | 'ai' | '
 
 interface MobileTabBarProps {
   activeScene: string;
+  chatOpen?: boolean;
   onSceneSelect: (sceneId: string) => void;
   onToggleChat: () => void;
+  onCloseChat: () => void;
 }
 
 // 5 primary tabs
@@ -60,8 +62,10 @@ const MORE_SCENES = SCENE_CONFIGS.filter(
 
 export function MobileTabBar({
   activeScene,
+  chatOpen = false,
   onSceneSelect,
   onToggleChat,
+  onCloseChat,
 }: MobileTabBarProps) {
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -78,12 +82,14 @@ export function MobileTabBar({
     if (tab.sceneId) {
       onSceneSelect(tab.sceneId);
       setMoreOpen(false);
+      if (chatOpen) onCloseChat();
     }
   };
 
   const handleMoreScene = (sceneId: string) => {
     onSceneSelect(sceneId);
     setMoreOpen(false);
+    if (chatOpen) onCloseChat();
   };
 
   // Determine active tab

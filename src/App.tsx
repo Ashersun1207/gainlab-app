@@ -381,8 +381,10 @@ function App() {
         {/* Bottom Tab Bar */}
         <MobileTabBar
           activeScene={activeScene}
+          chatOpen={chatOpen}
           onSceneSelect={switchScene}
           onToggleChat={toggleChat}
+          onCloseChat={() => setChatOpen(false)}
         />
       </div>
     );

@@ -7,6 +7,7 @@ describe('MobileTabBar (5 tabs)', () => {
     activeScene: 'stock_analysis',
     onSceneSelect: vi.fn(),
     onToggleChat: vi.fn(),
+    onCloseChat: vi.fn(),
   };
 
   it('renders five tabs', () => {
