@@ -153,12 +153,12 @@ export function KLineHeader({
     <div className="kwh">
       <div className="kwh-row">
         {/* ── Symbol selector ── */}
-        <div className="sym" onClick={toggleDD}>
+        <div className="sym" onClick={() => { if (!ddOpen) toggleDD(); }}>
           <span className="sym-icon">⌕</span>
           <span className="sym-t">{symbolDisplay}</span>
           <span className="sym-m">{market}</span>
           <span className="sym-v">▾</span>
-          {ddOpen && <div className="dd-overlay show" onClick={closeDD} />}
+          {ddOpen && <div className="dd-overlay show" onClick={e => { e.stopPropagation(); closeDD(); }} />}
           {ddOpen && (
             <div className="dd show" onClick={e => e.stopPropagation()}>
               <input
