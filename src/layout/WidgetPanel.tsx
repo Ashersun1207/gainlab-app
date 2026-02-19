@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { t } from '../i18n';
 
 interface WidgetPanelProps {
   title: string;
@@ -30,9 +31,9 @@ export function WidgetPanel({
         <div className="wph-spc" />
         {!hideActions && (
           <>
-            <button className="wph-btn" title="刷新" onClick={onRefresh ?? noop}>⟲</button>
-            <button className="wph-btn" title="全屏" onClick={onFullscreen ?? noop}>⛶</button>
-            <button className="wph-btn" title="关闭" onClick={onClose ?? noop}>✕</button>
+            <button className="wph-btn" title={t('btn_refresh')} onClick={onRefresh ?? noop}>⟲</button>
+            <button className="wph-btn" title={t('btn_fullscreen')} onClick={onFullscreen ?? noop}>⛶</button>
+            <button className="wph-btn" title={t('btn_close')} onClick={onClose ?? noop}>✕</button>
           </>
         )}
       </div>

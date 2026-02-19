@@ -75,6 +75,45 @@ const translations: Record<Lang, Record<string, string>> = {
     w_four_markets: '四市场',
     w_market_mood: '市场情绪',
     btn_agent: 'Agent',
+    // Chart types
+    ct_candle_solid: '实心蜡烛',
+    ct_candle_stroke: '空心蜡烛',
+    ct_ohlc: 'OHLC',
+    ct_price_line: '价格线',
+    ct_area: '面积图',
+    // Indicator descriptions
+    ind_ma_desc: '移动平均线',
+    ind_ema_desc: '指数移动平均',
+    ind_boll_desc: '布林带',
+    ind_vwap_desc: '成交量加权均价',
+    ind_vp_desc: '筹码分布',
+    ind_wrb_desc: '宽幅K线信号',
+    ind_rsi_desc: '相对强弱',
+    ind_macd_desc: '指数平滑异同',
+    ind_kdj_desc: '随机指标',
+    ind_atr_desc: '真实波幅',
+    // Indicator groups
+    ind_group_main: '主图叠加',
+    ind_group_sub: '副图指标',
+    // Search placeholders
+    ph_search_symbol: '搜索标的...',
+    ph_search_indicator: '搜索指标...',
+    // Buttons
+    btn_drawing: '画图工具',
+    btn_settings: '设置',
+    btn_screenshot: '截图',
+    btn_fullscreen: '全屏',
+    btn_refresh: '刷新',
+    btn_close: '关闭',
+    // Triggers
+    ind_trigger: 'ƒx 指标',
+    ind_trigger_chart: '📊 指标',
+    // Search states
+    search_searching: '搜索中...',
+    search_no_results: '无结果',
+    search_results: '搜索结果',
+    // Chat
+    btn_open_ai: '打开 AI 助手',
   },
   en: {
     sec_dashboards: 'Dashboards',
@@ -140,6 +179,45 @@ const translations: Record<Lang, Record<string, string>> = {
     w_four_markets: 'Multi-Market',
     w_market_mood: 'Market Mood',
     btn_agent: 'Agent',
+    // Chart types
+    ct_candle_solid: 'Solid Candle',
+    ct_candle_stroke: 'Hollow Candle',
+    ct_ohlc: 'OHLC',
+    ct_price_line: 'Price Line',
+    ct_area: 'Area',
+    // Indicator descriptions
+    ind_ma_desc: 'Moving Average',
+    ind_ema_desc: 'Exponential MA',
+    ind_boll_desc: 'Bollinger Bands',
+    ind_vwap_desc: 'Vol Weighted Avg Price',
+    ind_vp_desc: 'Volume Profile',
+    ind_wrb_desc: 'Wide Range Bar',
+    ind_rsi_desc: 'Relative Strength',
+    ind_macd_desc: 'MACD',
+    ind_kdj_desc: 'Stochastic',
+    ind_atr_desc: 'Average True Range',
+    // Indicator groups
+    ind_group_main: 'Main Overlays',
+    ind_group_sub: 'Sub Indicators',
+    // Search placeholders
+    ph_search_symbol: 'Search symbol...',
+    ph_search_indicator: 'Search indicator...',
+    // Buttons
+    btn_drawing: 'Drawing Tools',
+    btn_settings: 'Settings',
+    btn_screenshot: 'Screenshot',
+    btn_fullscreen: 'Fullscreen',
+    btn_refresh: 'Refresh',
+    btn_close: 'Close',
+    // Triggers
+    ind_trigger: 'ƒx Indicators',
+    ind_trigger_chart: '📊 Indicators',
+    // Search states
+    search_searching: 'Searching...',
+    search_no_results: 'No results',
+    search_results: 'Search Results',
+    // Chat
+    btn_open_ai: 'Open AI Assistant',
   },
 };
 

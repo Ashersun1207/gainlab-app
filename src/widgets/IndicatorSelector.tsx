@@ -1,35 +1,36 @@
 import { useState, useCallback } from 'react';
+import { t } from '../i18n';
 
 interface IndicatorItem {
   id: string;
   name: string;
-  desc: string;
+  descKey: string;
 }
 
 interface IndicatorGroup {
-  title: string;
+  titleKey: string;
   items: IndicatorItem[];
 }
 
 const INDICATOR_GROUPS: IndicatorGroup[] = [
   {
-    title: '主图叠加',
+    titleKey: 'ind_group_main',
     items: [
-      { id: 'MA', name: 'MA', desc: '移动平均线' },
-      { id: 'EMA', name: 'EMA', desc: '指数移动平均' },
-      { id: 'BOLL', name: 'BOLL', desc: '布林带' },
-      { id: 'VWAP', name: 'VWAP', desc: '成交量加权均价' },
-      { id: 'VP', name: 'VP', desc: '筹码分布' },
-      { id: 'WRB', name: 'WRB', desc: '宽幅K线信号' },
+      { id: 'MA', name: 'MA', descKey: 'ind_ma_desc' },
+      { id: 'EMA', name: 'EMA', descKey: 'ind_ema_desc' },
+      { id: 'BOLL', name: 'BOLL', descKey: 'ind_boll_desc' },
+      { id: 'VWAP', name: 'VWAP', descKey: 'ind_vwap_desc' },
+      { id: 'VP', name: 'VP', descKey: 'ind_vp_desc' },
+      { id: 'WRB', name: 'WRB', descKey: 'ind_wrb_desc' },
     ],
   },
   {
-    title: '副图指标',
+    titleKey: 'ind_group_sub',
     items: [
-      { id: 'RSI', name: 'RSI', desc: '相对强弱' },
-      { id: 'MACD', name: 'MACD', desc: '指数平滑异同' },
-      { id: 'KDJ', name: 'KDJ', desc: '随机指标' },
-      { id: 'ATR', name: 'ATR', desc: '真实波幅' },
+      { id: 'RSI', name: 'RSI', descKey: 'ind_rsi_desc' },
+      { id: 'MACD', name: 'MACD', descKey: 'ind_macd_desc' },
+      { id: 'KDJ', name: 'KDJ', descKey: 'ind_kdj_desc' },
+      { id: 'ATR', name: 'ATR', descKey: 'ind_atr_desc' },
     ],
   },
 ];
@@ -67,7 +68,7 @@ export function IndicatorSelector({ active, onChange }: IndicatorSelectorProps) 
         items: group.items.filter(
           (item) =>
             item.name.toLowerCase().includes(query.toLowerCase()) ||
-            item.desc.toLowerCase().includes(query.toLowerCase()),
+            t(item.descKey).toLowerCase().includes(query.toLowerCase()),
         ),
       })).filter((group) => group.items.length > 0)
     : INDICATOR_GROUPS;
@@ -81,7 +82,7 @@ export function IndicatorSelector({ active, onChange }: IndicatorSelectorProps) 
         aria-label="Select indicators"
         data-testid="indicator-selector-trigger"
       >
-        <span>📊 指标</span>
+        <span>{t('ind_trigger_chart')}</span>
         {activeCount > 0 && (
           <span
             className="flex items-center justify-center w-4 h-4 rounded-full bg-[#2563eb] text-white text-[9px] font-bold"
@@ -115,7 +116,7 @@ export function IndicatorSelector({ active, onChange }: IndicatorSelectorProps) 
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="搜索指标..."
+              placeholder={t('ph_search_indicator')}
               className="w-full px-2 py-1.5 bg-[#1a1a3e] border border-[#2a2a4a] rounded text-[#e0e0f0] text-[11px] placeholder-[#5a5a8a] outline-none"
             />
           </div>
@@ -123,12 +124,12 @@ export function IndicatorSelector({ active, onChange }: IndicatorSelectorProps) 
           {/* Groups */}
           <div style={{ maxHeight: 300, overflowY: 'auto' }}>
             {filteredGroups.length === 0 && (
-              <div className="px-3 py-2 text-[11px] text-[#5a5a8a]">无结果</div>
+              <div className="px-3 py-2 text-[11px] text-[#5a5a8a]">{t('search_no_results')}</div>
             )}
             {filteredGroups.map((group) => (
-              <div key={group.title}>
+              <div key={group.titleKey}>
                 <div className="px-3 pt-2 pb-1 text-[8px] text-[#5a5a8a] uppercase tracking-wider">
-                  {group.title}
+                  {t(group.titleKey)}
                 </div>
                 {group.items.map((item) => {
                   const isActive = active.includes(item.id);
@@ -144,7 +145,7 @@ export function IndicatorSelector({ active, onChange }: IndicatorSelectorProps) 
                         <span className="text-[12px] font-semibold text-[#e0e0f0]">
                           {item.name}
                         </span>
-                        <span className="ml-2 text-[10px] text-[#5a5a8a]">{item.desc}</span>
+                        <span className="ml-2 text-[10px] text-[#5a5a8a]">{t(item.descKey)}</span>
                       </div>
                       {/* Toggle switch */}
                       <div

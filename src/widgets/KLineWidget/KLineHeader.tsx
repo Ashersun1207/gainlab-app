@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, Fragment } from 'react';
+import { t } from '../../i18n';
 
 /* ── Data ─────────────────────────────────────────────── */
 
@@ -27,24 +28,24 @@ const DEFAULT_PERIODS = [
 ];
 
 const CHART_TYPES = [
-  { id: 'candle_solid', label: '实心蜡烛' },
-  { id: 'candle_stroke', label: '空心蜡烛' },
-  { id: 'ohlc', label: 'OHLC' },
-  { id: 'price_line', label: '价格线' },
-  { id: 'area', label: '面积图' },
+  { id: 'candle_solid', labelKey: 'ct_candle_solid' },
+  { id: 'candle_stroke', labelKey: 'ct_candle_stroke' },
+  { id: 'ohlc', labelKey: 'ct_ohlc' },
+  { id: 'price_line', labelKey: 'ct_price_line' },
+  { id: 'area', labelKey: 'ct_area' },
 ];
 
 const INDICATORS = [
-  { id: 'MA', name: 'MA', desc: '移动平均线', group: 'main' },
-  { id: 'EMA', name: 'EMA', desc: '指数移动平均', group: 'main' },
-  { id: 'BOLL', name: 'BOLL', desc: '布林带', group: 'main' },
-  { id: 'VWAP', name: 'VWAP', desc: '成交量加权均价', group: 'main' },
-  { id: 'VP', name: 'VP', desc: '筹码分布', group: 'main' },
-  { id: 'WRB', name: 'WRB', desc: '宽幅K线信号', group: 'main' },
-  { id: 'RSI', name: 'RSI', desc: '相对强弱', group: 'sub' },
-  { id: 'MACD', name: 'MACD', desc: '指数平滑异同', group: 'sub' },
-  { id: 'KDJ', name: 'KDJ', desc: '随机指标', group: 'sub' },
-  { id: 'ATR', name: 'ATR', desc: '真实波幅', group: 'sub' },
+  { id: 'MA', name: 'MA', descKey: 'ind_ma_desc', group: 'main' },
+  { id: 'EMA', name: 'EMA', descKey: 'ind_ema_desc', group: 'main' },
+  { id: 'BOLL', name: 'BOLL', descKey: 'ind_boll_desc', group: 'main' },
+  { id: 'VWAP', name: 'VWAP', descKey: 'ind_vwap_desc', group: 'main' },
+  { id: 'VP', name: 'VP', descKey: 'ind_vp_desc', group: 'main' },
+  { id: 'WRB', name: 'WRB', descKey: 'ind_wrb_desc', group: 'main' },
+  { id: 'RSI', name: 'RSI', descKey: 'ind_rsi_desc', group: 'sub' },
+  { id: 'MACD', name: 'MACD', descKey: 'ind_macd_desc', group: 'sub' },
+  { id: 'KDJ', name: 'KDJ', descKey: 'ind_kdj_desc', group: 'sub' },
+  { id: 'ATR', name: 'ATR', descKey: 'ind_atr_desc', group: 'sub' },
 ];
 
 /* ── Chart-type SVG icons ─────────────────────────────── */
@@ -162,7 +163,7 @@ export function KLineHeader({
           {ddOpen && (
             <div className="dd show" onClick={e => e.stopPropagation()}>
               <input
-                placeholder="搜索标的..."
+                placeholder={t('ph_search_symbol')}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 autoFocus
@@ -261,7 +262,7 @@ export function KLineHeader({
                   onClick={() => { onChartTypeChange?.(ct.id); closeCtDd(); }}
                 >
                   <ChartIcon id={ct.id} />
-                  <span>{ct.label}</span>
+                  <span>{t(ct.labelKey)}</span>
                 </div>
               ))}
             </div>
@@ -271,7 +272,7 @@ export function KLineHeader({
         {/* ── T9: Indicator selector ── */}
         <div className="ind-sel">
           <button className="ind-trigger" onClick={toggleInd}>
-            ƒx 指标
+            {t('ind_trigger')}
             {activeIndicators.length > 0 && (
               <span className="ind-count">{activeIndicators.length}</span>
             )}
@@ -287,7 +288,7 @@ export function KLineHeader({
           {indOpen && <div className="dd-overlay show" onClick={closeInd} />}
           {indOpen && (
             <div className="ind-panel">
-              <div className="dd-section">主图叠加</div>
+              <div className="dd-section">{t('ind_group_main')}</div>
               {INDICATORS.filter(i => i.group === 'main').map(ind => (
                 <div
                   key={ind.id}
@@ -296,10 +297,10 @@ export function KLineHeader({
                 >
                   <div className="ind-toggle" />
                   <span className="ind-name">{ind.name}</span>
-                  <span className="dm">{ind.desc}</span>
+                  <span className="dm">{t(ind.descKey)}</span>
                 </div>
               ))}
-              <div className="dd-section">副图指标</div>
+              <div className="dd-section">{t('ind_group_sub')}</div>
               {INDICATORS.filter(i => i.group === 'sub').map(ind => (
                 <div
                   key={ind.id}
@@ -308,7 +309,7 @@ export function KLineHeader({
                 >
                   <div className="ind-toggle" />
                   <span className="ind-name">{ind.name}</span>
-                  <span className="dm">{ind.desc}</span>
+                  <span className="dm">{t(ind.descKey)}</span>
                 </div>
               ))}
             </div>
@@ -318,7 +319,7 @@ export function KLineHeader({
         {/* ── Drawing tool trigger ── */}
         <button
           className={`dt-trigger${drawingToolOpen ? ' on' : ''}`}
-          title="画图工具"
+          title={t('btn_drawing')}
           onClick={onDrawingToolToggle}
         >
           <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -329,19 +330,19 @@ export function KLineHeader({
 
         {/* ── T9: Widget controls (right-aligned) ── */}
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '2px' }}>
-          <button className="dtb" title="设置">
+          <button className="dtb" title={t('btn_settings')}>
             <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5">
               <circle cx="8" cy="8" r="3" />
               <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" />
             </svg>
           </button>
-          <button className="dtb" title="截图">
+          <button className="dtb" title={t('btn_screenshot')}>
             <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5">
               <rect x="2" y="3" width="12" height="10" rx="1" />
               <circle cx="8" cy="8" r="2.5" />
             </svg>
           </button>
-          <button className="dtb" title="全屏">
+          <button className="dtb" title={t('btn_fullscreen')}>
             <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5">
               <polyline points="1,5 1,1 5,1" />
               <polyline points="11,1 15,1 15,5" />

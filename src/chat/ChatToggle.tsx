@@ -1,3 +1,5 @@
+import { t } from '../i18n';
+
 interface ChatToggleProps {
   onClick: () => void;
 }
@@ -10,7 +12,7 @@ export function ChatToggle({ onClick }: ChatToggleProps) {
                  rounded-full bg-gradient-to-br from-[#2563eb] to-[#1d4ed8]
                  text-xl text-white shadow-lg shadow-[#2563eb]/25
                  transition-all duration-200 hover:scale-110 hover:shadow-xl hover:shadow-[#2563eb]/40"
-      title="打开 AI 助手"
+      title={t('btn_open_ai')}
     >
       💬
     </button>

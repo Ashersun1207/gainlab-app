@@ -1,3 +1,5 @@
+import { t } from '../i18n';
+
 interface WidgetControlsProps {
   onRefresh?: () => void;
   onFullscreen?: () => void;
@@ -11,7 +13,7 @@ export function WidgetControls({ onRefresh, onFullscreen, onRemove }: WidgetCont
         <button
           onClick={onRefresh}
           className="w-[20px] h-[20px] rounded flex items-center justify-center text-[#5a5a8a] hover:bg-[#1e1e3a] hover:text-[#e0e0f0] text-xs transition-colors"
-          title="刷新"
+          title={t('btn_refresh')}
           aria-label="Refresh"
         >
           ⟲
@@ -21,7 +23,7 @@ export function WidgetControls({ onRefresh, onFullscreen, onRemove }: WidgetCont
         <button
           onClick={onFullscreen}
           className="w-[20px] h-[20px] rounded flex items-center justify-center text-[#5a5a8a] hover:bg-[#1e1e3a] hover:text-[#e0e0f0] text-xs transition-colors"
-          title="全屏"
+          title={t('btn_fullscreen')}
           aria-label="Fullscreen"
         >
           ⛶
@@ -31,7 +33,7 @@ export function WidgetControls({ onRefresh, onFullscreen, onRemove }: WidgetCont
         <button
           onClick={onRemove}
           className="w-[20px] h-[20px] rounded flex items-center justify-center text-[#5a5a8a] hover:bg-[#1e1e3a] hover:text-[#e0e0f0] text-xs transition-colors"
-          title="关闭"
+          title={t('btn_close')}
           aria-label="Close"
         >
           ✕

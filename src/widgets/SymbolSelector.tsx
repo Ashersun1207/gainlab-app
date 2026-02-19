@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { HOT_ASSETS, MARKET_CONFIG } from '../constants/markets';
 import { fetchWorkerSearch } from '../services/api';
+import { t } from '../i18n';
 import type { MarketType } from '../types/market';
 
 interface SymbolSelectorProps {
@@ -119,7 +120,7 @@ export function SymbolSelector({ symbol, market, onChange, compact = false }: Sy
               type="text"
               value={query}
               onChange={(e) => handleQueryChange(e.target.value)}
-              placeholder="搜索标的..."
+              placeholder={t('ph_search_symbol')}
               className="w-full px-2 py-1.5 bg-[#1a1a3e] border border-[#2a2a4a] rounded text-[#e0e0f0] text-[11px] placeholder-[#5a5a8a] outline-none"
             />
           </div>
@@ -127,17 +128,17 @@ export function SymbolSelector({ symbol, market, onChange, compact = false }: Sy
           {/* Content */}
           <div style={{ maxHeight: 300, overflowY: 'auto' }}>
             {searching && (
-              <div className="px-3 py-2 text-[11px] text-[#5a5a8a]">搜索中...</div>
+              <div className="px-3 py-2 text-[11px] text-[#5a5a8a]">{t('search_searching')}</div>
             )}
 
             {!searching && query.trim() && searchResults.length === 0 && (
-              <div className="px-3 py-2 text-[11px] text-[#5a5a8a]">无结果</div>
+              <div className="px-3 py-2 text-[11px] text-[#5a5a8a]">{t('search_no_results')}</div>
             )}
 
             {!searching && searchResults.length > 0 && (
               <div>
                 <div className="px-3 pt-2 pb-1 text-[8px] text-[#5a5a8a] uppercase tracking-wider">
-                  搜索结果
+                  {t('search_results')}
                 </div>
                 {searchResults.map((item) => (
                   <button
