@@ -5,7 +5,7 @@
  * K线 Widget 使用完整的 KLineHeader + KLineWidget（跟 CK 场景一样）。
  */
 
-import { useState, useCallback, Suspense, lazy } from 'react';
+import { useState, useCallback, useRef, Suspense, lazy } from 'react';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { WidgetPanel } from '../layout/WidgetPanel';
 import { KLineHeader } from '../widgets/KLineWidget/KLineHeader';
@@ -219,25 +219,54 @@ export function AgentView({ widgets, onClear, onRemoveWidget }: AgentViewProps) 
 }
 
 function ClearButton({ onClick }: { onClick: () => void }) {
+  const [pos, setPos] = useState({ x: 8, y: 8 });
+  const dragRef = useRef<{ startX: number; startY: number; originX: number; originY: number; moved: boolean } | null>(null);
+
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    dragRef.current = { startX: e.clientX, startY: e.clientY, originX: pos.x, originY: pos.y, moved: false };
+  }, [pos]);
+
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!dragRef.current) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragRef.current.moved = true;
+    setPos({ x: dragRef.current.originX + dx, y: dragRef.current.originY + dy });
+  }, []);
+
+  const onPointerUp = useCallback(() => {
+    const wasDrag = dragRef.current?.moved;
+    dragRef.current = null;
+    if (!wasDrag) onClick();
+  }, [onClick]);
+
   return (
-    <button
-      onClick={onClick}
+    <div
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
       style={{
         position: 'absolute',
-        top: 8,
-        right: 8,
-        zIndex: 10,
-        background: 'rgba(30,30,58,0.8)',
+        left: pos.x,
+        top: pos.y,
+        zIndex: 100,
+        background: 'rgba(30,30,58,0.85)',
         border: '1px solid #2a2a4a',
-        borderRadius: 6,
+        borderRadius: 8,
         color: '#6a6aaa',
         fontSize: 11,
-        padding: '4px 10px',
-        cursor: 'pointer',
+        padding: '5px 12px',
+        cursor: 'grab',
+        userSelect: 'none',
+        touchAction: 'none',
+        backdropFilter: 'blur(8px)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
       }}
-      title="清空可视化"
+      title="拖拽移动 · 点击清空"
     >
-      清空
-    </button>
+      🗑 清空
+    </div>
   );
 }
