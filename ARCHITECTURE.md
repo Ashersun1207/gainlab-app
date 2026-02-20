@@ -1,6 +1,6 @@
 # GainLab App — 架构文档
 
-_P1 产品阶段 | 更新时机：目录结构或数据流变更后 | 最后更新 2026-02-20 (T15 Widget Catalog + 218 tests)_
+_P1 产品阶段 | 更新时机：目录结构或数据流变更后 | 最后更新 2026-02-20 (T15 Widget Catalog + 271 tests)_
 
 ---
 
@@ -443,6 +443,8 @@ Widget 定义集中在 `src/catalog/widget-catalog.ts`（单一源），提供�
 
 新增 Widget 只需在 catalog 注册一个对象，prompt / 验证 / 路由自动生效。
 
+**测试覆盖**：271 tests（含 53 个集成测试），其中 Widget Catalog 33 tests 覆盖 schema 验证 / prompt 生成 / registry 查找。
+
 ```typescript
 // catalog 定义（简化示例）
 {
@@ -515,7 +517,7 @@ CF Worker: gainlab-api.asher-sun.workers.dev
 
 | 工具 | 用途 |
 |---|---|
-| Vitest + RTL | 测试（218 tests, G1 只增不减） |
+| Vitest + RTL | 测试（271 tests, G1 只增不减） |
 | ESLint flat config | Lint（0 error 才能 commit） |
 | tsc + typecheck.sh | 类型检查（过滤 KLineChart 45K fork 错误） |
 | Vite | 构建 + Dev server |
@@ -528,4 +530,4 @@ pnpm lint && pnpm typecheck && pnpm test && pnpm build
 
 ---
 
-_创建于 2026-02-17 | 最后更新于 2026-02-20（T15 Widget Catalog: Zod schema + validate + registry + auto prompt, 218 tests）_
+_创建于 2026-02-17 | 最后更新于 2026-02-20（T15 Widget Catalog: Zod schema + validate + registry + auto prompt, 271 tests）_
