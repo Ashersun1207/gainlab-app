@@ -267,24 +267,11 @@ function App() {
 
       case 'ai':
         return (
-          <div className="flex-1 min-h-0 flex" style={{ overflow: 'hidden' }}>
-            {/* 左：Chat 面板 */}
-            <div style={{ width: 360, minWidth: 300, flexShrink: 0, height: '100%' }}>
-              <ErrorBoundary label="Chat">
-                <Suspense fallback={<LoadingPlaceholder />}>
-                  <LazyChatPanel
-                    onToolResult={handleToolResult}
-                  />
-                </Suspense>
-              </ErrorBoundary>
-            </div>
-            {/* 右：Agent 可视化区域 */}
-            <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
-              <AgentView
-                widgetState={agentWidgetState}
-                klineData={chatKlineData ?? undefined}
-              />
-            </div>
+          <div className="flex-1 min-h-0">
+            <AgentView
+              widgetState={agentWidgetState}
+              klineData={chatKlineData ?? undefined}
+            />
           </div>
         );
 
@@ -457,22 +444,20 @@ function App() {
       </div>
 
       {/* Chat panel — default open */}
-      {/* Chat panel — 在 AI 场景时隐藏（Chat 已内嵌在场景中） */}
-      {activeScene !== 'ai' && (
-        chatOpen ? (
-          <div className="cp-panel">
-            <ErrorBoundary label="Chat">
-              <Suspense fallback={<LoadingPlaceholder />}>
-                <LazyChatPanel
-                  onToolResult={handleToolResult}
-                  onClose={() => setChatOpen(false)}
-                />
-              </Suspense>
-            </ErrorBoundary>
-          </div>
-        ) : (
-          <ChatToggle onClick={() => setChatOpen(true)} />
-        )
+      {/* Chat panel (右侧) */}
+      {chatOpen ? (
+        <div className="cp-panel">
+          <ErrorBoundary label="Chat">
+            <Suspense fallback={<LoadingPlaceholder />}>
+              <LazyChatPanel
+                onToolResult={handleToolResult}
+                onClose={() => setChatOpen(false)}
+              />
+            </Suspense>
+          </ErrorBoundary>
+        </div>
+      ) : (
+        <ChatToggle onClick={() => setChatOpen(true)} />
       )}
 
       {/* Settings overlay */}
