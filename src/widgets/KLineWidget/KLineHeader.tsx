@@ -86,6 +86,7 @@ export interface KLineHeaderProps {
   drawingToolOpen?: boolean;
   onDrawingToolToggle?: () => void;
   onClose?: () => void;
+  onClearPanel?: () => void;
 }
 
 /* ── Component ────────────────────────────────────────── */
@@ -105,6 +106,7 @@ export function KLineHeader({
   drawingToolOpen = false,
   onDrawingToolToggle,
   onClose,
+  onClearPanel,
 }: KLineHeaderProps) {
   /* ── state ── */
   const [ddOpen, setDdOpen] = useState(false);
@@ -332,6 +334,18 @@ export function KLineHeader({
 
         {/* ── T9: Widget controls (right-aligned) ── */}
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '2px' }}>
+          {onClearPanel && (
+            <button
+              className="dtb"
+              title="清空面板"
+              onClick={onClearPanel}
+              style={{ fontSize: 11, color: '#6a6aaa', padding: '2px 8px', display: 'flex', alignItems: 'center', gap: 3 }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#ff6b6b'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#6a6aaa'; }}
+            >
+              🗑 清空面板
+            </button>
+          )}
           <button className="dtb" title={t('btn_settings')}>
             <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5">
               <circle cx="8" cy="8" r="3" />
