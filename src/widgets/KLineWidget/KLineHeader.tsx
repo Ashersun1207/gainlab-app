@@ -85,6 +85,7 @@ export interface KLineHeaderProps {
   onIndicatorToggle?: (ind: string) => void;
   drawingToolOpen?: boolean;
   onDrawingToolToggle?: () => void;
+  onClose?: () => void;
 }
 
 /* ── Component ────────────────────────────────────────── */
@@ -103,6 +104,7 @@ export function KLineHeader({
   onIndicatorToggle,
   drawingToolOpen = false,
   onDrawingToolToggle,
+  onClose,
 }: KLineHeaderProps) {
   /* ── state ── */
   const [ddOpen, setDdOpen] = useState(false);
@@ -350,6 +352,17 @@ export function KLineHeader({
               <polyline points="5,15 1,15 1,11" />
             </svg>
           </button>
+          {onClose && (
+            <button className="dtb" title={t('btn_close')} onClick={onClose} style={{ color: '#6a6aaa' }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#ff6b6b'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#6a6aaa'; }}
+            >
+              <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <line x1="3" y1="3" x2="13" y2="13" />
+                <line x1="13" y1="3" x2="3" y2="13" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
     </div>

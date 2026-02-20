@@ -308,6 +308,7 @@ function App() {
         return (
           <>
             {/* KLine area */}
+            {!isHidden('KLINE') && (
             <div className="ck-kline">
               <KLineHeader
                 symbol={activeSymbol}
@@ -324,6 +325,7 @@ function App() {
                 onIndicatorToggle={handleIndicatorToggle}
                 drawingToolOpen={drawingToolOpen}
                 onDrawingToolToggle={() => setDrawingToolOpen(v => !v)}
+                onClose={closeHandler('KLINE')}
               />
               <ErrorBoundary label="KLine">
                 <Suspense fallback={<LoadingPlaceholder />}>
@@ -339,6 +341,7 @@ function App() {
                 </Suspense>
               </ErrorBoundary>
             </div>
+            )}
 
             {/* Resize handle */}
             <div className="ck-resize" onMouseDown={handleResizeStart} />

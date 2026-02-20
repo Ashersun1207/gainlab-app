@@ -71,8 +71,7 @@ function FullKLineCard({ item, onClose }: { item: AgentWidgetItem; onClose?: () 
   }, []);
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
-      {onClose && <CloseWidgetButton onClick={onClose} />}
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <KLineHeader
         symbol={symbol}
         symbolDisplay={formatSymbolDisplay(symbol)}
@@ -86,6 +85,7 @@ function FullKLineCard({ item, onClose }: { item: AgentWidgetItem; onClose?: () 
         onIndicatorToggle={handleIndicatorToggle}
         drawingToolOpen={drawingToolOpen}
         onDrawingToolToggle={() => setDrawingToolOpen((v) => !v)}
+        onClose={onClose}
       />
       <div style={{ flex: 1, minHeight: 0 }}>
         <ErrorBoundary label="AgentKLine">
@@ -215,38 +215,6 @@ export function AgentView({ widgets, onClear, onRemoveWidget }: AgentViewProps) 
         ))}
       </div>
     </div>
-  );
-}
-
-function CloseWidgetButton({ onClick }: { onClick: () => void }) {
-  return (
-    <button
-      onClick={(e) => { e.stopPropagation(); onClick(); }}
-      style={{
-        position: 'absolute',
-        top: 4,
-        right: 4,
-        zIndex: 50,
-        background: 'rgba(20,20,40,0.85)',
-        border: '1px solid #2a2a4a',
-        borderRadius: 4,
-        color: '#6a6aaa',
-        fontSize: 14,
-        width: 24,
-        height: 24,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        lineHeight: 1,
-        padding: 0,
-      }}
-      title="关闭"
-      onMouseEnter={(e) => { e.currentTarget.style.color = '#ff6b6b'; e.currentTarget.style.borderColor = '#ff6b6b'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.color = '#6a6aaa'; e.currentTarget.style.borderColor = '#2a2a4a'; }}
-    >
-      ✕
-    </button>
   );
 }
 
