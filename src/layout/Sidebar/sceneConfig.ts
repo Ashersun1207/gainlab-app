@@ -267,5 +267,10 @@ export function inferMarket(symbol: string): string {
  */
 export const SYMBOL_MARKET: Record<string, string> = new Proxy(
   NON_CRYPTO_MARKET,
-  { get: (_target, prop: string) => inferMarket(prop) },
+  {
+    get: (_target, prop: string | symbol) => {
+      if (typeof prop !== 'string') return undefined;
+      return inferMarket(prop);
+    },
+  },
 );

@@ -123,7 +123,7 @@ function App() {
   } = useAgentWidgets(switchScene);
 
   // ── (#4) Hidden Widgets — extracted hook ──
-  const { hideWidget, isHidden, closeHandler } = useHiddenWidgets(activeScene);
+  const { isHidden, closeHandler } = useHiddenWidgets(activeScene);
 
   // ── Scene content renderer ──
   const renderScene = () => {
@@ -190,8 +190,8 @@ function App() {
             <ErrorBoundary label="HeatmapScene">
               <HeatmapScene
                 market={activeMarket}
-                onCloseWidget={(k) => hideWidget(`${activeScene}:${k}`)}
-                isHidden={(k) => isHidden(k)}
+                onCloseWidget={(k) => closeHandler(k)()}
+                isHidden={isHidden}
               />
             </ErrorBoundary>
           </div>

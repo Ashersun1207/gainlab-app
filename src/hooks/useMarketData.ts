@@ -20,7 +20,9 @@ export function useMarketData(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [quote, setQuote] = useState<UseMarketDataResult['quote']>(null);
-  // (#11) AbortController 真正取消进行中的请求，而非只忽略结果
+  // (#11) AbortController 防止卸载后 setState + 防止旧请求覆盖新结果
+  // NOTE: signal 未透传到 fetchWithTimeout（它有自己的 timeout controller），
+  // 所以网络请求本身不会被 abort，只是结果被丢弃。完全透传需改 api.ts 签名（P2 优化）。
   const abortRef = useRef<AbortController | null>(null);
 
   const fetchData = useCallback(async () => {
