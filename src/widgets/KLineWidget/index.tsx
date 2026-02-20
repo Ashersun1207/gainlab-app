@@ -5,6 +5,7 @@ import { wrbHighlightTemplate } from './overlays/wrbHighlight';
 import { volumeProfileTemplate } from './overlays/volumeProfile';
 import { detectWRB } from '../WRBWidget/detectWRB';
 import { calculateVP } from '../VolumeProfileWidget/calculateVP';
+import { fetchWorkerKline } from '../../services/api';
 
 // Register overlay templates once
 registerOverlay(wrbHighlightTemplate);
@@ -69,23 +70,10 @@ function DrawingToolsOverlay({ open }: { open: boolean }) {
   );
 }
 
-async function fetchBinanceKline(symbol: string): Promise<KLineData[] | null> {
+/** 通过 CF Worker 获取 K线数据（不直连 Binance，中国封锁） */
+async function fetchFallbackKline(symbol: string): Promise<KLineData[] | null> {
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s 超时
-    const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1d&limit=100`;
-    const res = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeoutId);
-    if (!res.ok) return null;
-    const raw = (await res.json()) as unknown[][];
-    return raw.map((item) => ({
-      timestamp: item[0] as number,
-      open: parseFloat(item[1] as string),
-      high: parseFloat(item[2] as string),
-      low: parseFloat(item[3] as string),
-      close: parseFloat(item[4] as string),
-      volume: parseFloat(item[5] as string),
-    }));
+    return await fetchWorkerKline(symbol, 'crypto', '1D');
   } catch {
     return null;
   }
@@ -156,13 +144,13 @@ export function KLineWidget({
       // 先用 SAMPLE_DATA 立即显示
       chart.setDataList(SAMPLE_DATA);
 
-      // 后台尝试真实数据
-      fetchBinanceKline(symbol).then((fetched) => {
+      // 后台尝试真实数据（走 CF Worker 代理）
+      fetchFallbackKline(symbol).then((fetched) => {
         if (fetched && chartRef.current) {
           chartRef.current.setDataList(fetched);
           setError(null);
         } else {
-          setError('Binance API 不可用，使用样本数据');
+          setError('数据加载失败，使用样本数据');
         }
       });
     }

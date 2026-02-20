@@ -1,9 +1,10 @@
 import { useState, useCallback, useRef } from 'react';
 import { MessageList } from './MessageList';
 import { useMcpStream } from '../hooks/useMcpStream';
+import type { WidgetState } from '../types/widget-state';
 
 interface ChatPanelProps {
-  onToolResult?: (toolName: string, result: unknown) => void;
+  onToolResult?: (toolName: string, result: unknown, widgetState?: WidgetState) => void;
   onNewRound?: () => void;
   onClose?: () => void;
 }

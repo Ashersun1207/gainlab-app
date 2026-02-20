@@ -1,7 +1,6 @@
 import type { McpMessage, McpStreamEvent, McpToolCall } from '../types/mcp';
 import type { WidgetState } from '../types/widget-state';
-
-const WORKER_URL = import.meta.env.VITE_WORKER_URL as string;
+import { WORKER_URL } from '../constants/markets';
 
 /** 过滤掉 <think>...</think> 推理标签 */
 function stripThinkTags(text: string): string {
