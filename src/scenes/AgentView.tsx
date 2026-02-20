@@ -10,9 +10,12 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 import { WidgetPanel } from '../layout/WidgetPanel';
 import { KLineHeader } from '../widgets/KLineWidget/KLineHeader';
 import { t } from '../i18n';
+import { registerWidget, getWidget } from '../catalog';
 import type { WidgetState } from '../types/widget-state';
 import type { KLineData } from '../types/data';
 import type { MarketType, TimeInterval } from '../types/market';
+
+// ── Lazy imports ──
 
 const LazyKLineWidget = lazy(() =>
   import('../widgets/KLineWidget').then((m) => ({ default: m.KLineWidget })),
@@ -23,6 +26,57 @@ const LazyHeatmapWidget = lazy(() =>
 const LazyFundamentalsWidget = lazy(() =>
   import('../widgets/FundamentalsWidget').then((m) => ({ default: m.FundamentalsWidget })),
 );
+const LazySentimentWidget = lazy(() =>
+  import('../widgets/SentimentWidget').then((m) => ({ default: m.SentimentWidget })),
+);
+const LazyQuoteTableWidget = lazy(() =>
+  import('../widgets/QuoteTableWidget').then((m) => ({ default: m.QuoteTableWidget })),
+);
+
+// ── Widget 注册（单一注册点）──
+
+registerWidget('kline', {
+  component: LazyKLineWidget,
+  wrapper: 'kline',
+  propsMapper: () => ({}),
+});
+registerWidget('volume_profile', {
+  component: LazyKLineWidget,
+  wrapper: 'kline',
+  propsMapper: () => ({}),
+});
+registerWidget('overlay', {
+  component: LazyKLineWidget,
+  wrapper: 'kline',
+  propsMapper: () => ({}),
+});
+registerWidget('heatmap', {
+  component: LazyHeatmapWidget,
+  wrapper: 'panel',
+  title: 'HEATMAP',
+  propsMapper: (ws) => ({ market: (ws.market as string) || 'crypto' }),
+});
+registerWidget('fundamentals', {
+  component: LazyFundamentalsWidget,
+  wrapper: 'panel',
+  title: 'FUNDAMENTALS',
+  propsMapper: (ws) => ({ symbol: (ws.symbol as string) || 'BTCUSDT' }),
+});
+registerWidget('sentiment', {
+  component: LazySentimentWidget,
+  wrapper: 'panel',
+  title: 'SENTIMENT',
+  propsMapper: () => ({}),
+});
+registerWidget('quote_table', {
+  component: LazyQuoteTableWidget,
+  wrapper: 'panel',
+  title: 'QUOTES',
+  propsMapper: (ws) => ({
+    symbols: ws.symbols as string[] | undefined,
+    market: (ws.market as string) || 'crypto',
+  }),
+});
 
 function LoadingPlaceholder() {
   return (
@@ -106,58 +160,47 @@ function FullKLineCard({ item, onClose }: { item: AgentWidgetItem; onClose?: () 
   );
 }
 
-/** 渲染单个 Widget */
+/** 渲染单个 Widget — 从 registry 查找，不再 switch-case */
 function AgentWidgetCard({ item, onClose }: { item: AgentWidgetItem; onClose?: () => void }) {
   const { widgetState } = item;
-  const symbol = (widgetState.symbol as string) || 'BTCUSDT';
-  const market = ((widgetState.market as string) || 'crypto') as MarketType;
+  const reg = getWidget(widgetState.type);
 
-  switch (widgetState.type) {
-    case 'kline':
-    case 'overlay':
-    case 'volume_profile':
-      return <FullKLineCard item={item} onClose={onClose} />;
-
-    case 'heatmap':
-      return (
-        <WidgetPanel title="HEATMAP" subtitle={`${market.toUpperCase()}`} onClose={onClose}>
-          <ErrorBoundary label="AgentHeatmap">
-            <Suspense fallback={<LoadingPlaceholder />}>
-              <LazyHeatmapWidget market={market} />
-            </Suspense>
-          </ErrorBoundary>
-        </WidgetPanel>
-      );
-
-    case 'fundamentals':
-      return (
-        <WidgetPanel title="FUNDAMENTALS" subtitle={symbol} onClose={onClose}>
-          <ErrorBoundary label="AgentFundamentals">
-            <Suspense fallback={<LoadingPlaceholder />}>
-              <LazyFundamentalsWidget symbol={symbol} />
-            </Suspense>
-          </ErrorBoundary>
-        </WidgetPanel>
-      );
-
-    case 'sentiment':
-      return (
-        <WidgetPanel title="SENTIMENT" subtitle={symbol} onClose={onClose}>
-          <div className="w-full h-full flex items-center justify-center bg-[#0d0d20] text-[#6a6aaa] text-sm">
-            Sentiment view — coming in P2
-          </div>
-        </WidgetPanel>
-      );
-
-    default:
-      return (
-        <WidgetPanel title={widgetState.type.toUpperCase()} subtitle="" onClose={onClose}>
-          <div className="w-full h-full flex items-center justify-center bg-[#0d0d20] text-[#4a4a7a] text-sm">
-            Unsupported: {widgetState.type}
-          </div>
-        </WidgetPanel>
-      );
+  // 未注册的 type → fallback
+  if (!reg) {
+    return (
+      <WidgetPanel title={widgetState.type.toUpperCase()} subtitle="" onClose={onClose}>
+        <div className="w-full h-full flex items-center justify-center bg-[#0d0d20] text-[#4a4a7a] text-sm">
+          Unsupported: {widgetState.type}
+        </div>
+      </WidgetPanel>
+    );
   }
+
+  // kline 类型 → FullKLineCard（复杂有状态组件，保持原逻辑）
+  if (reg.wrapper === 'kline') {
+    return <FullKLineCard item={item} onClose={onClose} />;
+  }
+
+  // panel 类型 → WidgetPanel 包裹 + propsMapper 提取 props
+  const subtitle =
+    (widgetState.symbol as string) ||
+    (widgetState.market as string)?.toUpperCase() ||
+    '';
+  const props = reg.propsMapper(widgetState);
+
+  return (
+    <WidgetPanel
+      title={reg.title ?? widgetState.type.toUpperCase()}
+      subtitle={subtitle}
+      onClose={onClose}
+    >
+      <ErrorBoundary label={`Agent${widgetState.type}`}>
+        <Suspense fallback={<LoadingPlaceholder />}>
+          <reg.component {...props} />
+        </Suspense>
+      </ErrorBoundary>
+    </WidgetPanel>
+  );
 }
 
 export function AgentView({ widgets, onClear, onRemoveWidget }: AgentViewProps) {

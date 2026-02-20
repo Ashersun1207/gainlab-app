@@ -1,66 +1,32 @@
 /**
  * Widget State Protocol — 类型定义
  *
- * Agent 调用 tool → Worker 注入 widgetState JSON → 前端解析 → 主区域渲染。
- * 注册表模式：type 是开放字符串，新增 Widget 不改旧代码。
+ * 精确子类型从 Widget Catalog (src/catalog/widget-catalog.ts) Zod schema 自动推导。
+ * 依赖方向：widget-state.ts → catalog（单向，catalog 不 import 此文件）。
+ *
+ * @see src/catalog/widget-catalog.ts — 单一真相源
  */
 
-/** 通用 Widget State（所有 Widget 的基类） */
+import { z } from 'zod';
+import { WIDGET_CATALOG } from '../catalog/widget-catalog';
+
+/** 通用 Widget State（所有消费者使用的基础类型） */
 export interface WidgetState {
   type: string;
   [key: string]: unknown;
 }
 
-// ── 已有 Widget 的 State 定义（类型收窄，用于组件内部）──
+// ── 从 Catalog schema 自动推导（类型名保持不变，兼容现有引用）──
 
-export interface KlineWidgetState extends WidgetState {
-  type: 'kline';
-  symbol: string;
-  market: string;
-  period?: string;
-  indicators?: string[];
-  chartType?: string;
-  showWRB?: boolean;
-}
+export type KlineWidgetState = z.infer<typeof WIDGET_CATALOG.kline.schema>;
+export type HeatmapWidgetState = z.infer<typeof WIDGET_CATALOG.heatmap.schema>;
+export type QuoteTableWidgetState = z.infer<typeof WIDGET_CATALOG.quote_table.schema>;
+export type SentimentWidgetState = z.infer<typeof WIDGET_CATALOG.sentiment.schema>;
+export type FundamentalsWidgetState = z.infer<typeof WIDGET_CATALOG.fundamentals.schema>;
+export type VolumeProfileWidgetState = z.infer<typeof WIDGET_CATALOG.volume_profile.schema>;
+export type OverlayWidgetState = z.infer<typeof WIDGET_CATALOG.overlay.schema>;
 
-export interface HeatmapWidgetState extends WidgetState {
-  type: 'heatmap';
-  market: string;
-  sector?: string;
-  metric?: string;
-}
-
-export interface QuoteTableWidgetState extends WidgetState {
-  type: 'quote_table';
-  symbols: string[];
-  market: string;
-}
-
-export interface SentimentWidgetState extends WidgetState {
-  type: 'sentiment';
-}
-
-export interface FundamentalsWidgetState extends WidgetState {
-  type: 'fundamentals';
-  symbol: string;
-  market: string;
-}
-
-export interface VolumeProfileWidgetState extends WidgetState {
-  type: 'volume_profile';
-  symbol: string;
-  market: string;
-  period?: string;
-}
-
-export interface OverlayWidgetState extends WidgetState {
-  type: 'overlay';
-  symbols: string[];
-  markets: string[];
-  period: string;
-}
-
-/** 联合类型（用于 switch-case 类型收窄） */
+/** 联合类型 */
 export type KnownWidgetState =
   | KlineWidgetState
   | HeatmapWidgetState

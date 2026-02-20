@@ -14,6 +14,7 @@ import { AgentView } from './scenes/AgentView';
 import { PlaceholderScene } from './scenes/PlaceholderScene';
 import { KLineHeader } from './widgets/KLineWidget/KLineHeader';
 import { mcpToKLine } from './services/dataAdapter';
+import { validateWidgetState, isKlineWidget } from './catalog';
 import type { AgentWidgetItem } from './scenes/AgentView';
 import { t } from './i18n';
 import { Settings } from './layout/Settings';
@@ -161,18 +162,19 @@ function App() {
 
   // ── Chat tool result → 追加 Widget 到 Agent 场景 ──
   const handleToolResult = useCallback((toolName: string, result: unknown, widgetState?: WidgetState) => {
-    if (!widgetState) return;
+    // 验证 widgetState（不合法 → 丢弃）
+    const validated = widgetState ? validateWidgetState(widgetState) : null;
+    if (!validated) return;
 
     // 构造 Widget item
     const item: AgentWidgetItem = {
       id: `aw_${++agentWidgetCounterRef.current}_${Date.now()}`,
-      widgetState,
+      widgetState: validated,
       klineData: undefined,
     };
 
-    // K线类的 tool 需要转换数据
-    const klineTools = ['gainlab_kline', 'gainlab_indicators', 'gainlab_volume_profile', 'gainlab_wrb_scoring'];
-    if (klineTools.includes(toolName)) {
+    // 从 registry 判断是否需要 kline 数据转换（替代硬编码 klineTools 数组）
+    if (isKlineWidget(validated.type)) {
       item.klineData = mcpToKLine(result);
     }
 
