@@ -67,7 +67,7 @@ export function AgentView({ widgetState, klineData }: AgentViewProps) {
           <ErrorBoundary label="AgentKLine">
             <Suspense fallback={<LoadingPlaceholder />}>
               <LazyKLineWidget
-                key={`${symbol}-${Date.now()}`}
+                key={`${symbol}-${widgetState.period || '1D'}-${widgetState.type}`}
                 symbol={symbol}
                 data={klineData}
                 indicators={widgetState.type === 'overlay' ? ['MA'] : []}
