@@ -97,6 +97,7 @@ export async function* streamChat(messages: McpMessage[]): AsyncGenerator<McpStr
         }
 
         const eventType = parsed['type'] as string | undefined;
+        console.log('[SSE] event:', eventType, eventType === 'tool_result' ? { widgetState: parsed['widgetState'] } : '');
 
         if (eventType === 'text_delta') {
           const raw = (parsed['text'] as string | undefined) ?? '';

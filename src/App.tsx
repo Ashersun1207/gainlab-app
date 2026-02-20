@@ -150,8 +150,10 @@ function App() {
 
   // ── Chat tool result callback (T14.4: + widgetState) ──
   const handleToolResult = useCallback((toolName: string, result: unknown, widgetState?: WidgetState) => {
+    console.log('[App] handleToolResult', { toolName, widgetState, hasResult: !!result });
     // T14.4: 有 widgetState → 存储，驱动场景切换
     if (widgetState) {
+      console.log('[App] setting agentWidgetState →', widgetState);
       setAgentWidgetState(widgetState);
     }
 
@@ -172,6 +174,8 @@ function App() {
   useEffect(() => {
     if (!agentWidgetState) return;
 
+    console.log('[App] useEffect: agentWidgetState changed →', agentWidgetState);
+
     // widgetState.type → scene 映射
     const sceneMap: Record<string, string> = {
       kline: 'stock_analysis',
@@ -183,6 +187,7 @@ function App() {
     };
 
     const targetScene = sceneMap[agentWidgetState.type];
+    console.log('[App] switchScene →', targetScene, { symbol: agentWidgetState.symbol, market: agentWidgetState.market });
     if (targetScene) {
       switchScene(targetScene, {
         symbol: agentWidgetState.symbol as string | undefined,
