@@ -406,14 +406,19 @@ CF Worker (SSE 中间件)
   │  tool_result → handleToolResult(name, result, widgetState)
   ▼
 App.tsx
-  │  widgetState → setAgentWidgetState
-  │  useEffect → switchScene('ai')  // 自动切到 Agent 场景
+  │  widgetState → agentWidgets[] 数组追加 AgentWidgetItem
+  │  每轮第一个 widget 清空旧的，后续追加
+  │  switchScene('ai')  // 自动切到 Agent 场景
   ▼
 AgentView (src/scenes/AgentView.tsx)
-  │  根据 widgetState.type 渲染对应 Widget
-  │  kline/overlay/volume_profile → KLineWidget
-  │  heatmap → HeatmapWidget
-  │  fundamentals → FundamentalsWidget
+  │  接收 AgentWidgetItem[] 数组
+  │  空 → 引导页 | 1个 → 全屏 | 多个 → 自适应网格(1/2/3列)
+  │  每个卡片 AgentWidgetCard 根据 widgetState.type 渲染：
+  │    kline/overlay/volume_profile → FullKLineCard (KLineHeader + KLineWidget)
+  │    heatmap → HeatmapWidget
+  │    fundamentals → FundamentalsWidget
+  │  每个 Widget 有 ✕ 关闭按钮（onClose → 从数组移除）
+  │  FloatingClearButton 悬浮可拖拽"🗑 清空面板"
   ▼
 主区域渲染（Chat 保持在右侧 panel）
 ```
