@@ -1,6 +1,6 @@
 # GainLab App — 架构文档
 
-_P1 产品阶段 | 更新时机：目录结构或数据流变更后 | 最后更新 2026-02-22 (Widget State Protocol)_
+_P1 产品阶段 | 更新时机：目录结构或数据流变更后 | 最后更新 2026-02-20 (T15 Widget Catalog + 218 tests)_
 
 ---
 
@@ -31,6 +31,14 @@ gainlab-app/
 │   ├── main.tsx                # 入口
 │   ├── App.tsx                 # 三区布局 + 移动端适配 + 状态管理
 │   ├── index.css               # Tailwind + Mosaic 深色主题 + 移动端样式
+│   │
+│   ├── catalog/                # ★ Widget Catalog（T15, json-render 启发）
+│   │   ├── widget-catalog.ts   # 单一 schema 源：7 Widget 的 Zod schema + 元数据
+│   │   ├── validate.ts         # validateWidgetState() — Zod safeParse 运行时验证
+│   │   ├── build-prompt.ts     # buildWidgetPrompt() — 从 schema 自动生成 AI system prompt
+│   │   ├── widget-registry.ts  # getWidgetEntry() / isKlineWidget() — 组件查找 + 类型判断
+│   │   ├── index.ts            # barrel export
+│   │   └── __tests__/          # 33 tests（catalog/validate/build-prompt/registry）
 │   │
 │   ├── layout/
 │   │   ├── Sidebar/
@@ -423,12 +431,37 @@ AgentView (src/scenes/AgentView.tsx)
 主区域渲染（Chat 保持在右侧 panel）
 ```
 
-### WidgetState Schema
+### WidgetState Schema & Catalog
+
+Widget 定义集中在 `src/catalog/widget-catalog.ts`（单一源），提供：
+
+- **Zod Schema**：每种 Widget 的参数类型定义 + 运行时验证
+- **元数据**：display name、description、wrapper（kline/panel）、example prompts
+- **自动 prompt**：`buildWidgetPrompt()` 从 schema 生成 AI system prompt，永远与代码同步
+- **验证**：`validateWidgetState()` 在 App.tsx handleToolResult 中拦截非法参数
+- **注册表**：`getWidgetEntry()` / `isKlineWidget()` 替代硬编码 switch-case 和 klineTools 数组
+
+新增 Widget 只需在 catalog 注册一个对象，prompt / 验证 / 路由自动生效。
 
 ```typescript
+// catalog 定义（简化示例）
+{
+  type: 'kline',
+  schema: z.object({
+    type: z.literal('kline'),
+    symbol: z.string(),
+    market: z.enum(['crypto','us','cn','hk','eu','uk','jp','fx','comm','metal']),
+    period: z.string().optional(),
+  }),
+  wrapper: 'kline',        // → FullKLineCard (KLineHeader + KLineWidget)
+  displayName: 'K-Line Chart',
+  whenToUse: '...',
+  examplePrompts: ['Show BTC/USDT daily chart', ...],
+}
+
 interface WidgetState {
   type: string;               // 'kline' | 'heatmap' | 'overlay' | ...
-  [key: string]: unknown;     // Widget 特定参数
+  [key: string]: unknown;     // Widget 特定参数（由 Zod schema 验证）
 }
 ```
 
@@ -482,7 +515,7 @@ CF Worker: gainlab-api.asher-sun.workers.dev
 
 | 工具 | 用途 |
 |---|---|
-| Vitest + RTL | 测试（185 tests, G1 只增不减） |
+| Vitest + RTL | 测试（218 tests, G1 只增不减） |
 | ESLint flat config | Lint（0 error 才能 commit） |
 | tsc + typecheck.sh | 类型检查（过滤 KLineChart 45K fork 错误） |
 | Vite | 构建 + Dev server |
@@ -495,4 +528,4 @@ pnpm lint && pnpm typecheck && pnpm test && pnpm build
 
 ---
 
-_创建于 2026-02-17 | 最后更新于 2026-02-19（CK 对齐 + 全站 i18n + Settings + 185 tests）_
+_创建于 2026-02-17 | 最后更新于 2026-02-20（T15 Widget Catalog: Zod schema + validate + registry + auto prompt, 218 tests）_
