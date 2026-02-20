@@ -2,16 +2,17 @@
  * AgentView — Agent 可视化区域（多 Widget 网格）
  *
  * 每次 Chat tool_result 追加一个 Widget 卡片到网格中。
- * 支持 KLine / Heatmap / Fundamentals 等。
+ * K线 Widget 使用完整的 KLineHeader + KLineWidget（跟 CK 场景一样）。
  */
 
-import { Suspense, lazy } from 'react';
+import { useState, useCallback, Suspense, lazy } from 'react';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { WidgetPanel } from '../layout/WidgetPanel';
+import { KLineHeader } from '../widgets/KLineWidget/KLineHeader';
 import { t } from '../i18n';
 import type { WidgetState } from '../types/widget-state';
 import type { KLineData } from '../types/data';
-import type { MarketType } from '../types/market';
+import type { MarketType, TimeInterval } from '../types/market';
 
 const LazyKLineWidget = lazy(() =>
   import('../widgets/KLineWidget').then((m) => ({ default: m.KLineWidget })),
@@ -43,35 +44,77 @@ interface AgentViewProps {
   onClear?: () => void;
 }
 
-/** 渲染单个 Widget */
-function AgentWidgetCard({ item }: { item: AgentWidgetItem }) {
+/** 获取资产显示名 */
+function formatSymbolDisplay(symbol: string): string {
+  if (symbol.endsWith('USDT')) return `${symbol.slice(0, -4)} / USDT`;
+  if (symbol.includes('.')) return symbol.split('.')[0];
+  return symbol;
+}
+
+/** 完整 K线 Widget（KLineHeader + KLineWidget）— 自带独立状态 */
+function FullKLineCard({ item }: { item: AgentWidgetItem }) {
   const { widgetState, klineData } = item;
   const symbol = (widgetState.symbol as string) || 'BTCUSDT';
-  const market = (widgetState.market as MarketType) || 'crypto';
+  const market = ((widgetState.market as string) || 'crypto') as MarketType;
+  const period = ((widgetState.period as string) || '1D') as TimeInterval;
+
+  // 每个卡片独立的状态
+  const [chartType, setChartType] = useState('candle_solid');
+  const [activeIndicators, setActiveIndicators] = useState<string[]>(['MA']);
+  const [drawingToolOpen, setDrawingToolOpen] = useState(false);
+
+  const handleIndicatorToggle = useCallback((ind: string) => {
+    setActiveIndicators((prev) =>
+      prev.includes(ind) ? prev.filter((i) => i !== ind) : [...prev, ind],
+    );
+  }, []);
+
+  return (
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <KLineHeader
+        symbol={symbol}
+        symbolDisplay={formatSymbolDisplay(symbol)}
+        market={market}
+        period={period}
+        onSymbolChange={() => {}}
+        onPeriodChange={() => {}}
+        chartType={chartType}
+        onChartTypeChange={setChartType}
+        activeIndicators={activeIndicators}
+        onIndicatorToggle={handleIndicatorToggle}
+        drawingToolOpen={drawingToolOpen}
+        onDrawingToolToggle={() => setDrawingToolOpen((v) => !v)}
+      />
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <ErrorBoundary label="AgentKLine">
+          <Suspense fallback={<LoadingPlaceholder />}>
+            <LazyKLineWidget
+              key={item.id}
+              symbol={symbol}
+              data={klineData}
+              indicators={activeIndicators}
+              showWRB={widgetState.showWRB as boolean | undefined}
+              showVP={widgetState.type === 'volume_profile'}
+              drawingToolOpen={drawingToolOpen}
+            />
+          </Suspense>
+        </ErrorBoundary>
+      </div>
+    </div>
+  );
+}
+
+/** 渲染单个 Widget */
+function AgentWidgetCard({ item }: { item: AgentWidgetItem }) {
+  const { widgetState } = item;
+  const symbol = (widgetState.symbol as string) || 'BTCUSDT';
+  const market = ((widgetState.market as string) || 'crypto') as MarketType;
 
   switch (widgetState.type) {
     case 'kline':
     case 'overlay':
     case 'volume_profile':
-      return (
-        <WidgetPanel
-          title={symbol}
-          subtitle={`${market.toUpperCase()} · ${widgetState.period || '1D'}`}
-        >
-          <ErrorBoundary label="AgentKLine">
-            <Suspense fallback={<LoadingPlaceholder />}>
-              <LazyKLineWidget
-                key={item.id}
-                symbol={symbol}
-                data={klineData}
-                indicators={widgetState.type === 'overlay' ? ['MA'] : []}
-                showWRB={false}
-                showVP={widgetState.type === 'volume_profile'}
-              />
-            </Suspense>
-          </ErrorBoundary>
-        </WidgetPanel>
-      );
+      return <FullKLineCard item={item} />;
 
     case 'heatmap':
       return (
@@ -136,15 +179,14 @@ export function AgentView({ widgets, onClear }: AgentViewProps) {
     return (
       <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
         {onClear && <ClearButton onClick={onClear} />}
-        <style>{`.agent-single > .wp { flex: 1; min-height: 0; }`}</style>
-        <div className="agent-single" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
           <AgentWidgetCard item={widgets[0]} />
         </div>
       </div>
     );
   }
 
-  // 多个 Widget → 网格（自适应：2 个上下分，3-4 个 2×2，5-6 个 3×2）
+  // 多个 Widget → 网格
   const cols = widgets.length <= 2 ? 1 : widgets.length <= 4 ? 2 : 3;
 
   return (
@@ -163,9 +205,8 @@ export function AgentView({ widgets, onClear }: AgentViewProps) {
         }}
       >
         {widgets.map((item) => (
-          <div key={item.id} style={{ minHeight: 200, display: 'flex', flexDirection: 'column' }}>
-            <style>{`.agent-grid-item > .wp { flex: 1; min-height: 0; }`}</style>
-            <div className="agent-grid-item" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+          <div key={item.id} style={{ minHeight: 250, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
               <AgentWidgetCard item={item} />
             </div>
           </div>
