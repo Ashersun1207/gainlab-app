@@ -179,11 +179,11 @@ export function AgentView({ widgets, onClear, onRemoveWidget }: AgentViewProps) 
   if (widgets.length === 1) {
     return (
       <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-        {onClear && <ClearButton onClick={onClear} />}
-        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-          {onRemoveWidget && <CloseWidgetButton onClick={() => onRemoveWidget(widgets[0].id)} />}
+        <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
           <AgentWidgetCard item={widgets[0]} />
         </div>
+        {onRemoveWidget && <CloseWidgetButton onClick={() => onRemoveWidget(widgets[0].id)} />}
+        {onClear && <ClearButton onClick={onClear} />}
       </div>
     );
   }
@@ -208,10 +208,10 @@ export function AgentView({ widgets, onClear, onRemoveWidget }: AgentViewProps) 
       >
         {widgets.map((item) => (
           <div key={item.id} style={{ minHeight: 250, display: 'flex', flexDirection: 'column', position: 'relative' }}>
-            {onRemoveWidget && <CloseWidgetButton onClick={() => onRemoveWidget(item.id)} />}
             <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
               <AgentWidgetCard item={item} />
             </div>
+            {onRemoveWidget && <CloseWidgetButton onClick={() => onRemoveWidget(item.id)} />}
           </div>
         ))}
       </div>
@@ -227,7 +227,7 @@ function CloseWidgetButton({ onClick }: { onClick: () => void }) {
         position: 'absolute',
         top: 4,
         right: 4,
-        zIndex: 20,
+        zIndex: 50,
         background: 'rgba(20,20,40,0.85)',
         border: '1px solid #2a2a4a',
         borderRadius: 4,
