@@ -206,7 +206,7 @@ export function AgentView({ widgets, onClear, onRemoveWidget }: AgentViewProps) 
           overflow: 'auto',
         }}
       >
-        {widgets.map((item, idx) => (
+        {widgets.map((item) => (
           <div key={item.id} style={{ minHeight: 250, display: 'flex', flexDirection: 'column' }}>
             <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
               <AgentWidgetCard item={item} onClose={onRemoveWidget ? () => onRemoveWidget(item.id) : undefined} />
