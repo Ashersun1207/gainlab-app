@@ -33,9 +33,11 @@ const TOP_MOVERS_ITEMS = [
 
 interface HeatmapSceneProps {
   market: MarketType;
+  onCloseWidget?: (key: string) => void;
+  isHidden?: (key: string) => boolean;
 }
 
-export function HeatmapScene({ market }: HeatmapSceneProps) {
+export function HeatmapScene({ market, onCloseWidget, isHidden }: HeatmapSceneProps) {
   const fallback = (
     <div className="w-full h-full bg-[#0d0d20] flex items-center justify-center">
       <span className="text-[#5a5a8a] text-sm">Loading...</span>
@@ -45,17 +47,20 @@ export function HeatmapScene({ market }: HeatmapSceneProps) {
   return (
     <div className="hm-scene">
       {/* Main: big heatmap */}
+      {(!isHidden || !isHidden('HEATMAP')) && (
       <div className="hm-main">
-        <WidgetPanel title="HEATMAP" subtitle={`${market.charAt(0).toUpperCase() + market.slice(1)} ▾`}>
+        <WidgetPanel title="HEATMAP" subtitle={`${market.charAt(0).toUpperCase() + market.slice(1)} ▾`} onClose={onCloseWidget ? () => onCloseWidget('HEATMAP') : undefined}>
           <Suspense fallback={fallback}>
             <LazyHeatmapWidget market={market} />
           </Suspense>
         </WidgetPanel>
       </div>
+      )}
 
       {/* Side: top movers + quote table */}
+      {(!isHidden || !isHidden('TOP MOVERS')) && (
       <div className="hm-side">
-        <WidgetPanel title="TOP MOVERS" subtitle="Crypto">
+        <WidgetPanel title="TOP MOVERS" subtitle="Crypto" onClose={onCloseWidget ? () => onCloseWidget('TOP MOVERS') : undefined}>
           <Suspense fallback={fallback}>
             <LazyQuoteTableWidget
               title=""
@@ -64,6 +69,7 @@ export function HeatmapScene({ market }: HeatmapSceneProps) {
           </Suspense>
         </WidgetPanel>
       </div>
+      )}
     </div>
   );
 }

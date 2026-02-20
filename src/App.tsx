@@ -140,6 +140,12 @@ function App() {
   const agentRoundRef = useRef(0); // 当前对话轮次，每次用户发消息 +1
   const currentRoundWidgetsRef = useRef(0); // 当前轮次已收到的 widget 数
 
+  // ── 隐藏的 Widget（全局，按 key 标记）──
+  const [hiddenWidgets, setHiddenWidgets] = useState<Set<string>>(new Set());
+  const hideWidget = useCallback((key: string) => {
+    setHiddenWidgets((prev) => new Set(prev).add(key));
+  }, []);
+
   // ── Indicator toggle ──
   const handleIndicatorToggle = useCallback((ind: string) => {
     setActiveIndicators((prev) =>
@@ -189,6 +195,11 @@ function App() {
   const effectiveKlineData =
     klineData.length > 0 ? klineData : undefined;
 
+  /** Widget key for hide/show — scoped to scene */
+  const wkey = (title: string) => `${activeScene}:${title}`;
+  const isHidden = (title: string) => hiddenWidgets.has(wkey(title));
+  const closeHandler = (title: string) => () => hideWidget(wkey(title));
+
   // ── Scene content renderer ──
   const renderScene = () => {
     // Unimplemented scenes → placeholder
@@ -200,7 +211,8 @@ function App() {
       case 'snapshot':
         return (
           <div className="scene-grid">
-            <WidgetPanel title="QUOTES" subtitle={t('w_four_markets')}>
+            {!isHidden('QUOTES') && (
+            <WidgetPanel title="QUOTES" subtitle={t('w_four_markets')} onClose={closeHandler('QUOTES')}>
               <ErrorBoundary label="QuoteTable">
                 <Suspense fallback={<LoadingPlaceholder />}>
                   <LazyQuoteTableWidget
@@ -210,40 +222,50 @@ function App() {
                 </Suspense>
               </ErrorBoundary>
             </WidgetPanel>
+            )}
 
-            <WidgetPanel title="SENTIMENT" subtitle={t('w_market_mood')}>
+            {!isHidden('SENTIMENT') && (
+            <WidgetPanel title="SENTIMENT" subtitle={t('w_market_mood')} onClose={closeHandler('SENTIMENT')}>
               <ErrorBoundary label="Sentiment">
                 <Suspense fallback={<LoadingPlaceholder />}>
                   <LazySentimentWidget headless />
                 </Suspense>
               </ErrorBoundary>
             </WidgetPanel>
+            )}
 
-            <WidgetPanel title="GLOBAL INDEX" subtitle={t('w_world_indices')}>
+            {!isHidden('GLOBAL INDEX') && (
+            <WidgetPanel title="GLOBAL INDEX" subtitle={t('w_world_indices')} onClose={closeHandler('GLOBAL INDEX')}>
               <ErrorBoundary label="GlobalIndex">
                 <Suspense fallback={<LoadingPlaceholder />}>
                   <LazyGlobalIndexWidget headless />
                 </Suspense>
               </ErrorBoundary>
             </WidgetPanel>
+            )}
 
-            <WidgetPanel title="HEATMAP" subtitle={`${activeMarket.charAt(0).toUpperCase() + activeMarket.slice(1)} ▾`}>
+            {!isHidden('HEATMAP') && (
+            <WidgetPanel title="HEATMAP" subtitle={`${activeMarket.charAt(0).toUpperCase() + activeMarket.slice(1)} ▾`} onClose={closeHandler('HEATMAP')}>
               <ErrorBoundary label="Heatmap">
                 <Suspense fallback={<LoadingPlaceholder />}>
                   <LazyHeatmapWidget market={activeMarket} />
                 </Suspense>
               </ErrorBoundary>
             </WidgetPanel>
+            )}
 
-            <WidgetPanel title="FX & COMM" subtitle={t('w_forex_comm')}>
+            {!isHidden('FX & COMM') && (
+            <WidgetPanel title="FX & COMM" subtitle={t('w_forex_comm')} onClose={closeHandler('FX & COMM')}>
               <ErrorBoundary label="ForexCommodity">
                 <Suspense fallback={<LoadingPlaceholder />}>
                   <LazyForexCommodityWidget headless />
                 </Suspense>
               </ErrorBoundary>
             </WidgetPanel>
+            )}
 
-            <WidgetPanel title="CHART" subtitle={formatSymbolDisplay(activeSymbol)}>
+            {!isHidden('CHART') && (
+            <WidgetPanel title="CHART" subtitle={formatSymbolDisplay(activeSymbol)} onClose={closeHandler('CHART')}>
               <ErrorBoundary label="KLine">
                 <Suspense fallback={<LoadingPlaceholder />}>
                   <LazyKLineWidget
@@ -257,6 +279,7 @@ function App() {
                 </Suspense>
               </ErrorBoundary>
             </WidgetPanel>
+            )}
           </div>
         );
 
@@ -264,7 +287,7 @@ function App() {
         return (
           <div className="flex-1 min-h-0">
             <ErrorBoundary label="HeatmapScene">
-              <HeatmapScene market={activeMarket} />
+              <HeatmapScene market={activeMarket} onCloseWidget={(k) => hideWidget(wkey(k))} isHidden={(k) => hiddenWidgets.has(wkey(k))} />
             </ErrorBoundary>
           </div>
         );
@@ -322,7 +345,8 @@ function App() {
 
             {/* 3×2 Widget grid */}
             <div className="ck-grid">
-              <WidgetPanel title="HEATMAP" subtitle={`${activeMarket.charAt(0).toUpperCase() + activeMarket.slice(1)} ▾`}>
+              {!isHidden('HEATMAP') && (
+              <WidgetPanel title="HEATMAP" subtitle={`${activeMarket.charAt(0).toUpperCase() + activeMarket.slice(1)} ▾`} onClose={closeHandler('HEATMAP')}>
                 <ErrorBoundary label="Heatmap">
                   <Suspense fallback={<LoadingPlaceholder />}>
                     <LazyHeatmapWidget
@@ -331,16 +355,20 @@ function App() {
                   </Suspense>
                 </ErrorBoundary>
               </WidgetPanel>
+              )}
 
-              <WidgetPanel title="FUNDAMENTALS" subtitle={`${activeSymbol} ▾`}>
+              {!isHidden('FUNDAMENTALS') && (
+              <WidgetPanel title="FUNDAMENTALS" subtitle={`${activeSymbol} ▾`} onClose={closeHandler('FUNDAMENTALS')}>
                 <ErrorBoundary label="Fundamentals">
                   <Suspense fallback={<LoadingPlaceholder />}>
                     <LazyFundamentalsWidget symbol={activeSymbol} headless />
                   </Suspense>
                 </ErrorBoundary>
               </WidgetPanel>
+              )}
 
-              <WidgetPanel title="QUOTES" subtitle={t('w_four_markets')}>
+              {!isHidden('QUOTES') && (
+              <WidgetPanel title="QUOTES" subtitle={t('w_four_markets')} onClose={closeHandler('QUOTES')}>
                 <ErrorBoundary label="QuoteTable">
                   <Suspense fallback={<LoadingPlaceholder />}>
                     <LazyQuoteTableWidget
@@ -350,16 +378,20 @@ function App() {
                   </Suspense>
                 </ErrorBoundary>
               </WidgetPanel>
+              )}
 
-              <WidgetPanel title="SENTIMENT" subtitle={t('w_market_mood')}>
+              {!isHidden('SENTIMENT') && (
+              <WidgetPanel title="SENTIMENT" subtitle={t('w_market_mood')} onClose={closeHandler('SENTIMENT')}>
                 <ErrorBoundary label="Sentiment">
                   <Suspense fallback={<LoadingPlaceholder />}>
                     <LazySentimentWidget headless />
                   </Suspense>
                 </ErrorBoundary>
               </WidgetPanel>
+              )}
 
-              <WidgetPanel title="GLOBAL INDEX" subtitle={t('w_world_indices')}>
+              {!isHidden('GLOBAL INDEX') && (
+              <WidgetPanel title="GLOBAL INDEX" subtitle={t('w_world_indices')} onClose={closeHandler('GLOBAL INDEX')}>
                 <ErrorBoundary label="GlobalIndex">
                   <Suspense fallback={<LoadingPlaceholder />}>
                     <LazyGlobalIndexWidget
@@ -368,8 +400,10 @@ function App() {
                   </Suspense>
                 </ErrorBoundary>
               </WidgetPanel>
+              )}
 
-              <WidgetPanel title="FX & COMM" subtitle={t('w_forex_comm')}>
+              {!isHidden('FX & COMM') && (
+              <WidgetPanel title="FX & COMM" subtitle={t('w_forex_comm')} onClose={closeHandler('FX & COMM')}>
                 <ErrorBoundary label="ForexCommodity">
                   <Suspense fallback={<LoadingPlaceholder />}>
                     <LazyForexCommodityWidget
@@ -378,6 +412,7 @@ function App() {
                   </Suspense>
                 </ErrorBoundary>
               </WidgetPanel>
+              )}
             </div>
           </>
         );

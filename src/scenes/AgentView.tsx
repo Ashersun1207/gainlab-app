@@ -53,7 +53,7 @@ function formatSymbolDisplay(symbol: string): string {
 }
 
 /** 完整 K线 Widget（KLineHeader + KLineWidget）— 自带独立状态 */
-function FullKLineCard({ item }: { item: AgentWidgetItem }) {
+function FullKLineCard({ item, onClose }: { item: AgentWidgetItem; onClose?: () => void }) {
   const { widgetState, klineData } = item;
   const symbol = (widgetState.symbol as string) || 'BTCUSDT';
   const market = ((widgetState.market as string) || 'crypto') as MarketType;
@@ -71,7 +71,8 @@ function FullKLineCard({ item }: { item: AgentWidgetItem }) {
   }, []);
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+      {onClose && <CloseWidgetButton onClick={onClose} />}
       <KLineHeader
         symbol={symbol}
         symbolDisplay={formatSymbolDisplay(symbol)}
@@ -106,7 +107,7 @@ function FullKLineCard({ item }: { item: AgentWidgetItem }) {
 }
 
 /** 渲染单个 Widget */
-function AgentWidgetCard({ item }: { item: AgentWidgetItem }) {
+function AgentWidgetCard({ item, onClose }: { item: AgentWidgetItem; onClose?: () => void }) {
   const { widgetState } = item;
   const symbol = (widgetState.symbol as string) || 'BTCUSDT';
   const market = ((widgetState.market as string) || 'crypto') as MarketType;
@@ -115,11 +116,11 @@ function AgentWidgetCard({ item }: { item: AgentWidgetItem }) {
     case 'kline':
     case 'overlay':
     case 'volume_profile':
-      return <FullKLineCard item={item} />;
+      return <FullKLineCard item={item} onClose={onClose} />;
 
     case 'heatmap':
       return (
-        <WidgetPanel title="HEATMAP" subtitle={`${market.toUpperCase()}`}>
+        <WidgetPanel title="HEATMAP" subtitle={`${market.toUpperCase()}`} onClose={onClose}>
           <ErrorBoundary label="AgentHeatmap">
             <Suspense fallback={<LoadingPlaceholder />}>
               <LazyHeatmapWidget market={market} />
@@ -130,7 +131,7 @@ function AgentWidgetCard({ item }: { item: AgentWidgetItem }) {
 
     case 'fundamentals':
       return (
-        <WidgetPanel title="FUNDAMENTALS" subtitle={symbol}>
+        <WidgetPanel title="FUNDAMENTALS" subtitle={symbol} onClose={onClose}>
           <ErrorBoundary label="AgentFundamentals">
             <Suspense fallback={<LoadingPlaceholder />}>
               <LazyFundamentalsWidget symbol={symbol} />
@@ -141,7 +142,7 @@ function AgentWidgetCard({ item }: { item: AgentWidgetItem }) {
 
     case 'sentiment':
       return (
-        <WidgetPanel title="SENTIMENT" subtitle={symbol}>
+        <WidgetPanel title="SENTIMENT" subtitle={symbol} onClose={onClose}>
           <div className="w-full h-full flex items-center justify-center bg-[#0d0d20] text-[#6a6aaa] text-sm">
             Sentiment view — coming in P2
           </div>
@@ -150,7 +151,7 @@ function AgentWidgetCard({ item }: { item: AgentWidgetItem }) {
 
     default:
       return (
-        <WidgetPanel title={widgetState.type.toUpperCase()} subtitle="">
+        <WidgetPanel title={widgetState.type.toUpperCase()} subtitle="" onClose={onClose}>
           <div className="w-full h-full flex items-center justify-center bg-[#0d0d20] text-[#4a4a7a] text-sm">
             Unsupported: {widgetState.type}
           </div>
@@ -180,9 +181,8 @@ export function AgentView({ widgets, onClear, onRemoveWidget }: AgentViewProps) 
     return (
       <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
         <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          <AgentWidgetCard item={widgets[0]} />
+          <AgentWidgetCard item={widgets[0]} onClose={onRemoveWidget ? () => onRemoveWidget(widgets[0].id) : undefined} />
         </div>
-        {onRemoveWidget && <CloseWidgetButton onClick={() => onRemoveWidget(widgets[0].id)} />}
         {onClear && <ClearButton onClick={onClear} />}
       </div>
     );
@@ -207,11 +207,10 @@ export function AgentView({ widgets, onClear, onRemoveWidget }: AgentViewProps) 
         }}
       >
         {widgets.map((item) => (
-          <div key={item.id} style={{ minHeight: 250, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+          <div key={item.id} style={{ minHeight: 250, display: 'flex', flexDirection: 'column' }}>
             <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-              <AgentWidgetCard item={item} />
+              <AgentWidgetCard item={item} onClose={onRemoveWidget ? () => onRemoveWidget(item.id) : undefined} />
             </div>
-            {onRemoveWidget && <CloseWidgetButton onClick={() => onRemoveWidget(item.id)} />}
           </div>
         ))}
       </div>
