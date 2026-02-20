@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, Suspense, lazy } from 'react';
+import { useState, useCallback, useRef, Suspense, lazy } from 'react';
 import { useResponsive } from './hooks/useResponsive';
 import { useMarketData } from './hooks/useMarketData';
 import { useScene } from './hooks/useScene';
@@ -13,11 +13,10 @@ import { HeatmapScene } from './scenes/HeatmapScene';
 import { AgentView } from './scenes/AgentView';
 import { PlaceholderScene } from './scenes/PlaceholderScene';
 import { KLineHeader } from './widgets/KLineWidget/KLineHeader';
-import { getRenderTarget, mcpToKLine, mcpToEChartsOption } from './services/dataAdapter';
+import { mcpToKLine } from './services/dataAdapter';
+import type { AgentWidgetItem } from './scenes/AgentView';
 import { t } from './i18n';
 import { Settings } from './layout/Settings';
-import type { KLineData } from './types/data';
-import type { EChartsOption } from 'echarts';
 import type { MarketType, TimeInterval } from './types/market';
 import type { WidgetState } from './types/widget-state';
 
@@ -135,12 +134,9 @@ function App() {
   // ── Data ──
   const { klineData, quote } = useMarketData(activeSymbol, activeMarket, activeInterval);
 
-  // ── P0 compat: Chat onToolResult → update ECharts / KLine ──
-  const [_echartsOption, setEchartsOption] = useState<EChartsOption | null>(null);
-  const [chatKlineData, setChatKlineData] = useState<KLineData[] | null>(null);
-
-  // ── T14.4: Agent widgetState → 主区域场景切换 ──
-  const [agentWidgetState, setAgentWidgetState] = useState<WidgetState | null>(null);
+  // ── Agent Widgets 累积列表 ──
+  const [agentWidgets, setAgentWidgets] = useState<AgentWidgetItem[]>([]);
+  const agentWidgetCounterRef = useRef(0);
 
   // ── Indicator toggle ──
   const handleIndicatorToggle = useCallback((ind: string) => {
@@ -149,41 +145,35 @@ function App() {
     );
   }, []);
 
-  // ── Chat tool result callback (T14.4: + widgetState) ──
+  // ── Chat tool result → 追加 Widget 到 Agent 场景 ──
   const handleToolResult = useCallback((toolName: string, result: unknown, widgetState?: WidgetState) => {
-    // T14.4: 有 widgetState → 存储 + 自动切 ai 场景
-    if (widgetState) {
-      setAgentWidgetState(widgetState);
+    if (!widgetState) return;
+
+    // 构造 Widget item
+    const item: AgentWidgetItem = {
+      id: `aw_${++agentWidgetCounterRef.current}_${Date.now()}`,
+      widgetState,
+      klineData: undefined,
+    };
+
+    // K线类的 tool 需要转换数据
+    const klineTools = ['gainlab_kline', 'gainlab_indicators', 'gainlab_volume_profile', 'gainlab_wrb_scoring'];
+    if (klineTools.includes(toolName)) {
+      item.klineData = mcpToKLine(result);
     }
 
-    // 数据转换 → K线数据给 AgentView 用
-    const target = getRenderTarget(toolName);
-    if (target === 'kline') {
-      const data = mcpToKLine(result);
-      if (data.length > 0) {
-        setChatKlineData(data);
-      }
-    } else {
-      const option = mcpToEChartsOption(toolName, result);
-      setEchartsOption(option);
-    }
-  }, []);
-
-  // ── T14.4: widgetState → 场景切换 + 参数更新 ──
-  // T14.4: widgetState 变化 → 自动切到 AI 场景
-  useEffect(() => {
-    if (!agentWidgetState) return;
+    setAgentWidgets((prev) => [...prev, item]);
     switchScene('ai');
-  }, [agentWidgetState, switchScene]);
+  }, [switchScene]);
 
   // ── Toggle chat ──
   const toggleChat = useCallback(() => {
     setChatOpen((prev) => !prev);
   }, []);
 
-  // Effective kline data: Chat-pushed data takes priority
+  // Effective kline data: market data for stock_analysis scene
   const effectiveKlineData =
-    chatKlineData ?? (klineData.length > 0 ? klineData : undefined);
+    klineData.length > 0 ? klineData : undefined;
 
   // ── Scene content renderer ──
   const renderScene = () => {
@@ -269,8 +259,8 @@ function App() {
         return (
           <div className="flex-1 min-h-0">
             <AgentView
-              widgetState={agentWidgetState}
-              klineData={chatKlineData ?? undefined}
+              widgets={agentWidgets}
+              onClear={() => setAgentWidgets([])}
             />
           </div>
         );
