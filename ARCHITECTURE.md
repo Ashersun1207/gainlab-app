@@ -407,9 +407,15 @@ CF Worker (SSE 中间件)
   ▼
 App.tsx
   │  widgetState → setAgentWidgetState
-  │  useEffect → switchScene(映射场景) + 更新 symbol/market/interval
+  │  useEffect → switchScene('ai')  // 自动切到 Agent 场景
   ▼
-主区域渲染对应 Widget（KLine / Heatmap / Overlay / ...）
+AgentView (src/scenes/AgentView.tsx)
+  │  根据 widgetState.type 渲染对应 Widget
+  │  kline/overlay/volume_profile → KLineWidget
+  │  heatmap → HeatmapWidget
+  │  fundamentals → FundamentalsWidget
+  ▼
+主区域渲染（Chat 保持在右侧 panel）
 ```
 
 ### WidgetState Schema
@@ -433,16 +439,16 @@ Worker 端 `toWidgetState(toolName, args)` 映射：
 | `gainlab_fundamentals` | `fundamentals` | symbol, market |
 | `gainlab_volume_profile` | `volume_profile` | symbol, market, period |
 
-widgetState.type → 场景映射：
+widgetState.type → **统一落到 AI 场景 (AgentView)**：
 
-| type | 目标场景 |
+| type | AgentView 渲染 |
 |---|---|
-| `kline` | `stock_analysis` |
-| `heatmap` | `market_heat` |
-| `overlay` | `stock_analysis` |
-| `fundamentals` | `stock_analysis` |
-| `volume_profile` | `stock_analysis` |
-| `sentiment` | `snapshot` |
+| `kline` | KLineWidget |
+| `heatmap` | HeatmapWidget |
+| `overlay` | KLineWidget (MA) |
+| `fundamentals` | FundamentalsWidget |
+| `volume_profile` | KLineWidget (VP) |
+| `sentiment` | Placeholder (P2) |
 
 ### 降级策略
 
