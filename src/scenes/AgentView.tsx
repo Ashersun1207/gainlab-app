@@ -97,7 +97,6 @@ export function AgentView({ widgetState, klineData }: AgentViewProps) {
             <Suspense fallback={<LoadingPlaceholder />}>
               <LazyFundamentalsWidget
                 symbol={symbol}
-                market={market}
               />
             </Suspense>
           </ErrorBoundary>
