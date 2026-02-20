@@ -1,4 +1,5 @@
 import type { McpMessage, McpStreamEvent, McpToolCall } from '../types/mcp';
+import type { WidgetState } from '../types/widget-state';
 
 const WORKER_URL = import.meta.env.VITE_WORKER_URL as string;
 
@@ -24,12 +25,25 @@ export async function* streamChat(messages: McpMessage[]): AsyncGenerator<McpStr
   const trimmed =
     messages.length > MAX_MESSAGES ? messages.slice(messages.length - MAX_MESSAGES) : messages;
 
+  // T14.2: 读 Settings 配置注入请求
+  let agentConfig: Record<string, unknown> = {};
+  try { agentConfig = JSON.parse(localStorage.getItem('gainlab-agent') || '{}'); } catch { /* ignore */ }
+  const lang = localStorage.getItem('gainlab-lang') || 'zh';
+  const endpoint = (agentConfig.endpoint as string) || WORKER_URL;
+
   let response: Response;
   try {
-    response = await fetch(WORKER_URL, {
+    response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: trimmed }),
+      body: JSON.stringify({
+        messages: trimmed,
+        config: {
+          model: agentConfig.model,
+          style: agentConfig.style,
+          lang,
+        },
+      }),
     });
   } catch (err) {
     yield { type: 'error', error: `网络请求失败: ${String(err)}` };
@@ -104,6 +118,7 @@ export async function* streamChat(messages: McpMessage[]): AsyncGenerator<McpStr
           yield {
             type: 'tool_result',
             result: parsed['result'],
+            widgetState: parsed['widgetState'] as WidgetState | undefined,
           };
         } else if (eventType === 'error') {
           yield { type: 'error', error: (parsed['message'] as string) ?? '未知错误' };

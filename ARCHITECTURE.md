@@ -1,6 +1,6 @@
 # GainLab App — 架构文档
 
-_P1 产品阶段 | 更新时机：目录结构或数据流变更后_
+_P1 产品阶段 | 更新时机：目录结构或数据流变更后 | 最后更新 2026-02-22 (Widget State Protocol)_
 
 ---
 
@@ -373,11 +373,89 @@ handleToolResult(toolName, result)
 
 ---
 
+## Widget State Protocol
+
+### 概念
+
+Agent 调用 tool → Worker 拦截 SSE 注入 `widgetState` JSON → 前端解析 → 主区域渲染对应 Widget。
+
+三条路径共用同一套 Widget 组件渲染：
+- **人主动浏览**：Sidebar 切场景 / drill-down
+- **Agent 推送**：Chat tool_result 带 widgetState → 自动切场景 + 更新参数
+- **分享/嵌入**：URL 参数初始化（P2+）
+
+### SSE 数据流
+
+```
+前端 ChatPanel
+  │  POST /api/chat { messages, config: {model, style, lang} }
+  ▼
+CF Worker (SSE 中间件)
+  │  → MiniMax M2 (OpenAI 兼容格式)
+  │  ← choices[0].delta.content / tool_calls
+  │
+  │  Worker 转换:
+  │    delta.content     → {"type":"text_delta","text":"..."}
+  │    delta.tool_calls  → {"type":"tool_call","tool":{name,id,arguments}}
+  │    finish_reason=tool_calls → 内部执行 tool → {"type":"tool_result","result":{...},"widgetState":{...}}
+  │    <think> 标签     → 过滤掉
+  ▼
+前端 mcpClient.ts 解析
+  │  text_delta → 消息气泡追加文字
+  │  tool_call → 显示 ToolCallBadge
+  │  tool_result → handleToolResult(name, result, widgetState)
+  ▼
+App.tsx
+  │  widgetState → setAgentWidgetState
+  │  useEffect → switchScene(映射场景) + 更新 symbol/market/interval
+  ▼
+主区域渲染对应 Widget（KLine / Heatmap / Overlay / ...）
+```
+
+### WidgetState Schema
+
+```typescript
+interface WidgetState {
+  type: string;               // 'kline' | 'heatmap' | 'overlay' | ...
+  [key: string]: unknown;     // Widget 特定参数
+}
+```
+
+Worker 端 `toWidgetState(toolName, args)` 映射：
+
+| tool name | widgetState.type | 额外字段 |
+|---|---|---|
+| `gainlab_kline` | `kline` | symbol, market, period |
+| `gainlab_indicators` | `kline` | symbol, market, period, indicators[] |
+| `gainlab_wrb_scoring` | `kline` | symbol, market, period, showWRB |
+| `gainlab_heatmap` | `heatmap` | market |
+| `gainlab_overlay` | `overlay` | symbols[], markets[], period |
+| `gainlab_fundamentals` | `fundamentals` | symbol, market |
+| `gainlab_volume_profile` | `volume_profile` | symbol, market, period |
+
+widgetState.type → 场景映射：
+
+| type | 目标场景 |
+|---|---|
+| `kline` | `stock_analysis` |
+| `heatmap` | `market_heat` |
+| `overlay` | `stock_analysis` |
+| `fundamentals` | `stock_analysis` |
+| `volume_profile` | `stock_analysis` |
+| `sentiment` | `snapshot` |
+
+### 降级策略
+
+- Worker 未注入 widgetState → 前端走现有 handleToolResult 逻辑（数据转换 + 硬编码渲染）
+- 未知 widgetState.type → 忽略，不报错
+
+---
+
 ## 与外部系统的关系
 
 ```
 CF Worker: gainlab-api.asher-sun.workers.dev
-  ├── POST /api/chat     — AI 对话（SSE stream）
+  ├── POST /api/chat     — AI 对话（SSE 中间件：MiniMax 格式转换 + tool 执行 + widgetState 注入）
   ├── GET /api/kline      — K线数据（所有市场）
   ├── GET /api/quote      — 实时报价
   ├── GET /api/search     — 资产搜索

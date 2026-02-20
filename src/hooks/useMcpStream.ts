@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { streamChat } from '../services/mcpClient';
 import type { McpMessage, McpToolCall } from '../types/mcp';
+import type { WidgetState } from '../types/widget-state';
 
 export interface ChatMessage {
   id: string;
@@ -15,7 +16,7 @@ interface UseMcpStreamResult {
   activeToolCall: McpToolCall | null;
   sendMessage: (
     text: string,
-    onToolResult?: (toolName: string, result: unknown) => void,
+    onToolResult?: (toolName: string, result: unknown, widgetState?: WidgetState) => void,
   ) => Promise<void>;
   clearMessages: () => void;
 }
@@ -36,7 +37,7 @@ export function useMcpStream(): UseMcpStreamResult {
   const activeToolCallRef = useRef<McpToolCall | null>(null);
 
   const sendMessage = useCallback(
-    async (text: string, onToolResult?: (toolName: string, result: unknown) => void) => {
+    async (text: string, onToolResult?: (toolName: string, result: unknown, widgetState?: WidgetState) => void) => {
       if (streaming || !text.trim()) return;
 
       // 追加用户消息到 UI
@@ -84,7 +85,7 @@ export function useMcpStream(): UseMcpStreamResult {
           } else if (event.type === 'tool_result' && event.result !== undefined) {
             // 通知 App 更新 Widget（用 ref 取最新 tool call，避免 stale closure）
             if (activeToolCallRef.current && onToolResult) {
-              onToolResult(activeToolCallRef.current.name, event.result);
+              onToolResult(activeToolCallRef.current.name, event.result, event.widgetState);
             }
             activeToolCallRef.current = null;
             setActiveToolCall(null);
