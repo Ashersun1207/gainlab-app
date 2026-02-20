@@ -208,3 +208,17 @@ export const TOOL_MARKET_SUPPORT: Record<ToolType, MarketType[]> = {
 
 /** CF Worker base URL（从 .env VITE_WORKER_URL 读取） */
 export const WORKER_URL = import.meta.env.VITE_WORKER_URL as string;
+
+/** (#6) NOW 场景默认报价资产列表 — 从 App.tsx 移出 */
+export const NOW_QUOTE_ITEMS: Array<{ symbol: string; displayName: string; market: MarketType }> = [
+  { symbol: 'BTCUSDT', displayName: 'Bitcoin', market: 'crypto' },
+  { symbol: 'ETHUSDT', displayName: 'Ethereum', market: 'crypto' },
+  { symbol: 'SOLUSDT', displayName: 'Solana', market: 'crypto' },
+  { symbol: 'BNBUSDT', displayName: 'BNB', market: 'crypto' },
+  { symbol: 'XRPUSDT', displayName: 'XRP', market: 'crypto' },
+  { symbol: 'AAPL', displayName: 'Apple', market: 'us' },
+  { symbol: 'MSFT', displayName: 'Microsoft', market: 'us' },
+  { symbol: 'NVDA', displayName: 'NVIDIA', market: 'us' },
+  { symbol: 'TSLA', displayName: 'Tesla', market: 'us' },
+  { symbol: 'XAUUSD.FOREX', displayName: 'Gold', market: 'metal' },
+];

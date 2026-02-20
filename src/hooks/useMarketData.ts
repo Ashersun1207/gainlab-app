@@ -20,10 +20,15 @@ export function useMarketData(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [quote, setQuote] = useState<UseMarketDataResult['quote']>(null);
-  const cancelledRef = useRef(false);
+  // (#11) AbortController 真正取消进行中的请求，而非只忽略结果
+  const abortRef = useRef<AbortController | null>(null);
 
   const fetchData = useCallback(async () => {
-    cancelledRef.current = false;
+    // 取消上一次请求
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     setError(null);
 
@@ -33,7 +38,7 @@ export function useMarketData(
         getQuote(symbol, market),
       ]);
 
-      if (cancelledRef.current) return;
+      if (controller.signal.aborted) return;
 
       if (kline.status === 'fulfilled') {
         setKlineData(kline.value);
@@ -49,7 +54,7 @@ export function useMarketData(
         setQuote(q.value);
       }
     } finally {
-      if (!cancelledRef.current) {
+      if (!controller.signal.aborted) {
         setLoading(false);
       }
     }
@@ -58,7 +63,7 @@ export function useMarketData(
   useEffect(() => {
     if (symbol) fetchData();
     return () => {
-      cancelledRef.current = true;
+      abortRef.current?.abort();
     };
   }, [fetchData, symbol]);
 

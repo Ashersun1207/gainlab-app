@@ -232,100 +232,40 @@ export const ROUTABLE_SCENES = [
 ] as const;
 export type RoutableScene = (typeof ROUTABLE_SCENES)[number];
 
-// ── Symbol → display name mapping ──
-
-export const SYMBOL_DISPLAY: Record<string, string> = {
-  BTC: 'BTC/USDT',
-  ETH: 'ETH/USDT',
-  SOL: 'SOL/USDT',
-  BNB: 'BNB/USDT',
-  XRP: 'XRP/USDT',
-  ADA: 'ADA/USDT',
-  DOGE: 'DOGE/USDT',
-  AVAX: 'AVAX/USDT',
-  DOT: 'DOT/USDT',
-  LINK: 'LINK/USDT',
-  UNI: 'UNI/USDT',
-  MATIC: 'MATIC/USDT',
-  ATOM: 'ATOM/USDT',
-  APT: 'APT/USDT',
-  ARB: 'ARB/USDT',
-  OP: 'OP/USDT',
-  NEAR: 'NEAR/USDT',
-  FIL: 'FIL/USDT',
-  ICP: 'ICP/USDT',
-  AAVE: 'AAVE/USDT',
-  BTCUSDT: 'BTC/USDT',
-  ETHUSDT: 'ETH/USDT',
-  SOLUSDT: 'SOL/USDT',
-  AAPL: 'AAPL',
-  NVDA: 'NVDA',
-  MSFT: 'MSFT',
-  TSLA: 'TSLA',
-  SPY: 'SPY',
-  XAU: 'XAU/USD',
-  'S&P 500': 'S&P 500',
-  'Dow Jones': 'Dow Jones',
-  NASDAQ: 'NASDAQ',
-  'FTSE 100': 'FTSE 100',
-  DAX: 'DAX',
-  Nikkei: 'Nikkei',
-  恒生: '恒生指数',
-  上证: '上证指数',
-  'XAU/USD': 'XAU/USD',
-  'XAG/USD': 'XAG/USD',
-  'EUR/USD': 'EUR/USD',
-  'GBP/USD': 'GBP/USD',
-  'USD/JPY': 'USD/JPY',
-  WTI: 'WTI',
-};
-
 // ── Symbol → market inference ──
+// (#13) 精简：crypto 代币用后缀规则推导，非 crypto 保留小表
 
-export const SYMBOL_MARKET: Record<string, string> = {
-  BTC: 'crypto',
-  ETH: 'crypto',
-  SOL: 'crypto',
-  BNB: 'crypto',
-  XRP: 'crypto',
-  ADA: 'crypto',
-  DOGE: 'crypto',
-  AVAX: 'crypto',
-  DOT: 'crypto',
-  LINK: 'crypto',
-  UNI: 'crypto',
-  MATIC: 'crypto',
-  ATOM: 'crypto',
-  APT: 'crypto',
-  ARB: 'crypto',
-  OP: 'crypto',
-  NEAR: 'crypto',
-  FIL: 'crypto',
-  ICP: 'crypto',
-  AAVE: 'crypto',
-  BTCUSDT: 'crypto',
-  ETHUSDT: 'crypto',
-  SOLUSDT: 'crypto',
-  AAPL: 'us',
-  NVDA: 'us',
-  MSFT: 'us',
-  TSLA: 'us',
-  SPY: 'us',
-  XAU: 'metal',
-  'S&P 500': 'us',
-  'Dow Jones': 'us',
-  NASDAQ: 'us',
-  'FTSE 100': 'uk',
-  DAX: 'eu',
-  Nikkei: 'jp',
-  恒生: 'hk',
-  上证: 'cn',
-  'XAU/USD': 'metal',
-  'XAG/USD': 'metal',
-  'EUR/USD': 'fx',
-  'GBP/USD': 'fx',
-  'USD/JPY': 'fx',
+const KNOWN_CRYPTO = new Set([
+  'BTC', 'ETH', 'SOL', 'BNB', 'XRP', 'ADA', 'DOGE', 'AVAX', 'DOT', 'LINK',
+  'UNI', 'MATIC', 'ATOM', 'APT', 'ARB', 'OP', 'NEAR', 'FIL', 'ICP', 'AAVE',
+]);
+
+/** 非 crypto 资产的固定映射（不可自动推导的部分） */
+const NON_CRYPTO_MARKET: Record<string, string> = {
+  AAPL: 'us', NVDA: 'us', MSFT: 'us', TSLA: 'us', SPY: 'us',
+  'S&P 500': 'us', 'Dow Jones': 'us', NASDAQ: 'us',
+  'FTSE 100': 'uk', DAX: 'eu', Nikkei: 'jp',
+  恒生: 'hk', HSI: 'hk', 上证: 'cn', SSE: 'cn',
+  XAU: 'metal', 'XAU/USD': 'metal', 'XAG/USD': 'metal',
+  'EUR/USD': 'fx', 'GBP/USD': 'fx', 'USD/JPY': 'fx',
   WTI: 'comm',
-  HSI: 'hk',
-  SSE: 'cn',
 };
+
+/**
+ * 推导 symbol 所属 market。
+ * 规则：USDT 后缀 → crypto | KNOWN_CRYPTO 集合 → crypto | 小表查找 → 对应市场 | fallback crypto
+ */
+export function inferMarket(symbol: string): string {
+  if (symbol.endsWith('USDT')) return 'crypto';
+  if (KNOWN_CRYPTO.has(symbol)) return 'crypto';
+  return NON_CRYPTO_MARKET[symbol] ?? 'crypto';
+}
+
+/**
+ * @deprecated 用 inferMarket(symbol) 代替。保留兼容旧代码。
+ * 生成一个 Proxy 对象，访问任意 key 时动态推导 market。
+ */
+export const SYMBOL_MARKET: Record<string, string> = new Proxy(
+  NON_CRYPTO_MARKET,
+  { get: (_target, prop: string) => inferMarket(prop) },
+);

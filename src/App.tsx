@@ -1,8 +1,10 @@
-import { useState, useCallback, useRef, Suspense, lazy } from 'react';
+import { useState, useCallback, Suspense, lazy } from 'react';
 import { useResponsive } from './hooks/useResponsive';
 import { useMarketData } from './hooks/useMarketData';
 import { useScene } from './hooks/useScene';
 import { useResizable } from './hooks/useResizable';
+import { useAgentWidgets } from './hooks/useAgentWidgets';
+import { useHiddenWidgets } from './hooks/useHiddenWidgets';
 import { Sidebar } from './layout/Sidebar';
 import { HeaderBar } from './layout/HeaderBar';
 import { WidgetPanel } from './layout/WidgetPanel';
@@ -13,13 +15,10 @@ import { HeatmapScene } from './scenes/HeatmapScene';
 import { AgentView } from './scenes/AgentView';
 import { PlaceholderScene } from './scenes/PlaceholderScene';
 import { KLineHeader } from './widgets/KLineWidget/KLineHeader';
-import { mcpToKLine } from './services/dataAdapter';
-import { validateWidgetState, isKlineWidget } from './catalog';
-import type { AgentWidgetItem } from './scenes/AgentView';
+import { NOW_QUOTE_ITEMS } from './constants/markets';
 import { t } from './i18n';
 import { Settings } from './layout/Settings';
 import type { MarketType, TimeInterval } from './types/market';
-import type { WidgetState } from './types/widget-state';
 
 // --- Code-split heavy widgets (G7) ---
 const LazyChatPanel = lazy(() =>
@@ -36,8 +35,6 @@ const LazyFundamentalsWidget = lazy(() =>
     default: m.FundamentalsWidget,
   })),
 );
-
-// --- NOW page widgets (T11) ---
 const LazyQuoteTableWidget = lazy(() =>
   import('./widgets/QuoteTableWidget').then((m) => ({ default: m.QuoteTableWidget })),
 );
@@ -51,7 +48,6 @@ const LazyForexCommodityWidget = lazy(() =>
   import('./widgets/ForexCommodityWidget').then((m) => ({ default: m.ForexCommodityWidget })),
 );
 
-// --- Loading placeholder (dark themed) ---
 function LoadingPlaceholder() {
   return (
     <div className="w-full h-full flex items-center justify-center bg-[#1a1a2e] text-[#8888aa] text-sm">
@@ -60,28 +56,10 @@ function LoadingPlaceholder() {
   );
 }
 
-// --- NOW scene: 四市场报价表 items ---
-const NOW_QUOTE_ITEMS = [
-  { symbol: 'BTCUSDT', displayName: 'Bitcoin', market: 'crypto' as MarketType },
-  { symbol: 'ETHUSDT', displayName: 'Ethereum', market: 'crypto' as MarketType },
-  { symbol: 'SOLUSDT', displayName: 'Solana', market: 'crypto' as MarketType },
-  { symbol: 'BNBUSDT', displayName: 'BNB', market: 'crypto' as MarketType },
-  { symbol: 'XRPUSDT', displayName: 'XRP', market: 'crypto' as MarketType },
-  { symbol: 'AAPL', displayName: 'Apple', market: 'us' as MarketType },
-  { symbol: 'MSFT', displayName: 'Microsoft', market: 'us' as MarketType },
-  { symbol: 'NVDA', displayName: 'NVIDIA', market: 'us' as MarketType },
-  { symbol: 'TSLA', displayName: 'Tesla', market: 'us' as MarketType },
-  { symbol: 'XAUUSD.FOREX', displayName: 'Gold', market: 'metal' as MarketType },
-];
-
 /** 获取资产显示名（如 "BTC / USDT"） */
 function formatSymbolDisplay(symbol: string): string {
-  if (symbol.endsWith('USDT')) {
-    return `${symbol.slice(0, -4)} / USDT`;
-  }
-  if (symbol.includes('.')) {
-    return symbol.split('.')[0];
-  }
+  if (symbol.endsWith('USDT')) return `${symbol.slice(0, -4)} / USDT`;
+  if (symbol.includes('.')) return symbol.split('.')[0];
   return symbol;
 }
 
@@ -99,112 +77,56 @@ function toMarketType(label: string): MarketType {
 function App() {
   const { isMobile } = useResponsive();
 
-  // ── Language state (counter forces full re-render without remounting) ──
+  // ── Language ──
   const [, setLangVersion] = useState(0);
   const handleLangChange = useCallback((_newLang: 'zh' | 'en') => {
     setLangVersion((v) => v + 1);
   }, []);
 
-  // ── Settings panel ──
+  // ── Settings ──
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // ── Scene management (replaces old activeScene useState) ──
-  const { activeScene, sceneParams, switchScene, isImplemented } =
-    useScene();
-
-  // ── Derive market/symbol/interval from sceneParams ──
+  // ── Scene ──
+  const { activeScene, sceneParams, switchScene, isImplemented } = useScene();
   const activeSymbol = sceneParams.symbol ?? 'BTCUSDT';
   const activeMarket = (sceneParams.market ?? 'crypto') as MarketType;
   const activeInterval = sceneParams.period ?? '1D';
 
-  // ── Indicators ──
+  // ── Chart controls ──
   const [activeIndicators, setActiveIndicators] = useState<string[]>(['MA']);
-
-  // ── Chart type ──
   const [chartType, setChartType] = useState('candle_solid');
-
-  // ── Drawing tools ──
   const [drawingToolOpen, setDrawingToolOpen] = useState(false);
-
-  // ── Resize ──
-  const { handleResizeStart } = useResizable('.ck-grid', 150, 500);
-
-  // ── Chat (desktop default open, mobile default closed) ──
-  const [chatOpen, setChatOpen] = useState(!isMobile);
-
-  // ── Data ──
-  const { klineData, quote } = useMarketData(activeSymbol, activeMarket, activeInterval);
-
-  // ── Agent Widgets 累积列表 ──
-  const [agentWidgets, setAgentWidgets] = useState<AgentWidgetItem[]>([]);
-  const agentWidgetCounterRef = useRef(0);
-  const agentRoundRef = useRef(0); // 当前对话轮次，每次用户发消息 +1
-  const currentRoundWidgetsRef = useRef(0); // 当前轮次已收到的 widget 数
-
-  // ── 隐藏的 Widget（全局，按 key 标记）──
-  const [hiddenWidgets, setHiddenWidgets] = useState<Set<string>>(new Set());
-  const hideWidget = useCallback((key: string) => {
-    setHiddenWidgets((prev) => new Set(prev).add(key));
-  }, []);
-
-  // ── Indicator toggle ──
   const handleIndicatorToggle = useCallback((ind: string) => {
     setActiveIndicators((prev) =>
       prev.includes(ind) ? prev.filter((i) => i !== ind) : [...prev, ind],
     );
   }, []);
 
-  // ── 新一轮对话开始（ChatPanel 发消息时调用）──
-  const handleNewRound = useCallback(() => {
-    agentRoundRef.current++;
-    currentRoundWidgetsRef.current = 0;
-  }, []);
+  // ── Resize ──
+  const { handleResizeStart } = useResizable('.ck-grid', 150, 500);
 
-  // ── Chat tool result → 追加 Widget 到 Agent 场景 ──
-  const handleToolResult = useCallback((toolName: string, result: unknown, widgetState?: WidgetState) => {
-    // 验证 widgetState（不合法 → 丢弃）
-    const validated = widgetState ? validateWidgetState(widgetState) : null;
-    if (!validated) return;
+  // ── Chat ──
+  const [chatOpen, setChatOpen] = useState(!isMobile);
+  const toggleChat = useCallback(() => setChatOpen((prev) => !prev), []);
 
-    // 构造 Widget item
-    const item: AgentWidgetItem = {
-      id: `aw_${++agentWidgetCounterRef.current}_${Date.now()}`,
-      widgetState: validated,
-      klineData: undefined,
-    };
+  // ── Data ──
+  const { klineData, quote } = useMarketData(activeSymbol, activeMarket, activeInterval);
+  const effectiveKlineData = klineData.length > 0 ? klineData : undefined;
 
-    // 从 registry 判断是否需要 kline 数据转换（替代硬编码 klineTools 数组）
-    if (isKlineWidget(validated.type)) {
-      item.klineData = mcpToKLine(result);
-    }
+  // ── (#4) Agent Widgets — extracted hook ──
+  const {
+    agentWidgets,
+    handleToolResult,
+    handleNewRound,
+    clearAgentWidgets,
+    removeAgentWidget,
+  } = useAgentWidgets(switchScene);
 
-    // 本轮第一个 widget → 清空旧的
-    currentRoundWidgetsRef.current++;
-    if (currentRoundWidgetsRef.current === 1) {
-      setAgentWidgets([item]);
-    } else {
-      setAgentWidgets((prev) => [...prev, item]);
-    }
-    switchScene('ai');
-  }, [switchScene]);
-
-  // ── Toggle chat ──
-  const toggleChat = useCallback(() => {
-    setChatOpen((prev) => !prev);
-  }, []);
-
-  // Effective kline data: market data for stock_analysis scene
-  const effectiveKlineData =
-    klineData.length > 0 ? klineData : undefined;
-
-  /** Widget key for hide/show — scoped to scene */
-  const wkey = (title: string) => `${activeScene}:${title}`;
-  const isHidden = (title: string) => hiddenWidgets.has(wkey(title));
-  const closeHandler = (title: string) => () => hideWidget(wkey(title));
+  // ── (#4) Hidden Widgets — extracted hook ──
+  const { hideWidget, isHidden, closeHandler } = useHiddenWidgets(activeScene);
 
   // ── Scene content renderer ──
   const renderScene = () => {
-    // Unimplemented scenes → placeholder
     if (!isImplemented) {
       return <PlaceholderScene sceneId={activeScene} />;
     }
@@ -217,68 +139,44 @@ function App() {
             <WidgetPanel title="QUOTES" subtitle={t('w_four_markets')} onClose={closeHandler('QUOTES')}>
               <ErrorBoundary label="QuoteTable">
                 <Suspense fallback={<LoadingPlaceholder />}>
-                  <LazyQuoteTableWidget
-                    title=""
-                    items={NOW_QUOTE_ITEMS}
-                  />
+                  <LazyQuoteTableWidget title="" items={NOW_QUOTE_ITEMS} />
                 </Suspense>
               </ErrorBoundary>
             </WidgetPanel>
             )}
-
             {!isHidden('SENTIMENT') && (
             <WidgetPanel title="SENTIMENT" subtitle={t('w_market_mood')} onClose={closeHandler('SENTIMENT')}>
               <ErrorBoundary label="Sentiment">
-                <Suspense fallback={<LoadingPlaceholder />}>
-                  <LazySentimentWidget headless />
-                </Suspense>
+                <Suspense fallback={<LoadingPlaceholder />}><LazySentimentWidget headless /></Suspense>
               </ErrorBoundary>
             </WidgetPanel>
             )}
-
             {!isHidden('GLOBAL INDEX') && (
             <WidgetPanel title="GLOBAL INDEX" subtitle={t('w_world_indices')} onClose={closeHandler('GLOBAL INDEX')}>
               <ErrorBoundary label="GlobalIndex">
-                <Suspense fallback={<LoadingPlaceholder />}>
-                  <LazyGlobalIndexWidget headless />
-                </Suspense>
+                <Suspense fallback={<LoadingPlaceholder />}><LazyGlobalIndexWidget headless /></Suspense>
               </ErrorBoundary>
             </WidgetPanel>
             )}
-
             {!isHidden('HEATMAP') && (
             <WidgetPanel title="HEATMAP" subtitle={`${activeMarket.charAt(0).toUpperCase() + activeMarket.slice(1)} ▾`} onClose={closeHandler('HEATMAP')}>
               <ErrorBoundary label="Heatmap">
-                <Suspense fallback={<LoadingPlaceholder />}>
-                  <LazyHeatmapWidget market={activeMarket} />
-                </Suspense>
+                <Suspense fallback={<LoadingPlaceholder />}><LazyHeatmapWidget market={activeMarket} /></Suspense>
               </ErrorBoundary>
             </WidgetPanel>
             )}
-
             {!isHidden('FX & COMM') && (
             <WidgetPanel title="FX & COMM" subtitle={t('w_forex_comm')} onClose={closeHandler('FX & COMM')}>
               <ErrorBoundary label="ForexCommodity">
-                <Suspense fallback={<LoadingPlaceholder />}>
-                  <LazyForexCommodityWidget headless />
-                </Suspense>
+                <Suspense fallback={<LoadingPlaceholder />}><LazyForexCommodityWidget headless /></Suspense>
               </ErrorBoundary>
             </WidgetPanel>
             )}
-
             {!isHidden('CHART') && (
             <WidgetPanel title="CHART" subtitle={formatSymbolDisplay(activeSymbol)} onClose={closeHandler('CHART')}>
               <ErrorBoundary label="KLine">
                 <Suspense fallback={<LoadingPlaceholder />}>
-                  <LazyKLineWidget
-                    key={activeSymbol}
-                    symbol={activeSymbol}
-                    market={activeMarket}
-                    data={effectiveKlineData}
-                    indicators={activeIndicators}
-                    showWRB={false}
-                    showVP={false}
-                  />
+                  <LazyKLineWidget key={activeSymbol} symbol={activeSymbol} market={activeMarket} data={effectiveKlineData} indicators={activeIndicators} showWRB={false} showVP={false} />
                 </Suspense>
               </ErrorBoundary>
             </WidgetPanel>
@@ -290,7 +188,11 @@ function App() {
         return (
           <div className="flex-1 min-h-0">
             <ErrorBoundary label="HeatmapScene">
-              <HeatmapScene market={activeMarket} onCloseWidget={(k) => hideWidget(wkey(k))} isHidden={(k) => hiddenWidgets.has(wkey(k))} />
+              <HeatmapScene
+                market={activeMarket}
+                onCloseWidget={(k) => hideWidget(`${activeScene}:${k}`)}
+                isHidden={(k) => isHidden(k)}
+              />
             </ErrorBoundary>
           </div>
         );
@@ -298,11 +200,7 @@ function App() {
       case 'ai':
         return (
           <div className="flex-1 min-h-0">
-            <AgentView
-              widgets={agentWidgets}
-              onClear={() => setAgentWidgets([])}
-              onRemoveWidget={(id) => setAgentWidgets((prev) => prev.filter((w) => w.id !== id))}
-            />
+            <AgentView widgets={agentWidgets} onClear={clearAgentWidgets} onRemoveWidget={removeAgentWidget} />
           </div>
         );
 
@@ -310,7 +208,6 @@ function App() {
       default:
         return (
           <>
-            {/* KLine area */}
             {!isHidden('KLINE') && (
             <div className="ck-kline">
               <KLineHeader
@@ -327,96 +224,57 @@ function App() {
                 activeIndicators={activeIndicators}
                 onIndicatorToggle={handleIndicatorToggle}
                 drawingToolOpen={drawingToolOpen}
-                onDrawingToolToggle={() => setDrawingToolOpen(v => !v)}
+                onDrawingToolToggle={() => setDrawingToolOpen((v) => !v)}
                 onClose={closeHandler('KLINE')}
               />
               <ErrorBoundary label="KLine">
                 <Suspense fallback={<LoadingPlaceholder />}>
-                  <LazyKLineWidget
-                    key={activeSymbol}
-                    symbol={activeSymbol}
-                    market={activeMarket}
-                    data={effectiveKlineData}
-                    indicators={activeIndicators}
-                    showWRB={false}
-                    showVP={false}
-                    drawingToolOpen={drawingToolOpen}
-                  />
+                  <LazyKLineWidget key={activeSymbol} symbol={activeSymbol} market={activeMarket} data={effectiveKlineData} indicators={activeIndicators} showWRB={false} showVP={false} drawingToolOpen={drawingToolOpen} />
                 </Suspense>
               </ErrorBoundary>
             </div>
             )}
-
-            {/* Resize handle */}
             <div className="ck-resize" onMouseDown={handleResizeStart} />
-
-            {/* 3×2 Widget grid */}
             <div className="ck-grid">
               {!isHidden('HEATMAP') && (
               <WidgetPanel title="HEATMAP" subtitle={`${activeMarket.charAt(0).toUpperCase() + activeMarket.slice(1)} ▾`} onClose={closeHandler('HEATMAP')}>
                 <ErrorBoundary label="Heatmap">
-                  <Suspense fallback={<LoadingPlaceholder />}>
-                    <LazyHeatmapWidget
-                      market={activeMarket}
-                    />
-                  </Suspense>
+                  <Suspense fallback={<LoadingPlaceholder />}><LazyHeatmapWidget market={activeMarket} /></Suspense>
                 </ErrorBoundary>
               </WidgetPanel>
               )}
-
               {!isHidden('FUNDAMENTALS') && (
               <WidgetPanel title="FUNDAMENTALS" subtitle={`${activeSymbol} ▾`} onClose={closeHandler('FUNDAMENTALS')}>
                 <ErrorBoundary label="Fundamentals">
-                  <Suspense fallback={<LoadingPlaceholder />}>
-                    <LazyFundamentalsWidget symbol={activeSymbol} headless />
-                  </Suspense>
+                  <Suspense fallback={<LoadingPlaceholder />}><LazyFundamentalsWidget symbol={activeSymbol} headless /></Suspense>
                 </ErrorBoundary>
               </WidgetPanel>
               )}
-
               {!isHidden('QUOTES') && (
               <WidgetPanel title="QUOTES" subtitle={t('w_four_markets')} onClose={closeHandler('QUOTES')}>
                 <ErrorBoundary label="QuoteTable">
-                  <Suspense fallback={<LoadingPlaceholder />}>
-                    <LazyQuoteTableWidget
-                      title=""
-                      items={NOW_QUOTE_ITEMS}
-                    />
-                  </Suspense>
+                  <Suspense fallback={<LoadingPlaceholder />}><LazyQuoteTableWidget title="" items={NOW_QUOTE_ITEMS} /></Suspense>
                 </ErrorBoundary>
               </WidgetPanel>
               )}
-
               {!isHidden('SENTIMENT') && (
               <WidgetPanel title="SENTIMENT" subtitle={t('w_market_mood')} onClose={closeHandler('SENTIMENT')}>
                 <ErrorBoundary label="Sentiment">
-                  <Suspense fallback={<LoadingPlaceholder />}>
-                    <LazySentimentWidget headless />
-                  </Suspense>
+                  <Suspense fallback={<LoadingPlaceholder />}><LazySentimentWidget headless /></Suspense>
                 </ErrorBoundary>
               </WidgetPanel>
               )}
-
               {!isHidden('GLOBAL INDEX') && (
               <WidgetPanel title="GLOBAL INDEX" subtitle={t('w_world_indices')} onClose={closeHandler('GLOBAL INDEX')}>
                 <ErrorBoundary label="GlobalIndex">
-                  <Suspense fallback={<LoadingPlaceholder />}>
-                    <LazyGlobalIndexWidget
-                      headless
-                    />
-                  </Suspense>
+                  <Suspense fallback={<LoadingPlaceholder />}><LazyGlobalIndexWidget headless /></Suspense>
                 </ErrorBoundary>
               </WidgetPanel>
               )}
-
               {!isHidden('FX & COMM') && (
               <WidgetPanel title="FX & COMM" subtitle={t('w_forex_comm')} onClose={closeHandler('FX & COMM')}>
                 <ErrorBoundary label="ForexCommodity">
-                  <Suspense fallback={<LoadingPlaceholder />}>
-                    <LazyForexCommodityWidget
-                      headless
-                    />
-                  </Suspense>
+                  <Suspense fallback={<LoadingPlaceholder />}><LazyForexCommodityWidget headless /></Suspense>
                 </ErrorBoundary>
               </WidgetPanel>
               )}
@@ -426,90 +284,49 @@ function App() {
     }
   };
 
-  // ══════════════════════════════════════════════════════════
-  // Mobile layout
-  // ══════════════════════════════════════════════════════════
+  // ══════════════ Mobile ══════════════
   if (isMobile) {
     return (
       <div className="w-screen h-[100dvh] bg-[#0f0f1a] overflow-hidden flex flex-col">
-        {/* Scene content — pb-14 compensates for fixed MobileTabBar */}
         <div className="flex-1 min-h-0 flex flex-col overflow-y-auto pb-14">
           {renderScene()}
         </div>
-
-        {/* Mobile chat overlay */}
         {chatOpen && (
           <div className="mobile-overlay">
             <Suspense fallback={<LoadingPlaceholder />}>
-              <LazyChatPanel
-                onToolResult={handleToolResult}
-                onNewRound={handleNewRound}
-                onClose={() => setChatOpen(false)}
-              />
+              <LazyChatPanel onToolResult={handleToolResult} onNewRound={handleNewRound} onClose={() => setChatOpen(false)} />
             </Suspense>
           </div>
         )}
-
-        {/* Bottom Tab Bar */}
-        <MobileTabBar
-          activeScene={activeScene}
-          chatOpen={chatOpen}
-          onSceneSelect={switchScene}
-          onToggleChat={toggleChat}
-          onCloseChat={() => setChatOpen(false)}
-        />
-
-        {/* Settings overlay */}
+        <MobileTabBar activeScene={activeScene} chatOpen={chatOpen} onSceneSelect={switchScene} onToggleChat={toggleChat} onCloseChat={() => setChatOpen(false)} />
         <Settings open={settingsOpen} onClose={() => setSettingsOpen(false)} onLangChange={handleLangChange} />
       </div>
     );
   }
 
-  // ══════════════════════════════════════════════════════════
-  // Desktop layout: Sidebar + Main(HeaderBar + Scene) + Chat
-  // ══════════════════════════════════════════════════════════
+  // ══════════════ Desktop ══════════════
   return (
     <div className="w-screen h-screen bg-[#0f0f1a] overflow-hidden flex">
-      {/* Sidebar */}
       <ErrorBoundary label="Sidebar">
-        <Sidebar
-          activeScene={activeScene}
-          onSceneSelect={switchScene}
-          onToggleChat={toggleChat}
-          onOpenSettings={() => setSettingsOpen(true)}
-        />
+        <Sidebar activeScene={activeScene} onSceneSelect={switchScene} onToggleChat={toggleChat} onOpenSettings={() => setSettingsOpen(true)} />
       </ErrorBoundary>
-
-      {/* Main area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* HeaderBar */}
         <HeaderBar onToggleChat={toggleChat} />
-
-        {/* Scene content — independent flex container */}
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
           {renderScene()}
         </div>
       </div>
-
-      {/* Chat panel — default open */}
-      {/* Chat panel (右侧) */}
       {chatOpen ? (
         <div className="cp-panel">
           <ErrorBoundary label="Chat">
             <Suspense fallback={<LoadingPlaceholder />}>
-              <LazyChatPanel
-                onToolResult={handleToolResult}
-                onNewRound={handleNewRound}
-                onClose={() => setChatOpen(false)}
-              />
+              <LazyChatPanel onToolResult={handleToolResult} onNewRound={handleNewRound} onClose={() => setChatOpen(false)} />
             </Suspense>
           </ErrorBoundary>
         </div>
       ) : (
         <ChatToggle onClick={() => setChatOpen(true)} />
       )}
-
-      {/* Settings overlay */}
       <Settings open={settingsOpen} onClose={() => setSettingsOpen(false)} onLangChange={handleLangChange} />
     </div>
   );

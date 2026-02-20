@@ -10,73 +10,17 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 import { WidgetPanel } from '../layout/WidgetPanel';
 import { KLineHeader } from '../widgets/KLineWidget/KLineHeader';
 import { t } from '../i18n';
-import { registerWidget, getWidget } from '../catalog';
+import { getWidget } from '../catalog';
 import type { WidgetState } from '../types/widget-state';
 import type { KLineData } from '../types/data';
 import type { MarketType, TimeInterval } from '../types/market';
 
-// ── Lazy imports ──
+// (#12) Widget 注册已移到 catalog/widget-registration.ts，在 main.tsx 统一 import
 
+// LazyKLineWidget 仅 FullKLineCard 内部使用
 const LazyKLineWidget = lazy(() =>
   import('../widgets/KLineWidget').then((m) => ({ default: m.KLineWidget })),
 );
-const LazyHeatmapWidget = lazy(() =>
-  import('../widgets/HeatmapWidget').then((m) => ({ default: m.HeatmapWidget })),
-);
-const LazyFundamentalsWidget = lazy(() =>
-  import('../widgets/FundamentalsWidget').then((m) => ({ default: m.FundamentalsWidget })),
-);
-const LazySentimentWidget = lazy(() =>
-  import('../widgets/SentimentWidget').then((m) => ({ default: m.SentimentWidget })),
-);
-const LazyQuoteTableWidget = lazy(() =>
-  import('../widgets/QuoteTableWidget').then((m) => ({ default: m.QuoteTableWidget })),
-);
-
-// ── Widget 注册（单一注册点）──
-
-registerWidget('kline', {
-  component: LazyKLineWidget,
-  wrapper: 'kline',
-  propsMapper: () => ({}),
-});
-registerWidget('volume_profile', {
-  component: LazyKLineWidget,
-  wrapper: 'kline',
-  propsMapper: () => ({}),
-});
-registerWidget('overlay', {
-  component: LazyKLineWidget,
-  wrapper: 'kline',
-  propsMapper: () => ({}),
-});
-registerWidget('heatmap', {
-  component: LazyHeatmapWidget,
-  wrapper: 'panel',
-  title: 'HEATMAP',
-  propsMapper: (ws) => ({ market: (ws.market as string) || 'crypto' }),
-});
-registerWidget('fundamentals', {
-  component: LazyFundamentalsWidget,
-  wrapper: 'panel',
-  title: 'FUNDAMENTALS',
-  propsMapper: (ws) => ({ symbol: (ws.symbol as string) || 'BTCUSDT' }),
-});
-registerWidget('sentiment', {
-  component: LazySentimentWidget,
-  wrapper: 'panel',
-  title: 'SENTIMENT',
-  propsMapper: () => ({}),
-});
-registerWidget('quote_table', {
-  component: LazyQuoteTableWidget,
-  wrapper: 'panel',
-  title: 'QUOTES',
-  propsMapper: (ws) => ({
-    symbols: ws.symbols as string[] | undefined,
-    market: (ws.market as string) || 'crypto',
-  }),
-});
 
 function LoadingPlaceholder() {
   return (

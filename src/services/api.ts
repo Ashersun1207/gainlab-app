@@ -113,7 +113,11 @@ export async function fetchWorkerScreener(
   return data.data ?? [];
 }
 
-/** Fetch multiple quotes in parallel (batch) */
+/**
+ * Fetch multiple quotes in parallel.
+ * TODO (#10): Replace with single Worker batch endpoint when available
+ * to reduce N parallel requests to 1.
+ */
 export async function fetchBatchQuotes(
   items: Array<{ symbol: string; market: MarketType }>,
 ): Promise<Array<{ price: number; change: number; changePercent: number } | null>> {
