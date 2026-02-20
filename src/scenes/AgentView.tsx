@@ -141,7 +141,7 @@ function FullKLineCard({ item, onClose }: { item: AgentWidgetItem; onClose?: () 
         onDrawingToolToggle={() => setDrawingToolOpen((v) => !v)}
         onClose={onClose}
       />
-      <div style={{ flex: 1, minHeight: 0 }}>
+      <div style={{ flex: 1, minHeight: '400px' }}>
         <ErrorBoundary label="AgentKLine">
           <Suspense fallback={<LoadingPlaceholder />}>
             <LazyKLineWidget
@@ -250,7 +250,7 @@ export function AgentView({ widgets, onClear, onRemoveWidget }: AgentViewProps) 
         }}
       >
         {widgets.map((item) => (
-          <div key={item.id} style={{ minHeight: 250, display: 'flex', flexDirection: 'column' }}>
+          <div key={item.id} style={{ minHeight: 350, display: 'flex', flexDirection: 'column' }}>
             <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
               <AgentWidgetCard item={item} onClose={onRemoveWidget ? () => onRemoveWidget(item.id) : undefined} />
             </div>
