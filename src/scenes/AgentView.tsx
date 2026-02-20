@@ -55,11 +55,21 @@ export function AgentView({ widgetState, klineData }: AgentViewProps) {
   const symbol = (widgetState.symbol as string) || 'BTCUSDT';
   const market = (widgetState.market as MarketType) || 'crypto';
 
+  // wrap 确保 WidgetPanel 占满整个 AgentView 区域
+  const wrap = (children: React.ReactNode) => (
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <style>{`.agent-view-wrap > .wp { flex: 1; min-height: 0; }`}</style>
+      <div className="agent-view-wrap" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        {children}
+      </div>
+    </div>
+  );
+
   switch (widgetState.type) {
     case 'kline':
     case 'overlay':
     case 'volume_profile':
-      return (
+      return wrap(
         <WidgetPanel
           title={symbol}
           subtitle={`${market.toUpperCase()} · ${widgetState.period || '1D'}`}
@@ -76,22 +86,22 @@ export function AgentView({ widgetState, klineData }: AgentViewProps) {
               />
             </Suspense>
           </ErrorBoundary>
-        </WidgetPanel>
+        </WidgetPanel>,
       );
 
     case 'heatmap':
-      return (
+      return wrap(
         <WidgetPanel title="HEATMAP" subtitle={`${market.toUpperCase()}`}>
           <ErrorBoundary label="AgentHeatmap">
             <Suspense fallback={<LoadingPlaceholder />}>
               <LazyHeatmapWidget market={market} />
             </Suspense>
           </ErrorBoundary>
-        </WidgetPanel>
+        </WidgetPanel>,
       );
 
     case 'fundamentals':
-      return (
+      return wrap(
         <WidgetPanel title="FUNDAMENTALS" subtitle={symbol}>
           <ErrorBoundary label="AgentFundamentals">
             <Suspense fallback={<LoadingPlaceholder />}>
@@ -100,16 +110,16 @@ export function AgentView({ widgetState, klineData }: AgentViewProps) {
               />
             </Suspense>
           </ErrorBoundary>
-        </WidgetPanel>
+        </WidgetPanel>,
       );
 
     case 'sentiment':
-      return (
+      return wrap(
         <WidgetPanel title="SENTIMENT" subtitle={symbol}>
           <div className="w-full h-full flex items-center justify-center bg-[#0d0d20] text-[#6a6aaa] text-sm">
             Sentiment view — coming in P2
           </div>
-        </WidgetPanel>
+        </WidgetPanel>,
       );
 
     default:
