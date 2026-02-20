@@ -10,6 +10,7 @@ import { ChatToggle } from './chat/ChatToggle';
 import { MobileTabBar } from './layout/MobileTabBar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { HeatmapScene } from './scenes/HeatmapScene';
+import { AgentView } from './scenes/AgentView';
 import { PlaceholderScene } from './scenes/PlaceholderScene';
 import { KLineHeader } from './widgets/KLineWidget/KLineHeader';
 import { getRenderTarget, mcpToKLine, mcpToEChartsOption } from './services/dataAdapter';
@@ -150,14 +151,12 @@ function App() {
 
   // ── Chat tool result callback (T14.4: + widgetState) ──
   const handleToolResult = useCallback((toolName: string, result: unknown, widgetState?: WidgetState) => {
-    console.log('[App] handleToolResult', { toolName, widgetState, hasResult: !!result });
-    // T14.4: 有 widgetState → 存储，驱动场景切换
+    // T14.4: 有 widgetState → 存储 + 自动切 ai 场景
     if (widgetState) {
-      console.log('[App] setting agentWidgetState →', widgetState);
       setAgentWidgetState(widgetState);
     }
 
-    // 保留现有逻辑（数据转换 → 主区域渲染）
+    // 数据转换 → K线数据给 AgentView 用
     const target = getRenderTarget(toolName);
     if (target === 'kline') {
       const data = mcpToKLine(result);
@@ -171,30 +170,10 @@ function App() {
   }, []);
 
   // ── T14.4: widgetState → 场景切换 + 参数更新 ──
+  // T14.4: widgetState 变化 → 自动切到 AI 场景
   useEffect(() => {
     if (!agentWidgetState) return;
-
-    console.log('[App] useEffect: agentWidgetState changed →', agentWidgetState);
-
-    // widgetState.type → scene 映射
-    const sceneMap: Record<string, string> = {
-      kline: 'stock_analysis',
-      heatmap: 'market_heat',
-      overlay: 'stock_analysis',
-      fundamentals: 'stock_analysis',
-      volume_profile: 'stock_analysis',
-      sentiment: 'snapshot',
-    };
-
-    const targetScene = sceneMap[agentWidgetState.type];
-    console.log('[App] switchScene →', targetScene, { symbol: agentWidgetState.symbol, market: agentWidgetState.market });
-    if (targetScene) {
-      switchScene(targetScene, {
-        symbol: agentWidgetState.symbol as string | undefined,
-        market: agentWidgetState.market as MarketType | undefined,
-        period: agentWidgetState.period as TimeInterval | undefined,
-      });
-    }
+    switchScene('ai');
   }, [agentWidgetState, switchScene]);
 
   // ── Toggle chat ──
@@ -288,15 +267,24 @@ function App() {
 
       case 'ai':
         return (
-          <div className="flex-1 min-h-0">
-            <ErrorBoundary label="Chat">
-              <Suspense fallback={<LoadingPlaceholder />}>
-                <LazyChatPanel
-                  onToolResult={handleToolResult}
-                  onClose={() => switchScene('stock_analysis')}
-                />
-              </Suspense>
-            </ErrorBoundary>
+          <div className="flex-1 min-h-0 flex" style={{ overflow: 'hidden' }}>
+            {/* 左：Chat 面板 */}
+            <div style={{ width: 360, minWidth: 300, flexShrink: 0, height: '100%' }}>
+              <ErrorBoundary label="Chat">
+                <Suspense fallback={<LoadingPlaceholder />}>
+                  <LazyChatPanel
+                    onToolResult={handleToolResult}
+                  />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+            {/* 右：Agent 可视化区域 */}
+            <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
+              <AgentView
+                widgetState={agentWidgetState}
+                klineData={chatKlineData ?? undefined}
+              />
+            </div>
           </div>
         );
 
@@ -469,19 +457,22 @@ function App() {
       </div>
 
       {/* Chat panel — default open */}
-      {chatOpen ? (
-        <div className="cp-panel">
-          <ErrorBoundary label="Chat">
-            <Suspense fallback={<LoadingPlaceholder />}>
-              <LazyChatPanel
-                onToolResult={handleToolResult}
-                onClose={() => setChatOpen(false)}
-              />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-      ) : (
-        <ChatToggle onClick={() => setChatOpen(true)} />
+      {/* Chat panel — 在 AI 场景时隐藏（Chat 已内嵌在场景中） */}
+      {activeScene !== 'ai' && (
+        chatOpen ? (
+          <div className="cp-panel">
+            <ErrorBoundary label="Chat">
+              <Suspense fallback={<LoadingPlaceholder />}>
+                <LazyChatPanel
+                  onToolResult={handleToolResult}
+                  onClose={() => setChatOpen(false)}
+                />
+              </Suspense>
+            </ErrorBoundary>
+          </div>
+        ) : (
+          <ChatToggle onClick={() => setChatOpen(true)} />
+        )
       )}
 
       {/* Settings overlay */}

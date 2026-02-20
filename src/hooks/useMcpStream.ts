@@ -84,7 +84,6 @@ export function useMcpStream(): UseMcpStreamResult {
             );
           } else if (event.type === 'tool_result' && event.result !== undefined) {
             // 通知 App 更新 Widget（用 ref 取最新 tool call，避免 stale closure）
-            console.log('[MCP] tool_result received', { hasToolCall: !!activeToolCallRef.current, hasCallback: !!onToolResult, widgetState: event.widgetState });
             if (activeToolCallRef.current && onToolResult) {
               onToolResult(activeToolCallRef.current.name, event.result, event.widgetState);
             }
