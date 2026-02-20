@@ -147,6 +147,7 @@ function FullKLineCard({ item, onClose }: { item: AgentWidgetItem; onClose?: () 
             <LazyKLineWidget
               key={item.id}
               symbol={symbol}
+              market={market}
               data={klineData}
               indicators={activeIndicators}
               showWRB={widgetState.showWRB as boolean | undefined}

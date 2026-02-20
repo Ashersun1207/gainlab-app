@@ -273,6 +273,7 @@ function App() {
                   <LazyKLineWidget
                     key={activeSymbol}
                     symbol={activeSymbol}
+                    market={activeMarket}
                     data={effectiveKlineData}
                     indicators={activeIndicators}
                     showWRB={false}
@@ -334,6 +335,7 @@ function App() {
                   <LazyKLineWidget
                     key={activeSymbol}
                     symbol={activeSymbol}
+                    market={activeMarket}
                     data={effectiveKlineData}
                     indicators={activeIndicators}
                     showWRB={false}

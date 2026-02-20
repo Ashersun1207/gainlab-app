@@ -6,6 +6,7 @@ import { volumeProfileTemplate } from './overlays/volumeProfile';
 import { detectWRB } from '../WRBWidget/detectWRB';
 import { calculateVP } from '../VolumeProfileWidget/calculateVP';
 import { fetchWorkerKline } from '../../services/api';
+import type { MarketType } from '../../types/market';
 
 // Register overlay templates once
 registerOverlay(wrbHighlightTemplate);
@@ -47,6 +48,7 @@ const SAMPLE_DATA: KLineData[] = [
 
 interface KLineWidgetProps {
   symbol?: string;
+  market?: MarketType;
   data?: KLineData[];
   indicators?: string[];
   showWRB?: boolean;
@@ -71,9 +73,9 @@ function DrawingToolsOverlay({ open }: { open: boolean }) {
 }
 
 /** 通过 CF Worker 获取 K线数据（不直连 Binance，中国封锁） */
-async function fetchFallbackKline(symbol: string): Promise<KLineData[] | null> {
+async function fetchFallbackKline(symbol: string, market: MarketType = 'crypto'): Promise<KLineData[] | null> {
   try {
-    return await fetchWorkerKline(symbol, 'crypto', '1D');
+    return await fetchWorkerKline(symbol, market, '1D');
   } catch {
     return null;
   }
@@ -81,6 +83,7 @@ async function fetchFallbackKline(symbol: string): Promise<KLineData[] | null> {
 
 export function KLineWidget({
   symbol = 'BTCUSDT',
+  market = 'crypto',
   data: externalData,
   indicators = ['RSI'],
   showWRB = false,
@@ -145,7 +148,7 @@ export function KLineWidget({
       chart.setDataList(SAMPLE_DATA);
 
       // 后台尝试真实数据（走 CF Worker 代理）
-      fetchFallbackKline(symbol).then((fetched) => {
+      fetchFallbackKline(symbol, market).then((fetched) => {
         if (fetched && chartRef.current) {
           chartRef.current.setDataList(fetched);
           setError(null);
@@ -161,7 +164,7 @@ export function KLineWidget({
       if (container) dispose(container);
       chartRef.current = null;
     };
-  }, [symbol, externalData, indicators]);
+  }, [symbol, market, externalData, indicators]);
 
   // ── WRB overlay effect ──
   useEffect(() => {
