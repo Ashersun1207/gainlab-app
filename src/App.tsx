@@ -186,8 +186,8 @@ function App() {
     if (targetScene) {
       switchScene(targetScene, {
         symbol: agentWidgetState.symbol as string | undefined,
-        market: agentWidgetState.market as string | undefined,
-        period: agentWidgetState.period as string | undefined,
+        market: agentWidgetState.market as MarketType | undefined,
+        period: agentWidgetState.period as TimeInterval | undefined,
       });
     }
   }, [agentWidgetState, switchScene]);
