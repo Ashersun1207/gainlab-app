@@ -9,10 +9,13 @@ export interface McpToolCall {
   args: Record<string, unknown>;
 }
 
+import type { WidgetState } from './widget-state';
+
 export interface McpStreamEvent {
   type: 'text_delta' | 'tool_call' | 'tool_result' | 'done' | 'error';
   text?: string;
   toolCall?: McpToolCall;
   result?: unknown;
+  widgetState?: WidgetState;
   error?: string;
 }

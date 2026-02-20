@@ -1,4 +1,4 @@
-import { useState, useCallback, Suspense, lazy } from 'react';
+import { useState, useCallback, useEffect, Suspense, lazy } from 'react';
 import { useResponsive } from './hooks/useResponsive';
 import { useMarketData } from './hooks/useMarketData';
 import { useScene } from './hooks/useScene';
@@ -18,6 +18,7 @@ import { Settings } from './layout/Settings';
 import type { KLineData } from './types/data';
 import type { EChartsOption } from 'echarts';
 import type { MarketType, TimeInterval } from './types/market';
+import type { WidgetState } from './types/widget-state';
 
 // --- Code-split heavy widgets (G7) ---
 const LazyChatPanel = lazy(() =>
@@ -137,6 +138,9 @@ function App() {
   const [_echartsOption, setEchartsOption] = useState<EChartsOption | null>(null);
   const [chatKlineData, setChatKlineData] = useState<KLineData[] | null>(null);
 
+  // ── T14.4: Agent widgetState → 主区域场景切换 ──
+  const [agentWidgetState, setAgentWidgetState] = useState<WidgetState | null>(null);
+
   // ── Indicator toggle ──
   const handleIndicatorToggle = useCallback((ind: string) => {
     setActiveIndicators((prev) =>
@@ -144,8 +148,14 @@ function App() {
     );
   }, []);
 
-  // ── Chat tool result callback ──
-  const handleToolResult = useCallback((toolName: string, result: unknown) => {
+  // ── Chat tool result callback (T14.4: + widgetState) ──
+  const handleToolResult = useCallback((toolName: string, result: unknown, widgetState?: WidgetState) => {
+    // T14.4: 有 widgetState → 存储，驱动场景切换
+    if (widgetState) {
+      setAgentWidgetState(widgetState);
+    }
+
+    // 保留现有逻辑（数据转换 → 主区域渲染）
     const target = getRenderTarget(toolName);
     if (target === 'kline') {
       const data = mcpToKLine(result);
@@ -157,6 +167,30 @@ function App() {
       setEchartsOption(option);
     }
   }, []);
+
+  // ── T14.4: widgetState → 场景切换 + 参数更新 ──
+  useEffect(() => {
+    if (!agentWidgetState) return;
+
+    // widgetState.type → scene 映射
+    const sceneMap: Record<string, string> = {
+      kline: 'stock_analysis',
+      heatmap: 'market_heat',
+      overlay: 'stock_analysis',
+      fundamentals: 'stock_analysis',
+      volume_profile: 'stock_analysis',
+      sentiment: 'snapshot',
+    };
+
+    const targetScene = sceneMap[agentWidgetState.type];
+    if (targetScene) {
+      switchScene(targetScene, {
+        symbol: agentWidgetState.symbol as string | undefined,
+        market: agentWidgetState.market as string | undefined,
+        period: agentWidgetState.period as string | undefined,
+      });
+    }
+  }, [agentWidgetState, switchScene]);
 
   // ── Toggle chat ──
   const toggleChat = useCallback(() => {
