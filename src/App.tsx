@@ -137,12 +137,20 @@ function App() {
   // ── Agent Widgets 累积列表 ──
   const [agentWidgets, setAgentWidgets] = useState<AgentWidgetItem[]>([]);
   const agentWidgetCounterRef = useRef(0);
+  const agentRoundRef = useRef(0); // 当前对话轮次，每次用户发消息 +1
+  const currentRoundWidgetsRef = useRef(0); // 当前轮次已收到的 widget 数
 
   // ── Indicator toggle ──
   const handleIndicatorToggle = useCallback((ind: string) => {
     setActiveIndicators((prev) =>
       prev.includes(ind) ? prev.filter((i) => i !== ind) : [...prev, ind],
     );
+  }, []);
+
+  // ── 新一轮对话开始（ChatPanel 发消息时调用）──
+  const handleNewRound = useCallback(() => {
+    agentRoundRef.current++;
+    currentRoundWidgetsRef.current = 0;
   }, []);
 
   // ── Chat tool result → 追加 Widget 到 Agent 场景 ──
@@ -162,7 +170,13 @@ function App() {
       item.klineData = mcpToKLine(result);
     }
 
-    setAgentWidgets((prev) => [...prev, item]);
+    // 本轮第一个 widget → 清空旧的
+    currentRoundWidgetsRef.current++;
+    if (currentRoundWidgetsRef.current === 1) {
+      setAgentWidgets([item]);
+    } else {
+      setAgentWidgets((prev) => [...prev, item]);
+    }
     switchScene('ai');
   }, [switchScene]);
 
@@ -386,6 +400,7 @@ function App() {
             <Suspense fallback={<LoadingPlaceholder />}>
               <LazyChatPanel
                 onToolResult={handleToolResult}
+                onNewRound={handleNewRound}
                 onClose={() => setChatOpen(false)}
               />
             </Suspense>
@@ -441,6 +456,7 @@ function App() {
             <Suspense fallback={<LoadingPlaceholder />}>
               <LazyChatPanel
                 onToolResult={handleToolResult}
+                onNewRound={handleNewRound}
                 onClose={() => setChatOpen(false)}
               />
             </Suspense>

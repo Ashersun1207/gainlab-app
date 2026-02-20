@@ -4,10 +4,11 @@ import { useMcpStream } from '../hooks/useMcpStream';
 
 interface ChatPanelProps {
   onToolResult?: (toolName: string, result: unknown) => void;
+  onNewRound?: () => void;
   onClose?: () => void;
 }
 
-export function ChatPanel({ onToolResult, onClose }: ChatPanelProps) {
+export function ChatPanel({ onToolResult, onNewRound, onClose }: ChatPanelProps) {
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { messages, streaming, activeToolCall, sendMessage, clearMessages } = useMcpStream();
@@ -16,10 +17,11 @@ export function ChatPanel({ onToolResult, onClose }: ChatPanelProps) {
     const text = input.trim();
     if (!text || streaming) return;
     setInput('');
+    onNewRound?.();
     await sendMessage(text, onToolResult);
     // 发送后聚焦输入框
     inputRef.current?.focus();
-  }, [input, streaming, sendMessage, onToolResult]);
+  }, [input, streaming, sendMessage, onToolResult, onNewRound]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
