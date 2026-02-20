@@ -5,7 +5,7 @@
  * K线 Widget 使用完整的 KLineHeader + KLineWidget（跟 CK 场景一样）。
  */
 
-import { useState, useCallback, Suspense, lazy } from 'react';
+import { useState, useCallback, useRef, Suspense, lazy } from 'react';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { WidgetPanel } from '../layout/WidgetPanel';
 import { KLineHeader } from '../widgets/KLineWidget/KLineHeader';
@@ -53,7 +53,7 @@ function formatSymbolDisplay(symbol: string): string {
 }
 
 /** 完整 K线 Widget（KLineHeader + KLineWidget）— 自带独立状态 */
-function FullKLineCard({ item, onClose, onClearPanel }: { item: AgentWidgetItem; onClose?: () => void; onClearPanel?: () => void }) {
+function FullKLineCard({ item, onClose }: { item: AgentWidgetItem; onClose?: () => void }) {
   const { widgetState, klineData } = item;
   const symbol = (widgetState.symbol as string) || 'BTCUSDT';
   const market = ((widgetState.market as string) || 'crypto') as MarketType;
@@ -86,7 +86,6 @@ function FullKLineCard({ item, onClose, onClearPanel }: { item: AgentWidgetItem;
         drawingToolOpen={drawingToolOpen}
         onDrawingToolToggle={() => setDrawingToolOpen((v) => !v)}
         onClose={onClose}
-        onClearPanel={onClearPanel}
       />
       <div style={{ flex: 1, minHeight: 0 }}>
         <ErrorBoundary label="AgentKLine">
@@ -108,7 +107,7 @@ function FullKLineCard({ item, onClose, onClearPanel }: { item: AgentWidgetItem;
 }
 
 /** 渲染单个 Widget */
-function AgentWidgetCard({ item, onClose, onClearPanel }: { item: AgentWidgetItem; onClose?: () => void; onClearPanel?: () => void }) {
+function AgentWidgetCard({ item, onClose }: { item: AgentWidgetItem; onClose?: () => void }) {
   const { widgetState } = item;
   const symbol = (widgetState.symbol as string) || 'BTCUSDT';
   const market = ((widgetState.market as string) || 'crypto') as MarketType;
@@ -117,11 +116,11 @@ function AgentWidgetCard({ item, onClose, onClearPanel }: { item: AgentWidgetIte
     case 'kline':
     case 'overlay':
     case 'volume_profile':
-      return <FullKLineCard item={item} onClose={onClose} onClearPanel={onClearPanel} />;
+      return <FullKLineCard item={item} onClose={onClose} />;
 
     case 'heatmap':
       return (
-        <WidgetPanel title="HEATMAP" subtitle={`${market.toUpperCase()}`} onClose={onClose} onClearPanel={onClearPanel}>
+        <WidgetPanel title="HEATMAP" subtitle={`${market.toUpperCase()}`} onClose={onClose}>
           <ErrorBoundary label="AgentHeatmap">
             <Suspense fallback={<LoadingPlaceholder />}>
               <LazyHeatmapWidget market={market} />
@@ -132,7 +131,7 @@ function AgentWidgetCard({ item, onClose, onClearPanel }: { item: AgentWidgetIte
 
     case 'fundamentals':
       return (
-        <WidgetPanel title="FUNDAMENTALS" subtitle={symbol} onClose={onClose} onClearPanel={onClearPanel}>
+        <WidgetPanel title="FUNDAMENTALS" subtitle={symbol} onClose={onClose}>
           <ErrorBoundary label="AgentFundamentals">
             <Suspense fallback={<LoadingPlaceholder />}>
               <LazyFundamentalsWidget symbol={symbol} />
@@ -143,7 +142,7 @@ function AgentWidgetCard({ item, onClose, onClearPanel }: { item: AgentWidgetIte
 
     case 'sentiment':
       return (
-        <WidgetPanel title="SENTIMENT" subtitle={symbol} onClose={onClose} onClearPanel={onClearPanel}>
+        <WidgetPanel title="SENTIMENT" subtitle={symbol} onClose={onClose}>
           <div className="w-full h-full flex items-center justify-center bg-[#0d0d20] text-[#6a6aaa] text-sm">
             Sentiment view — coming in P2
           </div>
@@ -152,7 +151,7 @@ function AgentWidgetCard({ item, onClose, onClearPanel }: { item: AgentWidgetIte
 
     default:
       return (
-        <WidgetPanel title={widgetState.type.toUpperCase()} subtitle="" onClose={onClose} onClearPanel={onClearPanel}>
+        <WidgetPanel title={widgetState.type.toUpperCase()} subtitle="" onClose={onClose}>
           <div className="w-full h-full flex items-center justify-center bg-[#0d0d20] text-[#4a4a7a] text-sm">
             Unsupported: {widgetState.type}
           </div>
@@ -180,9 +179,10 @@ export function AgentView({ widgets, onClear, onRemoveWidget }: AgentViewProps) 
   // 单个 Widget → 全屏
   if (widgets.length === 1) {
     return (
-      <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        {onClear && <FloatingClearButton onClick={onClear} />}
         <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-          <AgentWidgetCard item={widgets[0]} onClose={onRemoveWidget ? () => onRemoveWidget(widgets[0].id) : undefined} onClearPanel={onClear} />
+          <AgentWidgetCard item={widgets[0]} onClose={onRemoveWidget ? () => onRemoveWidget(widgets[0].id) : undefined} />
         </div>
       </div>
     );
@@ -193,6 +193,7 @@ export function AgentView({ widgets, onClear, onRemoveWidget }: AgentViewProps) 
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
+      {onClear && <FloatingClearButton onClick={onClear} />}
       <div
         style={{
           display: 'grid',
@@ -208,7 +209,7 @@ export function AgentView({ widgets, onClear, onRemoveWidget }: AgentViewProps) 
         {widgets.map((item, idx) => (
           <div key={item.id} style={{ minHeight: 250, display: 'flex', flexDirection: 'column' }}>
             <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-              <AgentWidgetCard item={item} onClose={onRemoveWidget ? () => onRemoveWidget(item.id) : undefined} onClearPanel={idx === 0 ? onClear : undefined} />
+              <AgentWidgetCard item={item} onClose={onRemoveWidget ? () => onRemoveWidget(item.id) : undefined} />
             </div>
           </div>
         ))}
@@ -217,4 +218,62 @@ export function AgentView({ widgets, onClear, onRemoveWidget }: AgentViewProps) 
   );
 }
 
-/* ClearButton removed — "清空面板" now lives inside KLineHeader / WidgetPanel headers */
+/** 悬浮可拖拽"清空面板"按钮 */
+function FloatingClearButton({ onClick }: { onClick: () => void }) {
+  const [pos, setPos] = useState({ x: -70, y: 8 }); // 默认右上角（用 right 定位）
+  const dragRef = useRef<{ startX: number; startY: number; ox: number; oy: number; moved: boolean } | null>(null);
+
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    e.preventDefault();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    dragRef.current = { startX: e.clientX, startY: e.clientY, ox: pos.x, oy: pos.y, moved: false };
+  }, [pos]);
+
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!dragRef.current) return;
+    const dx = e.clientX - dragRef.current.startX;
+    const dy = e.clientY - dragRef.current.startY;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragRef.current.moved = true;
+    setPos({ x: dragRef.current.ox + dx, y: dragRef.current.oy + dy });
+  }, []);
+
+  const onPointerUp = useCallback(() => {
+    const wasDrag = dragRef.current?.moved;
+    dragRef.current = null;
+    if (!wasDrag) onClick();
+  }, [onClick]);
+
+  return (
+    <div
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      style={{
+        position: 'absolute',
+        right: -pos.x,
+        top: pos.y,
+        zIndex: 100,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 4,
+        background: 'rgba(25,25,50,0.9)',
+        border: '1px solid #2a2a4a',
+        borderRadius: 16,
+        color: '#8888aa',
+        fontSize: 11,
+        padding: '4px 12px',
+        cursor: 'grab',
+        userSelect: 'none',
+        touchAction: 'none',
+        backdropFilter: 'blur(8px)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+        whiteSpace: 'nowrap',
+      }}
+      title="拖拽移动 · 点击清空面板"
+      onMouseEnter={e => { e.currentTarget.style.borderColor = '#ff6b6b'; e.currentTarget.style.color = '#ff6b6b'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = '#2a2a4a'; e.currentTarget.style.color = '#8888aa'; }}
+    >
+      🗑 清空面板
+    </div>
+  );
+}

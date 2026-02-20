@@ -9,7 +9,6 @@ interface WidgetPanelProps {
   onRefresh?: () => void;
   onFullscreen?: () => void;
   onClose?: () => void;
-  onClearPanel?: () => void;
   children: ReactNode;
 }
 
@@ -22,7 +21,6 @@ export function WidgetPanel({
   onRefresh,
   onFullscreen,
   onClose,
-  onClearPanel,
   children,
 }: WidgetPanelProps) {
   return (
@@ -31,9 +29,6 @@ export function WidgetPanel({
         <div className="wph-title">{title}</div>
         {subtitle && <div className="wph-sym">{subtitle}</div>}
         <div className="wph-spc" />
-        {onClearPanel && (
-          <button className="wph-btn" title="清空面板" onClick={onClearPanel} style={{ fontSize: 10, marginRight: 2 }}>🗑 清空面板</button>
-        )}
         {!hideActions && (
           <>
             <button className="wph-btn" title={t('btn_refresh')} onClick={onRefresh ?? noop}>⟲</button>
