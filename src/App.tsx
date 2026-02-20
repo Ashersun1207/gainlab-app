@@ -275,6 +275,7 @@ function App() {
             <AgentView
               widgets={agentWidgets}
               onClear={() => setAgentWidgets([])}
+              onRemoveWidget={(id) => setAgentWidgets((prev) => prev.filter((w) => w.id !== id))}
             />
           </div>
         );
