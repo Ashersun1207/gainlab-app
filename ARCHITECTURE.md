@@ -1,6 +1,6 @@
 # GainLab App — 架构文档
 
-_P1 产品阶段 | 更新时机：目录结构或数据流变更后 | 最后更新 2026-02-20 (T15 Widget Catalog + 271 tests)_
+_P1 产品阶段 | 更新时机：目录结构或数据流变更后 | 最后更新 2026-02-21 (T17 Indicator→Script 迁移 + 285 tests)_
 
 ---
 
@@ -58,9 +58,20 @@ gainlab-app/
 │   │
 │   ├── widgets/
 │   │   ├── KLineWidget/
-│   │   │   ├── index.tsx       # K线渲染（外部 data prop 优先 → fallback Binance → 样本数据）
+│   │   │   ├── index.tsx       # K线渲染（外部 data prop 优先 → fallback Worker → 样本数据）
 │   │   │   ├── KLineHeader.tsx # TV 风格 widget-internal header（symbol 搜索 + 价格 + 周期 + 图表类型 + 指标 + 画图 + 控件）
-│   │   │   ├── klinechart.d.ts # 类型声明
+│   │   │   ├── klinechart.d.ts # 类型声明（含 Script 引擎 addScript/removeScript）
+│   │   │   ├── builtinScripts/ # ★ 内置技术指标脚本（T17: MA/EMA/BOLL/VWAP/RSI/MACD/KDJ/ATR）
+│   │   │   │   ├── index.ts   # BUILTIN_SCRIPTS 映射 + OVERLAY_INDICATORS 排除集合
+│   │   │   │   ├── ma.ts      # MA(5/10/20/60) → 主图 4 线
+│   │   │   │   ├── ema.ts     # EMA(12/26) → 主图 2 线
+│   │   │   │   ├── boll.ts    # BOLL(20,2) → 主图 3 线 + 填充
+│   │   │   │   ├── vwap.ts    # VWAP → 主图单线
+│   │   │   │   ├── rsi.ts     # RSI(14) → 副图 + 70/30/50 参考线
+│   │   │   │   ├── macd.ts    # MACD(12,26,9) → 副图 DIF/DEA/柱状图
+│   │   │   │   ├── kdj.ts     # KDJ(9,3) → 副图 K/D/J 三线
+│   │   │   │   ├── atr.ts     # ATR(14) → 副图单线
+│   │   │   │   └── __tests__/ # 14 tests
 │   │   │   ├── klines/         # K线数据文件
 │   │   │   └── KLineChart/     # 45K 行 fork（G5 禁区，不改）
 │   │   ├── EChartsWidget/
@@ -263,7 +274,7 @@ const activeSymbol = sceneParams.symbol ?? 'BTCUSDT';
 const activeMarket = sceneParams.market ?? 'crypto';
 const activeInterval = sceneParams.period ?? '1D';
 
-// ── 指标（Indicator 系统已废弃，技术指标通过 Script 引擎实现）──
+// ── 指标（通过 Script 引擎实现，VP/WRB 走 overlay）──
 const [activeIndicators, setActiveIndicators] = useState<string[]>([]);
 
 // ── Chat ──
@@ -343,7 +354,7 @@ handleToolResult(toolName, result)
 
 | 场景 | 渲染库 | 组件 |
 |---|---|---|
-| K线（OHLCV）+ 技术指标 | KLineChart | KLineWidget |
+| K线（OHLCV）+ 技术指标（Script 引擎） | KLineChart + builtinScripts | KLineWidget |
 | 筹码分布 | ECharts (bar) | VolumeProfileWidget |
 | 板块热力图 | ECharts (treemap) | HeatmapWidget |
 | 多资产叠加 | ECharts (line) | OverlayWidget |
@@ -517,7 +528,7 @@ CF Worker: gainlab-api.asher-sun.workers.dev
 
 | 工具 | 用途 |
 |---|---|
-| Vitest + RTL | 测试（271 tests, G1 只增不减） |
+| Vitest + RTL | 测试（285 tests, G1 只增不减） |
 | ESLint flat config | Lint（0 error 才能 commit） |
 | tsc + typecheck.sh | 类型检查（过滤 KLineChart 45K fork 错误） |
 | Vite | 构建 + Dev server |
@@ -530,4 +541,4 @@ pnpm lint && pnpm typecheck && pnpm test && pnpm build
 
 ---
 
-_创建于 2026-02-17 | 最后更新于 2026-02-20（T15 Widget Catalog: Zod schema + validate + registry + auto prompt, 271 tests）_
+_创建于 2026-02-17 | 最后更新于 2026-02-21（T17 Indicator→Script 迁移: 8 builtin scripts + encryptScript 完整链路, 285 tests）_
