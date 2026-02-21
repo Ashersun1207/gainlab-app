@@ -93,7 +93,8 @@ function App() {
   const activeInterval = sceneParams.period ?? '1D';
 
   // ── Chart controls ──
-  const [activeIndicators, setActiveIndicators] = useState<string[]>(['MA']);
+  // Indicator 系统已废弃，技术指标通过 Script 引擎实现（KLineHeader 指标面板控制 Script 注册）
+  const [activeIndicators, setActiveIndicators] = useState<string[]>([]);
   const [chartType, setChartType] = useState('candle_solid');
   const [drawingToolOpen, setDrawingToolOpen] = useState(false);
   const handleIndicatorToggle = useCallback((ind: string) => {

@@ -263,8 +263,8 @@ const activeSymbol = sceneParams.symbol ?? 'BTCUSDT';
 const activeMarket = sceneParams.market ?? 'crypto';
 const activeInterval = sceneParams.period ?? '1D';
 
-// ── 指标 ──
-const [activeIndicators, setActiveIndicators] = useState<string[]>(['MA']);
+// ── 指标（Indicator 系统已废弃，技术指标通过 Script 引擎实现）──
+const [activeIndicators, setActiveIndicators] = useState<string[]>([]);
 
 // ── Chat ──
 const [chatOpen, setChatOpen] = useState(false);
