@@ -8,7 +8,7 @@ export const RSI_SCRIPT = `// @name = RSI
 
 var period = input.int(14, name='RSI 周期', min=2, max=100)
 
-var c1 = style.color('#AB47BC', name='RSI 颜色')
+var c1 = style.color('#FFD54F', name='RSI 颜色')
 
 var rsiData = F.rsi(dataList, period, 100, 1, 'close')
 

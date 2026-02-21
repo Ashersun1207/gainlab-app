@@ -11,9 +11,9 @@ export const KDJ_SCRIPT = `// @name = KDJ
 var kPeriod = input.int(9, name='K 周期', min=1, max=100)
 var dPeriod = input.int(3, name='D 平滑', min=1, max=20)
 
-var cK = style.color('#2196F3', name='K 线颜色')
-var cD = style.color('#FF9800', name='D 线颜色')
-var cJ = style.color('#E040FB', name='J 线颜色')
+var cK = style.color('#EF5350', name='K 线颜色')
+var cD = style.color('#FFD54F', name='D 线颜色')
+var cJ = style.color('#2196F3', name='J 线颜色')
 
 var kdjResult = F.kdj(dataList, kPeriod, dPeriod)
 var kLine = kdjResult.k

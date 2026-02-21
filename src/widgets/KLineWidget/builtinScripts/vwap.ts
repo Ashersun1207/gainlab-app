@@ -5,7 +5,7 @@
 export const VWAP_SCRIPT = `// @name = VWAP
 // @position = main
 
-var c1 = style.color('#AB47BC', name='VWAP 颜色')
+var c1 = style.color('#2196F3', name='VWAP 颜色')
 
 var vwapData = F.vwap(dataList)
 

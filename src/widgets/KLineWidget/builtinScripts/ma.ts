@@ -10,10 +10,10 @@ var p2 = input.int(10, name='MA2 周期', min=1, max=200)
 var p3 = input.int(20, name='MA3 周期', min=1, max=200)
 var p4 = input.int(60, name='MA4 周期', min=1, max=200)
 
-var c1 = style.color('#FF6D00', name='MA1 颜色')
+var c1 = style.color('#EF5350', name='MA1 颜色')
 var c2 = style.color('#2196F3', name='MA2 颜色')
-var c3 = style.color('#E040FB', name='MA3 颜色')
-var c4 = style.color('#00E676', name='MA4 颜色')
+var c3 = style.color('#FFD54F', name='MA3 颜色')
+var c4 = style.color('#26A69A', name='MA4 颜色')
 
 var ma1 = F.ma(close, p1)
 var ma2 = F.ma(close, p2)
