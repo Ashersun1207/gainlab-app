@@ -85,7 +85,8 @@ export function KLineWidget({
   symbol = 'BTCUSDT',
   market = 'crypto',
   data: externalData,
-  indicators = ['RSI'],
+  // Indicator 系统已废弃（dashboard 原版也注释了 glob），技术指标通过 Script 引擎实现
+  indicators = [],
   showWRB = false,
   showVP = false,
   drawingToolOpen = false,

@@ -59,7 +59,8 @@ function FullKLineCard({ item, onClose }: { item: AgentWidgetItem; onClose?: () 
 
   // 每个卡片独立的状态
   const [chartType, setChartType] = useState('candle_solid');
-  const [activeIndicators, setActiveIndicators] = useState<string[]>(['MA']);
+  // Indicator 系统已废弃，技术指标通过 Script 引擎实现
+  const [activeIndicators, setActiveIndicators] = useState<string[]>([]);
   const [drawingToolOpen, setDrawingToolOpen] = useState(false);
 
   const handleIndicatorToggle = useCallback((ind: string) => {
