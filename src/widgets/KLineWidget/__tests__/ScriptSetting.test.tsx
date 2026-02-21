@@ -26,6 +26,7 @@ describe('ScriptSetting — T18 指标参数调节', () => {
     const { container } = render(<ScriptSetting {...defaultProps} />);
     const title = container.querySelector('.ss-title');
     expect(title).toBeTruthy();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     expect(title!.textContent).toContain('MA');
   });
 
@@ -95,6 +96,7 @@ describe('ScriptSetting — T18 指标参数调节', () => {
     const { container } = render(<ScriptSetting {...defaultProps} onClose={onClose} />);
     const backdrop = container.querySelector('.ss-backdrop');
     expect(backdrop).toBeTruthy();
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     fireEvent.click(backdrop!);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
