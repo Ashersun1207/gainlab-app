@@ -169,27 +169,42 @@ export function KLineWidget({
   // ── Script 引擎：indicators 增量注册/注销（不重建 chart）──
   useEffect(() => {
     const chart = chartRef.current;
-    if (!chart) return;
+    if (!chart) {
+      console.warn('[T17] indicators useEffect: chart not ready, skipping', indicators);
+      return;
+    }
 
     // 过滤掉 overlay 指标（VP/WRB 走 createOverlay，不走 Script）
     const scriptIndicators = indicators.filter((id) => !OVERLAY_INDICATORS.has(id));
     const wantSet = new Set(scriptIndicators);
+
+    console.log('[T17] indicators diff:', {
+      want: [...wantSet],
+      registered: [...registeredScriptsRef.current],
+    });
 
     // 新增：chart.addScript() → processScriptAdd → ScriptManager + ChartStore + 面板创建
     for (const ind of wantSet) {
       if (!registeredScriptsRef.current.has(ind)) {
         const def = BUILTIN_SCRIPTS[ind];
         if (def) {
-          chart.addScript(
-            {
-              id: `builtin_${ind}`,
-              name: ind,
-              code: encryptScript(def.script, 'gainlab-script') as string,
-              key: `builtin_${ind}`,
-            },
-            '',
-            false,
-          );
+          const encrypted = encryptScript(def.script, 'gainlab-script') as string;
+          console.log(`[T17] addScript: ${ind}, encrypted length: ${encrypted.length}`);
+          try {
+            chart.addScript(
+              {
+                id: `builtin_${ind}`,
+                name: ind,
+                code: encrypted,
+                key: `builtin_${ind}`,
+              },
+              '',
+              false,
+            );
+            console.log(`[T17] addScript ${ind} — success`);
+          } catch (e) {
+            console.error(`[T17] addScript ${ind} — failed:`, e);
+          }
         }
       }
     }
