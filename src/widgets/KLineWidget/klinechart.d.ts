@@ -37,6 +37,20 @@ export interface OverlayFilter {
   paneId?: string;
 }
 
+export interface ScriptCreate {
+  id: string | number;
+  name: string;
+  code: string; // 加密的脚本代码
+  key?: string;
+  [key: string]: unknown;
+}
+
+export interface ScriptFilter {
+  key?: string;
+  id?: string | number;
+  [key: string]: unknown;
+}
+
 export interface Chart {
   setDataList(data: KLineData[]): void;
   getDataList(): KLineData[];
@@ -44,6 +58,9 @@ export interface Chart {
   createIndicator(name: string, isStack?: boolean, options?: { id?: string }): string | null;
   createOverlay(value: string | OverlayCreate | Array<string | OverlayCreate>): string | null | Array<string | null>;
   removeOverlay(filter?: OverlayFilter): boolean;
+  // Script engine methods (T17 migration)
+  addScript(script: ScriptCreate, paneId: string, isStack: boolean): string | null;
+  removeScript(filter?: ScriptFilter): boolean;
   resize(): void;
   destroy(): void;
 }

@@ -7,6 +7,8 @@ import { detectWRB } from '../WRBWidget/detectWRB';
 import { calculateVP } from '../VolumeProfileWidget/calculateVP';
 import { fetchWorkerKline } from '../../services/api';
 import type { MarketType } from '../../types/market';
+import { BUILTIN_SCRIPTS, OVERLAY_INDICATORS } from './builtinScripts';
+import { encryptScript } from './KLineChart/Chart';
 
 // Register overlay templates once
 registerOverlay(wrbHighlightTemplate);
@@ -93,6 +95,7 @@ export function KLineWidget({
 }: KLineWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Chart | null>(null);
+  const registeredScriptsRef = useRef<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -136,12 +139,7 @@ export function KLineWidget({
     if (!chart) return;
     chartRef.current = chart;
 
-    // add indicator panes
-    for (const ind of indicators) {
-      chart.createIndicator(ind, false, { id: `pane_${ind}` });
-    }
-
-    // 立刻用外部数据或 fallback 显示，再异步尝试 Binance
+    // 立刻用外部数据或 fallback 显示，再异步尝试 Worker
     if (externalData && externalData.length > 0) {
       chart.setDataList(externalData);
     } else {
@@ -164,8 +162,47 @@ export function KLineWidget({
     return () => {
       if (container) dispose(container);
       chartRef.current = null;
+      registeredScriptsRef.current = new Set(); // chart 销毁后需要重新注册
     };
-  }, [symbol, market, externalData, indicators]);
+  }, [symbol, market, externalData]);
+
+  // ── Script 引擎：indicators 增量注册/注销（不重建 chart）──
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
+
+    // 过滤掉 overlay 指标（VP/WRB 走 createOverlay，不走 Script）
+    const scriptIndicators = indicators.filter((id) => !OVERLAY_INDICATORS.has(id));
+    const wantSet = new Set(scriptIndicators);
+
+    // 新增：chart.addScript() → processScriptAdd → ScriptManager + ChartStore + 面板创建
+    for (const ind of wantSet) {
+      if (!registeredScriptsRef.current.has(ind)) {
+        const def = BUILTIN_SCRIPTS[ind];
+        if (def) {
+          chart.addScript(
+            {
+              id: `builtin_${ind}`,
+              name: ind,
+              code: encryptScript(def.script, 'gainlab-script') as string,
+              key: `builtin_${ind}`,
+            },
+            '',
+            false,
+          );
+        }
+      }
+    }
+
+    // 删除：chart.removeScript() 同时清理 ScriptManager + ChartStore + 空面板
+    for (const ind of registeredScriptsRef.current) {
+      if (!wantSet.has(ind)) {
+        chart.removeScript({ key: `builtin_${ind}` });
+      }
+    }
+
+    registeredScriptsRef.current = wantSet;
+  }, [indicators]);
 
   // ── WRB overlay effect ──
   useEffect(() => {
