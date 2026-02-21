@@ -24,13 +24,13 @@ export function createDrawAPI(scriptContext: any) {
   let maxValue = -Infinity;
 
   // 在本次绘制周期里去重触发一次Y轴重建，避免反复layout
-  let yAxisRebuildScheduled = false;
+  // 去重标记挂在 script 对象上，避免闭包每次 createDrawAPI 新建导致去重失效
   const scheduleYAxisRebuild = () => {
     if (script.position !== 'vice') return;
-    if (yAxisRebuildScheduled) return;
-    yAxisRebuildScheduled = true;
+    if (script._yAxisRebuildScheduled) return;
+    script._yAxisRebuildScheduled = true;
     Promise.resolve().then(() => {
-      yAxisRebuildScheduled = false;
+      script._yAxisRebuildScheduled = false;
       // 强制构建Y轴刻度并测量宽度，确保首次加载即生效
       scriptContext.chart.layout({
         measureWidth: true,
@@ -284,6 +284,7 @@ export function createDrawAPI(scriptContext: any) {
 
     // 屏幕水平线绘制
     hline: (y: any, styles?: any, x1?: any, x2?: any) => {
+      collectOutputData(y);
       outputHLine(scriptContext, y, styles || {}, x1, x2);
     },
 

@@ -76,9 +76,48 @@ export default class ScriptView extends View<YAxis> {
                 renderContext, 
                 scriptObj
               );
+
+              if (!scriptCtx) {
+                ctx.restore();
+                return;
+              }
               
               scriptObj._compiledFunction(scriptCtx);
-              
+
+              // ── 副图两遍渲染：首次 draw 时 yAxis 没有范围 ──
+              // 第一遍执行后 collectOutputData 已收集 min/max 到 script 上，
+              // 同步重建 yAxis → 清 canvas → 再执行一次，同帧完成无闪烁。
+              if (scriptObj.position === 'vice' && !scriptObj._yAxisInitialized) {
+                const hasRange = scriptObj.minValue != null && scriptObj.maxValue != null
+                  && isFinite(scriptObj.minValue as number) && isFinite(scriptObj.maxValue as number)
+                if (hasRange) {
+                  // 同步重建 yAxis range（纯计算，不触发 layout）
+                  yAxis.buildTicks(true)
+                  // 清掉第一遍画的垃圾线
+                  ctx.clearRect(0, 0, bounding.width, bounding.height)
+                  // 重置 canvas 状态
+                  ctx.setLineDash([])
+                  ctx.globalAlpha = 1
+                  ctx.lineWidth = 1
+                  ctx.lineCap = 'butt'
+                  ctx.lineJoin = 'miter'
+                  ctx.strokeStyle = '#000000'
+                  ctx.fillStyle = '#000000'
+                  // 第二遍执行（yAxis 已有正确范围）
+                  const scriptCtx2 = scriptManager.createContext(
+                    pane.getChart().getDataList(),
+                    script.key,
+                    script.msgCallback,
+                    renderContext,
+                    scriptObj
+                  )
+                  if (scriptCtx2) {
+                    scriptObj._compiledFunction(scriptCtx2)
+                  }
+                  scriptObj._yAxisInitialized = true
+                }
+              }
+
               // 脚本执行完成后恢复canvas状态
               ctx.restore();
             }

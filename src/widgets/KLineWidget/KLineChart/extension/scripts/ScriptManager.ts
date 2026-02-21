@@ -508,6 +508,7 @@ class ScriptManager {
           }
 
           const ctx = this.createContext(this.chart.getDataList(), scriptId, msgCallback, renderContext, script);
+          if (!ctx) return true; // createContext 失败时跳过执行
 
           // 清理之前�?tooltipTools 数据
           if (script) {
@@ -646,7 +647,9 @@ class ScriptManager {
   }
 
   public createContext(dataList: KLineData[], scriptId?: string, msgCallback?: MsgCallback, renderContext?: any, script?: any) {
-    if (script && script._executing) { return null; } if (script) { script._executing = true; }
+    if (script && script._executing) { return null; }
+    if (script) { script._executing = true; }
+    try {
     // 获取默认版本的引擎组�?
     const engine = this.versionManager.getDefaultEngine();
     // 创建包装的公式对象，自动传递数�?
@@ -893,7 +896,15 @@ class ScriptManager {
         : null;
     };
 
-    if (script) { script._executing = false; } return scriptContext;
+    if (script) { script._executing = false; }
+    return scriptContext;
+    } catch (e) {
+      // 确保 _executing 被重置，避免后续 draw 全部返回 null
+      if (script) { script._executing = false; }
+      // eslint-disable-next-line no-console
+      console.error('createContext error:', e);
+      return null;
+    }
   }
 
 
@@ -971,7 +982,7 @@ class ScriptManager {
                   indicator: params.indicator
                 }
                 const ctx2 = this.createContext(this.chart.getDataList(), script.key, script.msgCallback, renderContext, script)
-                if (script._compiledFunction) {
+                if (ctx2 && script._compiledFunction) {
                   script._compiledFunction(ctx2)
                 }
               } catch (error) {
