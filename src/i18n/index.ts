@@ -105,6 +105,12 @@ const translations: Record<Lang, Record<string, string>> = {
     btn_fullscreen: '全屏',
     btn_refresh: '刷新',
     btn_close: '关闭',
+    // Script Setting (T18)
+    ss_title: '设置',
+    ss_tab_params: '参数',
+    ss_tab_styles: '样式',
+    ss_reset: '恢复默认',
+    ss_confirm: '确认',
     // Triggers
     ind_trigger: 'ƒx 指标',
     ind_trigger_chart: '📊 指标',
@@ -241,6 +247,12 @@ const translations: Record<Lang, Record<string, string>> = {
     btn_fullscreen: 'Fullscreen',
     btn_refresh: 'Refresh',
     btn_close: 'Close',
+    // Script Setting (T18)
+    ss_title: 'Settings',
+    ss_tab_params: 'Params',
+    ss_tab_styles: 'Styles',
+    ss_reset: 'Reset',
+    ss_confirm: 'Apply',
     // Triggers
     ind_trigger: 'ƒx Indicators',
     ind_trigger_chart: '📊 Indicators',

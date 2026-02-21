@@ -70,6 +70,9 @@ function ChartIcon({ id }: { id: string }) {
 
 /* ── Props ─────────────────────────────────────────────── */
 
+/** Set of indicators that use overlay (no Script settings) */
+const OVERLAY_IND_SET = new Set(['VP', 'WRB']);
+
 export interface KLineHeaderProps {
   symbol: string;
   symbolDisplay: string;
@@ -85,6 +88,7 @@ export interface KLineHeaderProps {
   onIndicatorToggle?: (ind: string) => void;
   drawingToolOpen?: boolean;
   onDrawingToolToggle?: () => void;
+  onIndicatorSettings?: (ind: string) => void;
   onClose?: () => void;
 }
 
@@ -104,6 +108,7 @@ export function KLineHeader({
   onIndicatorToggle,
   drawingToolOpen = false,
   onDrawingToolToggle,
+  onIndicatorSettings,
   onClose,
 }: KLineHeaderProps) {
   /* ── state ── */
@@ -283,7 +288,14 @@ export function KLineHeader({
           {activeIndicators.length > 0 && (
             <div className="ind-tags" style={{ marginLeft: 4 }}>
               {activeIndicators.map(id => (
-                <span key={id} className="ind-tag">{id}</span>
+                <span
+                  key={id}
+                  className={`ind-tag${!OVERLAY_IND_SET.has(id) ? ' ind-tag-cfg' : ''}`}
+                  onClick={() => { if (!OVERLAY_IND_SET.has(id)) onIndicatorSettings?.(id); }}
+                  title={!OVERLAY_IND_SET.has(id) ? t('btn_settings') : undefined}
+                >
+                  {id}{!OVERLAY_IND_SET.has(id) && ' ⚙'}
+                </span>
               ))}
             </div>
           )}
@@ -295,11 +307,13 @@ export function KLineHeader({
                 <div
                   key={ind.id}
                   className={`ind-item${activeIndicators.includes(ind.id) ? ' on' : ''}`}
-                  onClick={() => onIndicatorToggle?.(ind.id)}
                 >
-                  <div className="ind-toggle" />
-                  <span className="ind-name">{ind.name}</span>
-                  <span className="dm">{t(ind.descKey)}</span>
+                  <div className="ind-toggle" onClick={() => onIndicatorToggle?.(ind.id)} />
+                  <span className="ind-name" onClick={() => onIndicatorToggle?.(ind.id)}>{ind.name}</span>
+                  <span className="dm" onClick={() => onIndicatorToggle?.(ind.id)}>{t(ind.descKey)}</span>
+                  {activeIndicators.includes(ind.id) && !OVERLAY_IND_SET.has(ind.id) && (
+                    <button className="ind-cfg" onClick={(e) => { e.stopPropagation(); onIndicatorSettings?.(ind.id); }}>⚙</button>
+                  )}
                 </div>
               ))}
               <div className="dd-section">{t('ind_group_sub')}</div>
@@ -307,11 +321,13 @@ export function KLineHeader({
                 <div
                   key={ind.id}
                   className={`ind-item${activeIndicators.includes(ind.id) ? ' on' : ''}`}
-                  onClick={() => onIndicatorToggle?.(ind.id)}
                 >
-                  <div className="ind-toggle" />
-                  <span className="ind-name">{ind.name}</span>
-                  <span className="dm">{t(ind.descKey)}</span>
+                  <div className="ind-toggle" onClick={() => onIndicatorToggle?.(ind.id)} />
+                  <span className="ind-name" onClick={() => onIndicatorToggle?.(ind.id)}>{ind.name}</span>
+                  <span className="dm" onClick={() => onIndicatorToggle?.(ind.id)}>{t(ind.descKey)}</span>
+                  {activeIndicators.includes(ind.id) && !OVERLAY_IND_SET.has(ind.id) && (
+                    <button className="ind-cfg" onClick={(e) => { e.stopPropagation(); onIndicatorSettings?.(ind.id); }}>⚙</button>
+                  )}
                 </div>
               ))}
             </div>

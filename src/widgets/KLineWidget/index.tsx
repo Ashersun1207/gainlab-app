@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import { init, dispose, registerOverlay } from './KLineChart/index';
-import type { KLineData, Chart } from './klinechart';
+import type { KLineData, Chart, ScriptData } from './klinechart';
 import { wrbHighlightTemplate } from './overlays/wrbHighlight';
 import { volumeProfileTemplate } from './overlays/volumeProfile';
 import { detectWRB } from '../WRBWidget/detectWRB';
@@ -58,6 +58,12 @@ interface KLineWidgetProps {
   drawingToolOpen?: boolean;
 }
 
+/** Public handle exposed via forwardRef (T18) */
+export interface KLineWidgetHandle {
+  getScriptData(key: string): ScriptData | undefined;
+  setScriptConfig(key: string, config: { inputs?: ScriptData['inputs']; styles?: ScriptData['styles'] }): Promise<void>;
+}
+
 /* Drawing tools overlay — floats on chart left edge (matches preview .dt-overlay) */
 function DrawingToolsOverlay({ open }: { open: boolean }) {
   if (!open) return null;
@@ -83,7 +89,7 @@ async function fetchFallbackKline(symbol: string, market: MarketType = 'crypto')
   }
 }
 
-export function KLineWidget({
+export const KLineWidget = forwardRef<KLineWidgetHandle, KLineWidgetProps>(function KLineWidget({
   symbol = 'BTCUSDT',
   market = 'crypto',
   data: externalData,
@@ -92,11 +98,26 @@ export function KLineWidget({
   showWRB = false,
   showVP = false,
   drawingToolOpen = false,
-}: KLineWidgetProps) {
+}, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<Chart | null>(null);
   const registeredScriptsRef = useRef<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+
+  // T18: expose chart methods for ScriptSetting
+  useImperativeHandle(ref, () => ({
+    getScriptData(key: string) {
+      const chart = chartRef.current;
+      if (!chart) return undefined;
+      const scripts = chart.getScriptsByFilter({ key });
+      return scripts[0] as ScriptData | undefined;
+    },
+    async setScriptConfig(key, config) {
+      const chart = chartRef.current;
+      if (!chart) return;
+      await chart.setScriptConfig(key, config);
+    },
+  }), []);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -288,4 +309,4 @@ export function KLineWidget({
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
     </div>
   );
-}
+});

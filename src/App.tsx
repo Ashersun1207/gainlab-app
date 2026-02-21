@@ -1,4 +1,4 @@
-import { useState, useCallback, Suspense, lazy } from 'react';
+import { useState, useCallback, useRef, Suspense, lazy } from 'react';
 import { useResponsive } from './hooks/useResponsive';
 import { useMarketData } from './hooks/useMarketData';
 import { useScene } from './hooks/useScene';
@@ -15,6 +15,9 @@ import { HeatmapScene } from './scenes/HeatmapScene';
 import { AgentView } from './scenes/AgentView';
 import { PlaceholderScene } from './scenes/PlaceholderScene';
 import { KLineHeader } from './widgets/KLineWidget/KLineHeader';
+import type { KLineWidgetHandle } from './widgets/KLineWidget';
+import { ScriptSetting } from './widgets/KLineWidget/ScriptSetting';
+import type { ScriptInput, ScriptStyle } from './widgets/KLineWidget/ScriptSetting';
 import { NOW_QUOTE_ITEMS } from './constants/markets';
 import { t } from './i18n';
 import { Settings } from './layout/Settings';
@@ -97,6 +100,28 @@ function App() {
   const [activeIndicators, setActiveIndicators] = useState<string[]>([]);
   const [chartType, setChartType] = useState('candle_solid');
   const [drawingToolOpen, setDrawingToolOpen] = useState(false);
+  // T18: Script Setting state
+  const klineRef = useRef<KLineWidgetHandle>(null);
+  const [editingIndicator, setEditingIndicator] = useState<string | null>(null);
+  const [editingInputs, setEditingInputs] = useState<ScriptInput[]>([]);
+  const [editingStyles, setEditingStyles] = useState<ScriptStyle[]>([]);
+
+  const handleIndicatorSettings = useCallback((ind: string) => {
+    const data = klineRef.current?.getScriptData(`builtin_${ind}`);
+    if (data?.inputs || data?.styles) {
+      setEditingInputs((data.inputs ?? []) as ScriptInput[]);
+      setEditingStyles((data.styles ?? []) as ScriptStyle[]);
+      setEditingIndicator(ind);
+    }
+  }, []);
+
+  const handleScriptSettingConfirm = useCallback(async (config: { inputs: ScriptInput[]; styles: ScriptStyle[] }) => {
+    if (editingIndicator && klineRef.current) {
+      await klineRef.current.setScriptConfig(`builtin_${editingIndicator}`, config);
+    }
+    setEditingIndicator(null);
+  }, [editingIndicator]);
+
   const handleIndicatorToggle = useCallback((ind: string) => {
     setActiveIndicators((prev) =>
       prev.includes(ind) ? prev.filter((i) => i !== ind) : [...prev, ind],
@@ -226,11 +251,12 @@ function App() {
                 onIndicatorToggle={handleIndicatorToggle}
                 drawingToolOpen={drawingToolOpen}
                 onDrawingToolToggle={() => setDrawingToolOpen((v) => !v)}
+                onIndicatorSettings={handleIndicatorSettings}
                 onClose={closeHandler('KLINE')}
               />
               <ErrorBoundary label="KLine">
                 <Suspense fallback={<LoadingPlaceholder />}>
-                  <LazyKLineWidget key={activeSymbol} symbol={activeSymbol} market={activeMarket} data={effectiveKlineData} indicators={activeIndicators} showWRB={false} showVP={false} drawingToolOpen={drawingToolOpen} />
+                  <LazyKLineWidget ref={klineRef} key={activeSymbol} symbol={activeSymbol} market={activeMarket} data={effectiveKlineData} indicators={activeIndicators} showWRB={false} showVP={false} drawingToolOpen={drawingToolOpen} />
                 </Suspense>
               </ErrorBoundary>
             </div>
@@ -301,6 +327,15 @@ function App() {
         )}
         <MobileTabBar activeScene={activeScene} chatOpen={chatOpen} onSceneSelect={switchScene} onToggleChat={toggleChat} onCloseChat={() => setChatOpen(false)} />
         <Settings open={settingsOpen} onClose={() => setSettingsOpen(false)} onLangChange={handleLangChange} />
+        {editingIndicator && (
+          <ScriptSetting
+            scriptName={editingIndicator}
+            inputs={editingInputs}
+            styles={editingStyles}
+            onClose={() => setEditingIndicator(null)}
+            onConfirm={handleScriptSettingConfirm}
+          />
+        )}
       </div>
     );
   }
@@ -329,6 +364,15 @@ function App() {
         <ChatToggle onClick={() => setChatOpen(true)} />
       )}
       <Settings open={settingsOpen} onClose={() => setSettingsOpen(false)} onLangChange={handleLangChange} />
+      {editingIndicator && (
+        <ScriptSetting
+          scriptName={editingIndicator}
+          inputs={editingInputs}
+          styles={editingStyles}
+          onClose={() => setEditingIndicator(null)}
+          onConfirm={handleScriptSettingConfirm}
+        />
+      )}
     </div>
   );
 }

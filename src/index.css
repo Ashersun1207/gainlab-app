@@ -1071,3 +1071,78 @@ body {
   .dd { width: calc(100vw - 60px); left: -6px; }
   .ind-panel { width: calc(100vw - 60px); }
 }
+
+
+/* ═══════ T18: Script Setting Panel ═══════ */
+.ss-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 900; }
+.ss-panel {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 340px; max-width: 90vw; max-height: 70vh;
+  background: #1a1a3a; border: 1px solid #2a2a5a; border-radius: 8px;
+  display: flex; flex-direction: column; z-index: 901;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.ss-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 14px; border-bottom: 1px solid #2a2a5a;
+}
+.ss-title { font-size: 13px; font-weight: 600; color: #e0e0f0; }
+.ss-close {
+  background: none; border: none; color: #6a6aaa; font-size: 14px; cursor: pointer;
+  padding: 2px 6px; border-radius: 4px;
+}
+.ss-close:hover { color: #ff6b6b; background: #2a1a2a; }
+.ss-tabs {
+  display: flex; gap: 0; border-bottom: 1px solid #2a2a5a;
+}
+.ss-tab {
+  flex: 1; padding: 7px 0; background: none; border: none;
+  color: #6a6aaa; font-size: 12px; cursor: pointer;
+  border-bottom: 2px solid transparent; transition: all 0.15s;
+}
+.ss-tab:hover { color: #a0a0d0; }
+.ss-tab.on { color: #8888ff; border-bottom-color: #8888ff; }
+.ss-body {
+  flex: 1; overflow-y: auto; padding: 10px 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.ss-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.ss-label { font-size: 12px; color: #a0a0d0; white-space: nowrap; }
+.ss-number {
+  width: 80px; padding: 4px 8px; border-radius: 4px;
+  background: #12122a; border: 1px solid #2a2a5a; color: #e0e0f0;
+  font-size: 12px; text-align: right; outline: none;
+}
+.ss-number:focus { border-color: #6666cc; }
+.ss-color-wrap { display: flex; align-items: center; gap: 6px; }
+.ss-color {
+  width: 28px; height: 28px; padding: 0; border: 1px solid #2a2a5a;
+  border-radius: 4px; cursor: pointer; background: none;
+}
+.ss-color::-webkit-color-swatch-wrapper { padding: 2px; }
+.ss-color::-webkit-color-swatch { border: none; border-radius: 2px; }
+.ss-color-hex { font-size: 11px; color: #6a6aaa; font-family: monospace; }
+.ss-actions {
+  display: flex; justify-content: space-between; padding: 10px 14px;
+  border-top: 1px solid #2a2a5a;
+}
+.ss-btn {
+  padding: 6px 16px; border-radius: 4px; font-size: 12px; cursor: pointer;
+  background: #2a2a5a; border: 1px solid #3a3a6a; color: #a0a0d0;
+  transition: all 0.15s;
+}
+.ss-btn:hover { background: #3a3a6a; color: #e0e0f0; }
+.ss-btn-primary { background: #4444aa; border-color: #5555bb; color: #fff; }
+.ss-btn-primary:hover { background: #5555bb; }
+
+/* T18: indicator settings button in panel + clickable tags */
+.ind-cfg {
+  margin-left: auto; background: none; border: none; color: #6a6aaa;
+  font-size: 12px; cursor: pointer; padding: 2px 4px; border-radius: 3px;
+  flex-shrink: 0;
+}
+.ind-cfg:hover { color: #8888ff; background: #1e1e3a; }
+.ind-tag-cfg { cursor: pointer; }
+.ind-tag-cfg:hover { background: #2a2a5a; color: #8888ff; }

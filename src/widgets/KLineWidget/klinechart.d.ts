@@ -51,6 +51,14 @@ export interface ScriptFilter {
   [key: string]: unknown;
 }
 
+export interface ScriptData {
+  key: string;
+  name: string;
+  inputs?: Array<{ key: string; title: string; type: string; defaultValue: unknown; value: unknown; min?: number; max?: number }>;
+  styles?: Array<{ key: string; title: string; type: string; defaultValue: unknown; value: unknown }>;
+  [key: string]: unknown;
+}
+
 export interface Chart {
   setDataList(data: KLineData[]): void;
   getDataList(): KLineData[];
@@ -61,6 +69,9 @@ export interface Chart {
   // Script engine methods (T17 migration)
   addScript(script: ScriptCreate, paneId: string, isStack: boolean): string | null;
   removeScript(filter?: ScriptFilter): boolean;
+  // Script config methods (T18 parameter tuning)
+  setScriptConfig(key: string, config: { inputs?: ScriptData['inputs']; styles?: ScriptData['styles'] }): Promise<void>;
+  getScriptsByFilter(filter?: ScriptFilter): ScriptData[];
   resize(): void;
   destroy(): void;
 }

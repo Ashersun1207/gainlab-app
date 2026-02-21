@@ -89,7 +89,8 @@ describe('KLineHeader', () => {
 
   it('shows indicator tags when active', () => {
     render(<KLineHeader {...defaultProps} activeIndicators={['BOLL']} />);
-    expect(screen.getByText('BOLL')).toBeInTheDocument();
+    // T18: tags now include ⚙ icon for Script indicators
+    expect(screen.getByText(/BOLL/)).toBeInTheDocument();
   });
 
   it('renders widget control buttons', () => {
