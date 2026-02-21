@@ -60,7 +60,8 @@ gainlab-app/
 │   │   ├── KLineWidget/
 │   │   │   ├── index.tsx       # K线渲染（外部 data prop 优先 → fallback Worker → 样本数据）
 │   │   │   ├── KLineHeader.tsx # TV 风格 widget-internal header（symbol 搜索 + 价格 + 周期 + 图表类型 + 指标 + 画图 + 控件）
-│   │   │   ├── klinechart.d.ts # 类型声明（含 Script 引擎 addScript/removeScript）
+│   │   │   ├── klinechart.d.ts # 类型声明（Script 引擎 addScript/removeScript/setScriptConfig/getScriptsByFilter）
+│   │   │   ├── ScriptSetting.tsx # T18: 指标参数调节面板（int/float/color 控件）
 │   │   │   ├── builtinScripts/ # ★ 内置技术指标脚本（T17: MA/EMA/BOLL/VWAP/RSI/MACD/KDJ/ATR）
 │   │   │   │   ├── index.ts   # BUILTIN_SCRIPTS 映射 + OVERLAY_INDICATORS 排除集合
 │   │   │   │   ├── ma.ts      # MA(5/10/20/60) → 主图 4 线
@@ -454,7 +455,7 @@ Widget 定义集中在 `src/catalog/widget-catalog.ts`（单一源），提供�
 
 新增 Widget 只需在 catalog 注册一个对象，prompt / 验证 / 路由自动生效。
 
-**测试覆盖**：271 tests（含 53 个集成测试），其中 Widget Catalog 33 tests 覆盖 schema 验证 / prompt 生成 / registry 查找。
+**测试覆盖**：297 tests（含 53 个集成测试），其中 Widget Catalog 33 tests，ScriptSetting 12 tests。
 
 ```typescript
 // catalog 定义（简化示例）
@@ -528,7 +529,7 @@ CF Worker: gainlab-api.asher-sun.workers.dev
 
 | 工具 | 用途 |
 |---|---|
-| Vitest + RTL | 测试（285 tests, G1 只增不减） |
+| Vitest + RTL | 测试（297 tests, G1 只增不减） |
 | ESLint flat config | Lint（0 error 才能 commit） |
 | tsc + typecheck.sh | 类型检查（过滤 KLineChart 45K fork 错误） |
 | Vite | 构建 + Dev server |
@@ -541,4 +542,4 @@ pnpm lint && pnpm typecheck && pnpm test && pnpm build
 
 ---
 
-_创建于 2026-02-17 | 最后更新于 2026-02-21（T17 Indicator→Script 迁移: 8 builtin scripts + encryptScript 完整链路, 285 tests）_
+_创建于 2026-02-17 | 最后更新于 2026-02-21（T18 Script Setting: 指标参数调节面板 + input.int/style.color 声明式, 297 tests）_
