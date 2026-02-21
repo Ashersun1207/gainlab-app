@@ -30,7 +30,7 @@ export function useAgentWidgets(
   }, []);
 
   const handleToolResult = useCallback(
-    (toolName: string, result: unknown, widgetState?: WidgetState) => {
+    (_toolName: string, result: unknown, widgetState?: WidgetState) => {
       const validated = widgetState ? validateWidgetState(widgetState) : null;
       if (!validated) return;
 

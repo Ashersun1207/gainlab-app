@@ -15,16 +15,16 @@ const LazyKLineWidget = lazy(() =>
   import('../widgets/KLineWidget').then((m) => ({ default: m.KLineWidget as ComponentType<Record<string, unknown>> })),
 );
 const LazyHeatmapWidget = lazy(() =>
-  import('../widgets/HeatmapWidget').then((m) => ({ default: m.HeatmapWidget as ComponentType<Record<string, unknown>> })),
+  import('../widgets/HeatmapWidget').then((m) => ({ default: m.HeatmapWidget as unknown as ComponentType<Record<string, unknown>> })),
 );
 const LazyFundamentalsWidget = lazy(() =>
-  import('../widgets/FundamentalsWidget').then((m) => ({ default: m.FundamentalsWidget as ComponentType<Record<string, unknown>> })),
+  import('../widgets/FundamentalsWidget').then((m) => ({ default: m.FundamentalsWidget as unknown as ComponentType<Record<string, unknown>> })),
 );
 const LazySentimentWidget = lazy(() =>
   import('../widgets/SentimentWidget').then((m) => ({ default: m.SentimentWidget as ComponentType<Record<string, unknown>> })),
 );
 const LazyQuoteTableWidget = lazy(() =>
-  import('../widgets/QuoteTableWidget').then((m) => ({ default: m.QuoteTableWidget as ComponentType<Record<string, unknown>> })),
+  import('../widgets/QuoteTableWidget').then((m) => ({ default: m.QuoteTableWidget as unknown as ComponentType<Record<string, unknown>> })),
 );
 
 // ── Register all widget renderers ──

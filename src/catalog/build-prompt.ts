@@ -60,12 +60,14 @@ function describeField(field: z.ZodType): string {
       return '(boolean, required)';
 
     case 'enum': {
-      const options = (field as z.ZodEnum<[string, ...string[]]>).options;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Zod v4 type mismatch
+      const options = (field as any).options as string[];
       return `(${options.join('|')}, required)`;
     }
 
     case 'literal':
-      return `(literal: ${String((field as z.ZodLiteral<unknown>).value)})`;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Zod v4 type mismatch
+      return `(literal: ${String((field as any).value)})`;
 
     case 'array': {
       const el = (field as z.ZodArray<z.ZodType>).element;
@@ -101,11 +103,13 @@ function describeFieldSimple(field: z.ZodType): string {
     case 'boolean':
       return 'boolean';
     case 'enum': {
-      const options = (field as z.ZodEnum<[string, ...string[]]>).options;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Zod v4 type mismatch
+      const options = (field as any).options as string[];
       return options.join('|');
     }
     case 'literal':
-      return String((field as z.ZodLiteral<unknown>).value);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Zod v4 type mismatch
+      return String((field as any).value);
     case 'array': {
       const el = (field as z.ZodArray<z.ZodType>).element;
       return `${describeFieldSimple(el)}[]`;
