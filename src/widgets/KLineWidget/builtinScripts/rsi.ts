@@ -5,7 +5,7 @@
 export const RSI_SCRIPT = `// @name = RSI
 // @position = vice
 
-var rsiData = F.rsi(dataList, 14)
+var rsiData = F.rsi(dataList, 14, 100, 1, 'close')
 
 D.line(rsiData, { color: '#AB47BC', size: 1.5 })
 D.hline(70, { color: '#EF5350', size: 0.5, style: 'dashed' })
